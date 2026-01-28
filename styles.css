@@ -1,0 +1,351 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #00758f;
+    --secondary-color: #00a3bf;
+    --accent-color: #f29111;
+    --text-color: #333;
+    --bg-light: #f9fafb;
+    --bg-white: #ffffff;
+    --border-color: #e5e7eb;
+    --code-bg: #ffffff;
+    --code-text: #24292f;
+    --code-border: #d0d7de;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-light);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header Styles */
+header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 3rem 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+}
+
+nav ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    gap: 2rem;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Main Content */
+main {
+    padding: 3rem 0;
+}
+
+.section {
+    background: var(--bg-white);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.section h3 {
+    color: var(--secondary-color);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.section p {
+    margin-bottom: 1rem;
+}
+
+/* Feature Grid */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.feature-card {
+    background: var(--bg-light);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--secondary-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+/* Tabs */
+.tabs {
+    margin-top: 1.5rem;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-light);
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.tab-button:hover {
+    background: var(--border-color);
+}
+
+.tab-content {
+    display: block;
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    padding: 0;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+}
+
+.tab-content pre {
+    padding: 1rem;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: transparent;
+    color: var(--code-text);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    border-radius: 4px;
+}
+
+.code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    padding: 1.5rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+    overflow-x: auto;
+}
+
+.code-block pre {
+    color: var(--code-text);
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 1.5;
+    margin: 0;
+    overflow-x: auto;
+}
+
+.code-block code {
+    font-size: 0.95rem;
+    color: var(--code-text);
+}
+
+/* Practice Projects */
+.practice-project {
+    background: var(--bg-light);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.practice-project h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+details {
+    margin-top: 1rem;
+}
+
+details summary {
+    cursor: pointer;
+    color: var(--secondary-color);
+    font-weight: 500;
+    padding: 0.5rem;
+    background: var(--bg-white);
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+details summary:hover {
+    background: var(--border-color);
+}
+
+details[open] summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Tips List */
+.tips-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.tip-item {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tip-item h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2rem;
+    }
+
+    header p {
+        font-size: 1rem;
+    }
+
+    nav ul {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .section {
+        padding: 1.5rem;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tab-buttons {
+        flex-wrap: wrap;
+    }
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Code Styles */
+code {
+    font-family: 'Courier New', Courier, monospace;
+    background: #f6f8fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+/* GitHub Light+ SQL Syntax Highlighting */
+.code-block .kwd, .tab-content .kwd {
+    color: #cf222e;
+    font-weight: 600;
+}
+
+.code-block .str, .tab-content .str {
+    color: #0a3069;
+}
+
+.code-block .com, .tab-content .com {
+    color: #6e7781;
+    font-style: italic;
+}
+
+.code-block .num, .tab-content .num {
+    color: #0550ae;
+}
+
+.code-block .func, .tab-content .func {
+    color: #8250df;
+}
+
+.code-block .type, .tab-content .type {
+    color: #953800;
+}
+
+/* GitHub Light+ Shell Syntax Highlighting */
+.code-block code.sh .cmd, .tab-content code.sh .cmd {
+    color: #cf222e;
+    font-weight: 600;
+}
+
+.code-block code.sh .str, .tab-content code.sh .str {
+    color: #0a3069;
+}
+
+.code-block code.sh .com, .tab-content code.sh .com {
+    color: #6e7781;
+    font-style: italic;
+}
+
+.code-block code.sh .var, .tab-content code.sh .var {
+    color: #953800;
+}
+
+.code-block code.sh .path, .tab-content code.sh .path {
+    color: #0550ae;
+}
+
+.code-block code.sh .num, .tab-content code.sh .num {
+    color: #0550ae;
+}
+
