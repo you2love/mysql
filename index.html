@@ -98,56 +98,50 @@ mysql -u root -p</code></pre>
                     </div>
 
                     <div class="tab-content" id="linux">
-                        <pre><code class="sh"># Ubuntu/Debian 24.04 LTS
-sudo apt update
-sudo apt install mysql-server-9.0
+                        <pre><code class="sh">"com"># Ubuntu/Debian 24.04 LTSsudoapt updatesudoapt install mysql-server-9.0
 
-# 启用 AI 优化器
-sudo mysql -e "SET GLOBAL optimizer_switch='ai_optimization=on';"
+"com"># 启用 AI 优化器
+sudomysql -e "SET GLOBAL optimizer_switch=ai_optimization=on;"
 
-# 启动服务
-sudo systemctl start mysql
-sudo systemctl enable mysql
+"com"># 启动服务
+sudosystemctl startmysql
+sudosystemctl enablemysql
 
-# RHEL/CentOS 9
-sudo dnf install mysql-server
+"com"># RHEL/CentOS 9sudodnf install mysql-server
 
-# 安全配置
-sudo mysql_secure_installation</code></pre>
+"com"># 安全配置
+sudomysql_secure_installation</code></pre>
                     </div>
 
                     <div class="tab-content" id="windows">
-                        <pre><code class="sh">"com">"com"># 1. 访问 MySQL 官网下载 MySQL 9.x
-"com">"com"># https://dev.mysql.com/downloads/mysql/
+                        <pre><code class="sh">"com"># 1. 访问 MySQL 官网下载 MySQL 9.x
+"com"># https://dev.mysql.com/downloads/mysql/
 
-"com">"com"># 2. 选择 "Developer Default" 安装类型
+"com"># 2. 选择 "Developer Default" 安装类型
 
-"com">"com"># 3. 启用以下选项：
-"com">"com">#    - AI Query Optimizer
-"com">"com">#    - Machine Learning Integration
-"com">"com">#    - Enhanced Security
+"com"># 3. 启用以下选项：
+"com">#    - AI Query Optimizer
+"com">#    - Machine Learning Integration
+"com">#    - Enhanced Security
 
-"com">"com"># 4. 配置 root 密码（支持密码策略）
+"com"># 4. 配置 root 密码（支持密码策略）
 
-"com">"com"># 5. 启动 MySQL 服务
-"com">"com"># 从开始菜单运行 "MySQL 9.0 Command Line Client"</code></pre>
+"com"># 5. 启动 MySQL 服务
+"com"># 从开始菜单运行 "MySQL 9.0 Command Line Client"</code></pre>
                     </div>
 
                     <div class="tab-content" id="docker">
-                        <pre><code class="sh">"com">"com"># 拉取最新 MySQL 9.x 镜像
-docker pull mysql:9.0
+                        <pre><code class="sh">"com"># 拉取最新 MySQL 9.x 镜像docker pull mysql:9.0
 
-"com">"com"># 运行容器（启用 AI 优化器）
-docker run --name mysql90 \
+"com"># 运行容器（启用 AI 优化器）docker run --name mysql90 \
   -p 3306:3306 \
   -e MYSQL_ROOT_PASSWORD=yourpassword \
   -e MYSQL_AI_OPTIMIZER=1 \
   -d mysql:9.0
 
-"com">"com"># 连接到容器
-docker exec -it mysql90 mysql -u root -p
+"com"># 连接到容器dockerexec -it mysql90mysql -u root -p
 
-"com">"com"># 使用 Docker Compose
+"com"># 使用 Docker Compose
 version: 3.8
 services:
   mysql:

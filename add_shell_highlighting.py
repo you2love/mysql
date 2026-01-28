@@ -29,29 +29,69 @@ def highlight_shell(code):
         'logout', 'clear', 'reset', 'stty', 'tput', 'echo', 'printf', 'read',
         'exec', 'eval', 'shift', 'getopts', 'trap', 'wait', 'sleep', 'true',
         'false', 'test', '[', ']', 'let', 'declare', 'typeset', 'local', 'readonly',
-        'export', 'unset', 'shift', 'source', 'exec'
+        'export', 'unset', 'shift', 'source', 'exec', 'version', 'services',
+        'image', 'environment', 'ports', 'volumes', 'pull', 'run', 'exec'
     ]
 
     result = code
 
-    # 高亮注释（从 # 到行尾）
-    result = re.sub(r'(#.*$)', r'<span class="com">\1</span>', result, flags=re.MULTILINE)
-
-    # 高亮字符串（双引号和单引号）
-    result = re.sub(r'"([^"]*)"', r'<span class="str">"\1"</span>', result)
-    result = re.sub(r"'([^']*)'", r"<span class='str'>\1</span>", result)
-
-    # 高亮数字
-    result = re.sub(r'\b(\d+)\b', r'<span class="num">\1</span>', result)
-
-    # 高亮命令（在行首或空格后面）
-    for cmd in sorted(commands, key=len, reverse=True):
-        escaped_cmd = re.escape(cmd)
-        # 只匹配在行首、空格或操作符后面的命令
-        result = re.sub(r'(?:^|\s|\||;|&&|\|\|)\b(' + escaped_cmd + r')(?=\s|$)', r'<span class="cmd">\1</span>', result, flags=re.MULTILINE)
-
-    # 高亮变量（$VAR 或 ${VAR}）
-    result = re.sub(r'(\$\{?\w+\}?)', r'<span class="var">\1</span>', result)
+    # 高亮注释（从 # 到行尾，但要在最后处理）
+    # 先保存注释的位置
+    comment_pattern = r'(#.*)$'
+    
+    # 处理每一行，单独高亮
+    lines = result.split('\n')
+    highlighted_lines = []
+    
+    for line in lines:
+        # 检查是否有注释
+        comment_match = re.search(comment_pattern, line)
+        if comment_match:
+            comment = comment_match.group(1)
+            code_part = line[:comment_match.start()]
+            
+            # 高亮代码部分
+            # 高亮字符串
+            code_part = re.sub(r'"([^"]*)"', r'<span class="str">"\1"</span>', code_part)
+            code_part = re.sub(r"'([^']*)'", r"<span class='str'>\1</span>", code_part)
+            
+            # 高亮数字
+            code_part = re.sub(r'\b(\d+)\b', r'<span class="num">\1</span>', code_part)
+            
+            # 高亮命令
+            for cmd in sorted(commands, key=len, reverse=True):
+                escaped_cmd = re.escape(cmd)
+                code_part = re.sub(r'\b(' + escaped_cmd + r')(?=\s|$)', r'<span class="cmd">\1</span>', code_part)
+            
+            # 高亮变量
+            code_part = re.sub(r'(\$\{?\w+\}?)', r'<span class="var">\1</span>', code_part)
+            
+            # 高亮注释
+            comment = f'<span class="com">{comment}</span>'
+            
+            highlighted_line = code_part + comment
+        else:
+            # 没有注释的行
+            highlighted_line = line
+            
+            # 高亮字符串
+            highlighted_line = re.sub(r'"([^"]*)"', r'<span class="str">"\1"</span>', highlighted_line)
+            highlighted_line = re.sub(r"'([^']*)'", r"<span class='str'>\1</span>", highlighted_line)
+            
+            # 高亮数字
+            highlighted_line = re.sub(r'\b(\d+)\b', r'<span class="num">\1</span>', highlighted_line)
+            
+            # 高亮命令
+            for cmd in sorted(commands, key=len, reverse=True):
+                escaped_cmd = re.escape(cmd)
+                highlighted_line = re.sub(r'\b(' + escaped_cmd + r')(?=\s|$)', r'<span class="cmd">\1</span>', highlighted_line)
+            
+            # 高亮变量
+            highlighted_line = re.sub(r'(\$\{?\w+\}?)', r'<span class="var">\1</span>', highlighted_line)
+        
+        highlighted_lines.append(highlighted_line)
+    
+    result = '\n'.join(highlighted_lines)
 
     return result
 
