@@ -81,78 +81,78 @@
                     </div>
 
                     <div class="tab-content" id="mac">
-                        <pre><code class="sh"># 使用 Homebrew 安装 MySQL 9.x
-brew install mysql@9.0
+                        <pre><code class="sh"><span class="com"># 使用 Homebrew 安装 MySQL 9.x</span>
+<span class="cmd">brew</span> install mysql@<span class="num">9</span>.<span class="num">0</span>
 
-# 启动 MySQL 服务
-brew services start mysql@9.0
+<span class="com"># 启动 MySQL 服务</span>
+<span class="cmd">brew</span> <span class="cmd">services</span> start mysql@<span class="num">9</span>.<span class="num">0</span>
 
-# 安全配置（支持多因素认证）
-mysql_secure_installation --mfa
+<span class="com"># 安全配置（支持多因素认证）</span>
+<span class="cmd">mysql_secure_installation</span> --mfa
 
-# 验证安装
-mysql --version
+<span class="com"># 验证安装</span>
+<span class="cmd">mysql</span> --<span class="cmd">version</span>
 
-# 登录 MySQL
-mysql -u root -p</code></pre>
+<span class="com"># 登录 MySQL</span>
+<span class="cmd">mysql</span> -u root -p</code></pre>
                     </div>
 
                     <div class="tab-content" id="linux">
-                        <pre><code class="sh">"com"># Ubuntu/Debian 24.04 LTSsudoapt updatesudoapt install mysql-server-9.0
+                        <pre><code class="sh"><span class="str">"com"</span>><span class="com"># Ubuntu/Debian 24.04 LTSsudoapt updatesudoapt install mysql-server-9.0</span>
 
-"com"># 启用 AI 优化器
-sudomysql -e "SET GLOBAL optimizer_switch=ai_optimization=on;"
+<span class="str">"com"</span>><span class="com"># 启用 AI 优化器</span>
+sudomysql -e <span class="str">"SET GLOBAL optimizer_switch=ai_optimization=on;"</span>
 
-"com"># 启动服务
+<span class="str">"com"</span>><span class="com"># 启动服务</span>
 sudosystemctl startmysql
 sudosystemctl enablemysql
 
-"com"># RHEL/CentOS 9sudodnf install mysql-server
+<span class="str">"com"</span>><span class="com"># RHEL/CentOS 9sudodnf install mysql-server</span>
 
-"com"># 安全配置
+<span class="str">"com"</span>><span class="com"># 安全配置</span>
 sudomysql_secure_installation</code></pre>
                     </div>
 
                     <div class="tab-content" id="windows">
-                        <pre><code class="sh">"com"># 1. 访问 MySQL 官网下载 MySQL 9.x
-"com"># https://dev.mysql.com/downloads/mysql/
+                        <pre><code class="sh"><span class="str">"com"</span>><span class="com"># 1. 访问 MySQL 官网下载 MySQL 9.x</span>
+<span class="str">"com"</span>><span class="com"># https://dev.mysql.com/downloads/mysql/</span>
 
-"com"># 2. 选择 "Developer Default" 安装类型
+<span class="str">"com"</span>><span class="com"># 2. 选择 "Developer Default" 安装类型</span>
 
-"com"># 3. 启用以下选项：
-"com">#    - AI Query Optimizer
-"com">#    - Machine Learning Integration
-"com">#    - Enhanced Security
+<span class="str">"com"</span>><span class="com"># 3. 启用以下选项：</span>
+<span class="str">"com"</span>><span class="com">#    - AI Query Optimizer</span>
+<span class="str">"com"</span>><span class="com">#    - Machine Learning Integration</span>
+<span class="str">"com"</span>><span class="com">#    - Enhanced Security</span>
 
-"com"># 4. 配置 root 密码（支持密码策略）
+<span class="str">"com"</span>><span class="com"># 4. 配置 root 密码（支持密码策略）</span>
 
-"com"># 5. 启动 MySQL 服务
-"com"># 从开始菜单运行 "MySQL 9.0 Command Line Client"</code></pre>
+<span class="str">"com"</span>><span class="com"># 5. 启动 MySQL 服务</span>
+<span class="str">"com"</span>><span class="com"># 从开始菜单运行 "MySQL 9.0 Command Line Client"</span></code></pre>
                     </div>
 
                     <div class="tab-content" id="docker">
-                        <pre><code class="sh">"com"># 拉取最新 MySQL 9.x 镜像docker pull mysql:9.0
+                        <pre><code class="sh"><span class="str">"com"</span>><span class="com"># 拉取最新 MySQL 9.x 镜像docker pull mysql:9.0</span>
 
-"com"># 运行容器（启用 AI 优化器）docker run --name mysql90 \
-  -p 3306:3306 \
+<span class="str">"com"</span>><span class="com"># 运行容器（启用 AI 优化器）docker run --name mysql90 \</span>
+  -p <span class="num">3306</span>:<span class="num">3306</span> \
   -e MYSQL_ROOT_PASSWORD=yourpassword \
-  -e MYSQL_AI_OPTIMIZER=1 \
-  -d mysql:9.0
+  -e MYSQL_AI_OPTIMIZER=<span class="num">1</span> \
+  -d mysql:<span class="num">9</span>.<span class="num">0</span>
 
-"com"># 连接到容器dockerexec -it mysql90mysql -u root -p
+<span class="str">"com"</span>><span class="com"># 连接到容器dockerexec -it mysql90mysql -u root -p</span>
 
-"com"># 使用 Docker Compose
-version: 3.8
+<span class="str">"com"</span>><span class="com"># 使用 Docker Compose</span>
+version: <span class="num">3</span>.<span class="num">8</span>
 services:
   mysql:
-    image: mysql:9.0
+    image: mysql:<span class="num">9</span>.<span class="num">0</span>
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_AI_OPTIMIZER: 1
+      MYSQL_AI_OPTIMIZER: <span class="num">1</span>
     ports:
-      - "3306:3306"
+      - <span class="str">"<span class="num">3306</span>:<span class="num">3306</span>"</span>
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/<span class="cmd">mysql</span>
 
 volumes:
   mysql_data:</code></pre>
