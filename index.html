@@ -6,6 +6,34 @@
     <title>MySQL 学习教程 - 从入门到精通</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.code-block').forEach(function(block) {
+                var pre = block.querySelector('pre');
+                if (!pre) return;
+                
+                var code = document.createElement('div');
+                code.className = 'code-actions';
+                
+                var copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.innerHTML = '📋 复制';
+                copyBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    var text = pre.textContent;
+                    navigator.clipboard.writeText(text).then(function() {
+                        copyBtn.innerHTML = '✓ 已复制';
+                        setTimeout(function() {
+                            copyBtn.innerHTML = '📋 复制';
+                        }, 2000);
+                    });
+                };
+                
+                code.appendChild(copyBtn);
+                block.insertBefore(code, pre);
+            });
+        });
+    </script>
 </head>
 <body>
     <div class="layout">
