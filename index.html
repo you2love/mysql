@@ -1500,65 +1500,394 @@ USING (user_id = <span class="func">CURRENT_USER_ID</span>());
         <section id="ai" class="section">
             <h2>AI 增强功能</h2>
             <div class="content">
-                <h3>1. 机器学习集成</h3>
+                <h3>1. AI 查询优化器</h3>
+                
+                <h4>1.1 传统查询优化器 vs AI 优化器</h4>
+                <p>MySQL 9.x 引入了基于机器学习的查询优化器，能够通过分析历史查询模式和统计信息，自动选择最优的执行计划。</p>
                 <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 创建机器学习模型</span>
-<span class="kwd">CREATE</span> ML <span class="kwd">MODEL</span> churn_prediction
-<span class="kwd">FROM</span> training_data
-ALGORITHM <span class="str">'random_forest'</span>
-TARGET <span class="str">'churn'</span>;
+                    <pre><code class="sql"><span class="com">-- 传统优化器基于成本模型</span>
+<span class="com">-- AI 优化器基于历史数据和预测模型</span>
 
-<span class="com">-- 使用模型进行预测</span>
-<span class="kwd">SELECT</span> customer_id,
-       <span class="func">PREDICT</span>(churn_prediction, features) <span class="kwd">as</span> churn_probability
-<span class="kwd">FROM</span> customers
-<span class="kwd">WHERE</span> <span class="func">PREDICT</span>(churn_prediction, features) > <span class="num">0</span>.<span class="num">7</span>;
+<span class="com">-- 启用 AI 优化器</span>
+<span class="kwd">SET</span> GLOBAL optimizer_switch = <span class="str">'ai_optimization=on'</span>;
 
-<span class="com">-- 训练模型</span>
-<span class="kwd">CALL</span> sys.train_ml_model(<span class="str">'churn_prediction'</span>, <span class="str">'new_training_data'</span>);</code></pre>
+<span class="com">-- 查看当前优化器设置</span>
+<span class="kwd">SHOW</span> VARIABLES LIKE <span class="str">'optimizer_switch'</span>;
+
+<span class="com">-- 为特定查询启用 AI 优化</span>
+<span class="kwd">SELECT</span> /*+ AI_OPTIMIZE */ *
+<span class="kwd">FROM</span> orders o
+<span class="kwd">JOIN</span> customers c <span class="kwd">ON</span> o.customer_id = c.id
+<span class="kwd">WHERE</span> o.created_at > <span class="str">'2024-01-01'</span>
+<span class="kwd">ORDER BY</span> o.total_amount DESC
+<span class="kwd">LIMIT</span> <span class="num">100</span>;</code></pre>
                 </div>
 
-                <h3>2. 自然语言查询</h3>
+                <h4>1.2 AI 优化器工作原理</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- AI 优化器的工作流程：</span>
+<span class="com">-- 1. 收集历史查询执行数据</span>
+<span class="com">-- 2. 构建查询特征模型</span>
+<span class="com">-- 3. 预测不同执行计划的成本</span>
+<span class="com">-- 4. 选择最优执行计划</span>
+
+<span class="com">-- 查看 AI 优化器的分析结果</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ai_query_analysis
+<span class="kwd">WHERE</span> query_time > <span class="func">NOW</span>() - INTERVAL <span class="num">1</span> DAY
+<span class="kwd">ORDER BY</span> execution_time DESC;
+
+<span class="com">-- 查看执行计划预测</span>
+<span class="kwd">EXPLAIN</span> ANALYZE <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+
+<span class="com">-- AI 优化的统计信息</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ai_optimizer_stats;</code></pre>
+                </div>
+
+                <h3>2. 机器学习集成</h3>
+                
+                <h4>2.1 内置 ML 模型</h4>
+                <p>MySQL 9.x 支持直接在数据库中创建、训练和使用机器学习模型，实现端到端的 ML 工作流。</p>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 查看支持的 ML 算法</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ml_available_algorithms;
+
+<span class="com">-- 创建训练数据表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> customer_features (
+    customer_id <span class="kwd">INT PRIMARY KEY</span>,
+    age <span class="kwd">INT</span>,
+    income <span class="kwd">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>),
+    purchase_frequency <span class="kwd">INT</span>,
+    avg_order_value <span class="kwd">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>),
+    days_since_last_purchase <span class="kwd">INT</span>,
+    churn_label <span class="kwd">TINYINT</span>  <span class="com">-- 目标变量：1=流失，0=留存</span>
+);
+
+<span class="com">-- 创建机器学习模型</span>
+<span class="kwd">CREATE</span> ML <span class="kwd">MODEL</span> customer_churn_model
+<span class="kwd">FROM</span> customer_features
+FEATURES (age, income, purchase_frequency, avg_order_value, days_since_last_purchase)
+TARGET (churn_label)
+ALGORITHM <span class="str">'gradient_boosting'</span>
+OPTIONS (
+    n_estimators = <span class="num">100</span>,
+    max_depth = <span class="num">5</span>,
+    learning_rate = <span class="num">0.1</span>
+);</code></pre>
+                </div>
+
+                <h4>2.2 模型预测</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 使用模型进行预测</span>
+<span class="kwd">SELECT</span> 
+    customer_id,
+    <span class="func">PREDICT</span>(customer_churn_model <span class="kwd">USING</span> 
+        age, income, purchase_frequency, avg_order_value, days_since_last_purchase
+    ) <span class="kwd">as</span> churn_probability,
+    <span class="kwd">CASE</span>
+        WHEN <span class="func">PREDICT</span>(...) > <span class="num">0.7</span> THEN <span class="str">'高风险'</span>
+        WHEN <span class="func">PREDICT</span>(...) > <span class="num">0.3</span> THEN <span class="str">'中风险'</span>
+        <span class="kwd">ELSE</span> <span class="str">'低风险'</span>
+    <span class="kwd">END</span> <span class="kwd">as</span> risk_level
+<span class="kwd">FROM</span> customer_features
+<span class="kwd">WHERE</span> churn_label <span class="kwd">IS</span> NULL;
+
+<span class="com">-- 批量预测并更新表</span>
+<span class="kwd">UPDATE</span> customer_features
+<span class="kwd">SET</span> predicted_churn = 
+    <span class="func">PREDICT</span>(customer_churn_model <span class="kwd">USING</span> age, income, purchase_frequency, avg_order_value, days_since_last_purchase)
+<span class="kwd">WHERE</span> churn_label <span class="kwd">IS</span> NULL;
+
+<span class="com">-- 模型评估</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ml_model_evaluation
+<span class="kwd">WHERE</span> model_name = <span class="str">'customer_churn_model'</span>;</code></pre>
+                </div>
+
+                <h4>2.3 模型管理</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 查看所有模型</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ml_models;
+
+<span class="com">-- 查看模型详细信息</span>
+<span class="kwd">DESCRIBE</span> ML <span class="kwd">MODEL</span> customer_churn_model;
+
+<span class="com">-- 重新训练模型</span>
+<span class="kwd">ALTER</span> ML <span class="kwd">MODEL</span> customer_churn_model
+RETRAIN <span class="kwd">FROM</span> customer_features
+FEATURES (age, income, purchase_frequency, avg_order_value, days_since_last_purchase)
+TARGET (churn_label);
+
+<span class="com">-- 导出模型</span>
+<span class="kwd">EXPORT</span> ML <span class="kwd">MODEL</span> customer_churn_model
+<span class="kwd">TO</span> <span class="str">'/backup/models/'</span>;
+
+<span class="com">-- 导入模型</span>
+<span class="kwd">IMPORT</span> ML <span class="kwd">MODEL</span> customer_churn_model_new
+<span class="kwd">FROM</span> <span class="str">'/backup/models/customer_churn_model'</span>;
+
+<span class="com">-- 删除模型</span>
+<span class="kwd">DROP</span> ML <span class="kwd">MODEL</span> customer_churn_model;</code></pre>
+                </div>
+
+                <h3>3. 向量搜索与语义查询</h3>
+                
+                <h4>3.1 向量索引</h4>
+                <p>MySQL 9.x 原生支持向量数据类型和向量索引，可用于语义搜索、相似度匹配等 AI 应用场景。</p>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 创建包含向量列的表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> documents (
+    id <span class="kwd">INT PRIMARY KEY</span>,
+    title <span class="type">VARCHAR</span>(<span class="num">255</span>),
+    content <span class="type">TEXT</span>,
+    embedding <span class="type">VECTOR</span>(<span class="num">768</span>),  <span class="com">-- 768维向量（支持 BERT 等模型）</span>
+    <span class="kwd">INDEX</span> idx_embedding (embedding) <span class="kwd">USING</span> HNSW
+);
+
+<span class="com">-- 插入带向量的数据</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> documents (id, title, content, embedding)
+<span class="kwd">VALUES</span> (
+    <span class="num">1</span>, 
+    <span class="str">'MySQL 教程'</span>, 
+    <span class="str">'MySQL 是一种关系型数据库管理系统...'</span>,
+    <span class="str">'[0.12, -0.34, 0.56, ...]'</span>  <span class="com">-- 实际使用 embedding 生成工具</span>
+);
+
+<span class="com">-- 创建向量索引（HNSW 算法）</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> documents 
+ADD <span class="kwd">INDEX</span> idx_vector (embedding) <span class="kwd">USING</span> HNSW
+OPTIONS (m = <span class="num">16</span>, ef_construction = <span class="num">200</span>);</code></pre>
+                </div>
+
+                <h4>3.2 向量相似度搜索</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 向量距离计算函数：</span>
+<span class="com">-- VECTOR_DISTANCE(v1, v2, 'cosine') - 余弦相似度</span>
+<span class="com">-- VECTOR_DISTANCE(v1, v2, 'euclidean') - 欧氏距离</span>
+<span class="com">-- VECTOR_DISTANCE(v1, v2, 'dot_product') - 点积</span>
+
+<span class="com">-- 查找最相似的文档</span>
+<span class="kwd">SELECT</span> id, title, 
+    <span class="func">VECTOR_DISTANCE</span>(embedding, <span class="str">'[0.12, -0.34, 0.56, ...]'</span>, <span class="str">'cosine'</span>) <span class="kwd">as</span> distance
+<span class="kwd">FROM</span> documents
+<span class="kwd">ORDER BY</span> distance
+<span class="kwd">LIMIT</span> <span class="num">5</span>;
+
+<span class="com">-- 使用向量索引加速搜索（近似最近邻）</span>
+<span class="kwd">SELECT</span> id, title,
+    <span class="func">VECTOR_DISTANCE</span>(embedding, <span class="str">'[query_vector]'</span>, <span class="str">'cosine'</span>) <span class="kwd">as</span> distance
+<span class="kwd">FROM</span> documents
+<span class="kwd">ORDER BY</span> distance
+<span class="kwd">LIMIT</span> <span class="num">10</span>;
+
+<span class="com">-- 过滤条件 + 向量搜索</span>
+<span class="kwd">SELECT</span> id, title
+<span class="kwd">FROM</span> documents
+<span class="kwd">WHERE</span> category = <span class="str">'数据库'</span>
+<span class="kwd">ORDER BY</span> <span class="func">VECTOR_DISTANCE</span>(embedding, <span class="str">'[query_vector]'</span>, <span class="str">'cosine'</span>)
+<span class="kwd">LIMIT</span> <span class="num">5</span>;</code></pre>
+                </div>
+
+                <h3>4. 自然语言查询</h3>
+                
+                <h4>4.1 NL2SQL 转换</h4>
+                <p>通过自然语言处理技术，将自然语言查询转换为优化的 SQL 语句。</p>
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- 使用自然语言查询</span>
 <span class="kwd">CALL</span> sys.natural_language_query(
-    <span class="str">'显示所有年龄大于25岁并且最近30天活跃的用户'</span>
+    <span class="str">'查找2024年销售额超过10000元的客户'</span>
 );
 
-<span class="com">-- <span class="kwd">AI</span> 生成的 SQL 会自动优化并执行</span>
+<span class="com">-- AI 生成的 SQL 示例：</span>
+<span class="com">-- SELECT c.name, SUM(o.total_amount) as total_sales</span>
+<span class="com">-- FROM customers c</span>
+<span class="com">-- JOIN orders o ON c.id = o.customer_id</span>
+<span class="com">-- WHERE YEAR(o.order_date) = 2024</span>
+<span class="com">-- GROUP BY c.id, c.name</span>
+<span class="com">-- HAVING SUM(o.total_amount) > 10000</span>
 
-<span class="com">-- 查询建议（<span class="kwd">AI</span> 驱动）</span>
-<span class="kwd">CALL</span> sys.get_query_suggestions(<span class="str">'用户活跃度分析'</span>);</code></pre>
+<span class="com">-- 自然语言查询复杂问题</span>
+<span class="kwd">SELECT</span> <span class="func">NL</span>(<span class="str">'哪些产品的月销量呈下降趋势？'</span>);
+
+<span class="com">-- 查看历史自然语言查询</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.nl_query_history
+<span class="kwd">ORDER BY</span> query_time DESC
+<span class="kwd">LIMIT</span> <span class="num">20</span>;</code></pre>
                 </div>
 
-                <h3>3. 异常检测</h3>
+                <h4>4.2 查询解释与优化建议</h4>
                 <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 自动异常检测</span>
-<span class="kwd">CREATE</span> <span class="kwd">EVENT</span> detect_anomalies
+                    <pre><code class="sql"><span class="com">-- AI 解释查询意图</span>
+<span class="kwd">SELECT</span> sys.explain_query(
+    <span class="str">'SELECT * FROM orders WHERE status = "pending"'</span>
+) <span class="kwd">as</span> explanation;
+
+<span class="com">-- 获取性能优化建议</span>
+<span class="kwd">SELECT</span> sys.get_optimization_suggestions(
+    <span class="str">'SELECT o.*, c.name FROM orders o JOIN customers c ON o.customer_id = c.id'</span>
+);
+
+<span class="com">-- SQL 语句改写建议</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.query_rewrites
+<span class="kwd">WHERE</span> original_query LIKE <span class="str">'%orders%'</span>;</code></pre>
+                </div>
+
+                <h3>5. 智能异常检测</h3>
+                
+                <h4>5.1 数据异常检测</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 配置异常检测</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> anomaly_detection_config (
+    table_name <span class="type">VARCHAR</span>(<span class="num">64</span>),
+    column_name <span class="type">VARCHAR</span>(<span class="num">64</span>),
+    detection_method <span class="type">VARCHAR</span>(<span class="num">20</span>),  <span class="com">-- 'statistical', 'ml', 'isolation_forest'</span>
+    sensitivity <span class="kwd">DECIMAL</span>(<span class="num">3</span>,<span class="num">2</span>)  <span class="com">-- 0.0-1.0</span>
+);
+
+<span class="com">-- 为用户表启用异常检测</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> anomaly_detection_config
+<span class="kwd">VALUES</span> (<span class="str">'users'</span>, <span class="str">'age'</span>, <span class="str">'isolation_forest'</span>, <span class="num">0.8</span>);
+
+<span class="com">-- 手动触发异常检测</span>
+<span class="kwd">CALL</span> sys.detect_data_anomalies(<span class="str">'users'</span>);
+
+<span class="com">-- 查看检测到的异常</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.detected_anomalies
+<span class="kwd">WHERE</span> table_name = <span class="str">'users'</span>
+<span class="kwd">AND</span> detected_at > <span class="func">NOW</span>() - INTERVAL <span class="num">1</span> DAY;</code></pre>
+                </div>
+
+                <h4>5.2 性能异常检测</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 启用性能异常检测</span>
+<span class="kwd">SET</span> GLOBAL performance_anomaly_detection = <span class="str">'ON'</span>;
+
+<span class="com">-- 配置性能指标阈值</span>
+<span class="kwd">CREATE</span> <span class="kwd">EVENT</span> hourly_performance_check
 <span class="kwd">ON</span> <span class="kwd">SCHEDULE</span> <span class="kwd">EVERY</span> <span class="num">1</span> <span class="kwd">HOUR</span>
 DO
 <span class="kwd">BEGIN</span>
-    <span class="kwd">CALL</span> sys.detect_data_anomalies(<span class="str">'users'</span>);
     <span class="kwd">CALL</span> sys.detect_performance_anomalies();
-END;
+    <span class="kwd">CALL</span> sys.detect_slow_queries();
+<span class="kwd">END</span>;
 
-<span class="com">-- 查看异常报告</span>
-<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.anomaly_reports
-<span class="kwd">WHERE</span> <span class="kwd">timestamp</span> > <span class="func">NOW</span>() - INTERVAL <span class="num">1</span> HOUR;</code></pre>
+<span class="com">-- 查看性能异常</span>
+<span class="kwd">SELECT</span> 
+    <span class="kwd">timestamp</span>,
+    metric_name,
+    expected_value,
+    actual_value,
+    anomaly_score
+<span class="kwd">FROM</span> sys.performance_anomalies
+<span class="kwd">WHERE</span> <span class="kwd">timestamp</span> > <span class="func">NOW</span>() - INTERVAL <span class="num">24</span> HOURS
+<span class="kwd">ORDER BY</span> anomaly_score DESC;
+
+<span class="com">-- 异常自动告警</span>
+<span class="kwd">CREATE</span> <span class="kwd">TRIGGER</span> performance_anomaly_alert
+<span class="kwd">AFTER</span> <span class="kwd">INSERT</span> <span class="kwd">ON</span> sys.performance_anomalies
+<span class="kwd">FOR</span> <span class="kwd">EACH</span> <span class="kwd">ROW</span>
+<span class="kwd">BEGIN</span>
+    <span class="kwd">IF</span> NEW.anomaly_score > <span class="num">0.9</span> <span class="kwd">THEN</span>
+        <span class="kwd">INSERT</span> <span class="kwd">INTO</span> alert_log <span class="kwd">VALUES</span>(NEW.<span class="kwd">timestamp</span>, NEW.metric_name);
+    <span class="kwd">END</span> <span class="kwd">IF</span>;
+<span class="kwd">END</span>;</code></pre>
                 </div>
 
-                <h3>4. 智能索引推荐</h3>
+                <h3>6. 智能索引推荐</h3>
+                
+                <h4>6.1 自动索引分析</h4>
                 <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- <span class="kwd">AI</span> 自动分析并推荐索引</span>
-<span class="kwd">CALL</span> sys.recommend_indexes(<span class="str">'your_database'</span>);
+                    <pre><span class="com">-- 开启查询分析收集</span>
+<span class="kwd">SET</span> GLOBAL optimizer_trace = <span class="str">'enabled=on'</span>;
+<span class="kwd">SET</span> GLOBAL performance_schema = <span class="str">'ON'</span>;
 
-<span class="com">-- 查看推荐结果</span>
-<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.index_recommendations
+<span class="com">-- 运行一段时间后，分析查询模式</span>
+<span class="kwd">CALL</span> sys.analyze_workload(<span class="str">'your_database'</span>);
+
+<span class="com">-- 查看索引推荐</span>
+<span class="kwd">SELECT</span> 
+    table_name,
+    suggested_index,
+    columns,
+    potential_improvement,
+    estimated_size
+<span class="kwd">FROM</span> sys.index_recommendations
 <span class="kwd">WHERE</span> table_schema = <span class="str">'your_database'</span>
-<span class="kwd">ORDER BY</span> potential_improvement DESC;
+<span class="kwd">ORDER BY</span> potential_improvement DESC;</code></pre>
+                </div>
 
-<span class="com">-- 一键应用推荐</span>
-<span class="kwd">CALL</span> sys.apply_index_recommendations(<span class="str">'your_database'</span>);</code></pre>
+                <h4>6.2 自动应用索引</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 预览索引创建语句</span>
+<span class="kwd">SELECT</span> create_index_statement
+<span class="kwd">FROM</span> sys.index_recommendations
+<span class="kwd">WHERE</span> table_name = <span class="str">'orders'</span>
+<span class="kwd">AND</span> recommended_index = <span class="str">'idx_customer_date'</span>;
+
+<span class="com">-- 手动应用推荐索引</span>
+<span class="kwd">CALL</span> sys.apply_index_recommendation(
+    <span class="str">'orders'</span>, 
+    <span class="str">'idx_customer_date'</span>
+);
+
+<span class="com">-- 自动应用安全索引（可快速回滚）</span>
+<span class="kwd">CALL</span> sys.apply_recommended_indexes(
+    <span class="str">'your_database'</span>,
+    <span class="str">'auto'</span>,
+    <span class="num">1000</span>  <span class="com">-- 最大影响行数阈值</span>
+);
+
+<span class="com">-- 回滚索引变更</span>
+<span class="kwd">CALL</span> sys.rollback_index_change(<span class="str">'idx_customer_date'</span>, <span class="str">'orders'</span>);</code></pre>
+                </div>
+
+                <h3>7. AI 辅助运维</h3>
+                
+                <h4>7.1 智能监控仪表盘</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 查看 AI 健康状态报告</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ai_health_check\G
+
+<span class="com">-- AI 生成的优化建议</span>
+<span class="kwd">SELECT</span> 
+    category,
+    issue,
+    recommendation,
+    priority,
+    estimated_impact
+<span class="kwd">FROM</span> sys.ai_recommendations
+<span class="kwd">WHERE</span> status = <span class="str">'pending'</span>
+<span class="kwd">ORDER BY</span> priority DESC;
+
+<span class="com">-- 自动性能调优</span>
+<span class="kwd">CALL</span> sys.auto_tune(<span class="str">'your_database'</span>);
+
+<span class="com">-- 查看调优历史</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.auto_tune_history
+<span class="kwd">WHERE</span> tuned_at > <span class="func">NOW</span>() - INTERVAL <span class="num">7</span> DAY;</code></pre>
+                </div>
+
+                <h4>7.2 容量预测</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 存储容量预测</span>
+<span class="kwd">SELECT</span> 
+    table_name,
+    current_size_mb,
+    predicted_size_30d,
+    predicted_size_90d,
+    days_until_full
+<span class="kwd">FROM</span> sys.capacity_predictions
+<span class="kwd">WHERE</span> table_schema = <span class="str">'your_database'</span>;
+
+<span class="com">-- 性能趋势预测</span>
+<span class="kwd">SELECT</span> 
+    metric_name,
+    current_value,
+    predicted_value_7d,
+    trend
+<span class="kwd">FROM</span> sys.performance_predictions;
+
+<span class="com">-- 基于预测自动扩容建议</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.scaling_recommendations
+<span class="kwd">WHERE</span> recommendation_type = <span class="str">'storage'</span>;</code></pre>
                 </div>
             </div>
         </section>
