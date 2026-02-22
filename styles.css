@@ -15,6 +15,99 @@
     --code-bg: #ffffff;
     --code-text: #24292f;
     --code-border: #d0d7de;
+    --sidebar-width: 260px;
+    --sidebar-bg: #ffffff;
+    --sidebar-hover: #f3f4f6;
+    --sidebar-active: #e0f2fe;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-light);
+}
+
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.sidebar-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 1.5rem 1rem;
+    text-align: center;
+}
+
+.sidebar-header h1 {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.tree-nav {
+    padding: 1rem 0;
+}
+
+.tree {
+    list-style: none;
+}
+
+.tree > li > a {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tree > li > a:hover {
+    background: var(--sidebar-hover);
+    border-left-color: var(--secondary-color);
+}
+
+.tree > li > a.active {
+    background: var(--sidebar-active);
+    border-left-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 2rem;
+    max-width: calc(100% - var(--sidebar-width));
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Main Content */
+main {
+    padding: 0;
 }
 
 body {
@@ -30,45 +123,9 @@ body {
     padding: 0 20px;
 }
 
-/* Header Styles */
-header {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: white;
-    padding: 3rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-}
-
-header p {
-    font-size: 1.2rem;
-    opacity: 0.9;
-    margin-bottom: 1.5rem;
-}
-
-nav ul {
-    display: flex;
-    justify-content: center;
-    list-style: none;
-    gap: 2rem;
-}
-
-nav a {
-    color: white;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-nav a:hover {
-    text-decoration: underline;
-}
-
 /* Main Content */
 main {
-    padding: 3rem 0;
+    padding: 0;
 }
 
 .section {
@@ -249,17 +306,20 @@ details[open] summary {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    header h1 {
-        font-size: 2rem;
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
     }
 
-    header p {
-        font-size: 1rem;
+    .layout {
+        flex-direction: column;
     }
 
-    nav ul {
-        flex-wrap: wrap;
-        gap: 1rem;
+    .main-content {
+        margin-left: 0;
+        max-width: 100%;
+        padding: 1rem;
     }
 
     .section {
