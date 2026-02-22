@@ -361,7 +361,8 @@ TRUNCATE <span class="kwd">TABLE</span> users;</code></pre>
 <span class="kwd">WHERE</span> database_name = <span class="kwd">DATABASE</span>() <span class="kwd">AND</span> table_name = <span class="str">'users'</span>;</code></pre>
                 </div>
 
-                <h4>1.2 索引类型</h4>
+                <details>
+                    <summary>1.2 索引类型（点击展开）</summary>
 
                 <h5>1.2.1 主键索引（PRIMARY KEY）</h5>
                 <div class="code-block">
@@ -500,8 +501,9 @@ TRUNCATE <span class="kwd">TABLE</span> users;</code></pre>
 <span class="com">-- <span class="kwd">JSON</span> 列索引</span>
 <span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_prefs <span class="kwd">ON</span> users((<span class="func">JSON_EXTRACT</span>(preferences, <span class="str">'$.language'</span>)));
 <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users
-<span class="kwd">WHERE</span> <span class="func">JSON_EXTRACT</span>(preferences, <span class="str">'$.language'</span>) = <span class="str">'zh-CN'</span>;</code></pre>
+<span class="kwd">WHERE</span> <span class="func">JSON_EXTRACT</span>(preferences, <span class="str">'$.language'</span>) = <span class="str">'zh-CN'</span>;
                 </div>
+                </details>
 
                 <h4>1.3 索引设计原则</h4>
 
@@ -1516,7 +1518,8 @@ SELECT * FROM users WHERE name LIKE 'zhang%';  <span class="com">-- ❌ 无法�
 <span class="kwd">SHOW</span> <span class="kwd">STATUS</span> <span class="kwd">LIKE</span> <span class="str">'Qcache%'</span>;</code></pre>
                 </div>
 
-                <h3>3. SQL 语句优化技巧</h3>
+                <details>
+                    <summary>3. SQL 语句优化技巧（点击展开）</summary>
 
                 <h4>3.1 避免全表扫描</h4>
                 <div class="code-block">
@@ -1625,6 +1628,7 @@ FIELDS TERMINATED BY <span class="str">','</span>
 LINES TERMINATED BY <span class="str">'\n'</span>
 (name);</code></pre>
                 </div>
+                </details>
 
                 <h3>4. 常用配置优化</h3>
 
@@ -1989,8 +1993,9 @@ USING (user_id = <span class="func">CURRENT_USER_ID</span>());
 <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ai_optimizer_stats;</code></pre>
                 </div>
 
-                <h3>2. 机器学习集成</h3>
-                
+                <details>
+                    <summary>2. 机器学习集成（点击展开）</summary>
+
                 <h4>2.1 内置 ML 模型</h4>
                 <p>MySQL 9.x 支持直接在数据库中创建、训练和使用机器学习模型，实现端到端的 ML 工作流。</p>
                 <div class="code-block">
@@ -2073,6 +2078,7 @@ TARGET (churn_label);
 <span class="com">-- 删除模型</span>
 <span class="kwd">DROP</span> ML <span class="kwd">MODEL</span> customer_churn_model;</code></pre>
                 </div>
+                </details>
 
                 <h3>3. 向量搜索与语义查询</h3>
                 
