@@ -28,6 +28,9 @@
                         <a href="#advanced">高级特性</a>
                     </li>
                     <li>
+                        <a href="#index-theory">索引原理</a>
+                    </li>
+                    <li>
                         <a href="#performance">性能优化</a>
                     </li>
                     <li>
@@ -919,6 +922,440 @@ FOR EACH STATEMENT
     <span class="kwd">INNER JOIN</span> category_tree ct <span class="kwd">ON</span> c.parent_id = ct.id
 )
 <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> category_tree <span class="kwd">ORDER BY</span> <span class="kwd">level</span>, name;</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="index-theory" class="section">
+            <h2>索引原理</h2>
+            <div class="content">
+                <h3>1. 索引概述</h3>
+                <p>索引是数据库中用于加速数据检索的特殊数据结构。在 MySQL 中，索引本质上是帮助快速定位数据的数据结构，类似于书籍的目录。理解索引的实现原理对于设计高性能数据库至关重要。</p>
+
+                <h3>2. B+ Tree 索引原理</h3>
+                
+                <h4>2.1 B+ Tree 结构</h4>
+                <p>B+ Tree 是 MySQL 中 InnoDB 存储引擎默认使用的索引结构。它是一种自平衡的多路搜索树，所有数据都存储在叶子节点，非叶子节点只存储索引键。</p>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- B+ Tree 结构特点：</span>
+<span class="com">-- 1. 非叶子节点只存储索引键（冗余存储），不存储实际数据</span>
+<span class="com">-- 2. 叶子节点存储所有数据（包含主键和所有列）</span>
+<span class="com">-- 3. 叶子节点之间通过双向链表连接</span>
+<span class="com">-- 4. 所有叶子节点深度相同，查询时间复杂度稳定 O(log n)</span>
+
+<span class="com">-- 假设 B+ Tree 阶数 m=4：</span>
+<span class="com">--        [50]              非叶子节点（索引键）</span>
+<span class="com">--      /   |   \</span>
+<span class="com">--   [10] [30] [50,70,90]  叶子节点（数据+链表）</span>
+<span class="com">--    |    |    |</span>
+<span class="com">--   ...  ...  ...</span></code></pre>
+                </div>
+
+                <h4>2.2 B+ Tree 查询过程</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 查询 id=50 的记录过程：</span>
+<span class="com">-- 1. 从根节点开始，50 >= 50，进入中间子树</span>
+<span class="com">-- 2. 比较 30 < 50 < 70，进入左侧叶子节点</span>
+<span class="com">-- 3. 在叶子节点中顺序查找，找到目标记录</span>
+
+<span class="com">-- B+ Tree 查询效率：</span>
+<span class="com">-- - 高度通常为 2-3 层（百万级数据）</span>
+<span class="com">-- - 每次 IO 可读取一个节点（约 16KB）</span>
+<span class="com">-- - 磁盘 IO 次数 = 树高度 ≈ 3 次</span>
+
+<span class="com">-- 对比全表扫描：需要读取所有数据页</span></code></pre>
+                </div>
+
+                <h4>2.3 B+ Tree vs B Tree</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- B+ Tree vs B Tree 对比：</span>
+<span class="kwd">特性</span>           | <span class="kwd">B+ Tree</span>              | <span class="kwd">B Tree</span>
+---------------|--------------------|----------------
+数据存储       | 只在叶子节点        | 所有节点都存储数据
+查询稳定性     | O(log n)，所有查询 | O(log n)，不同位置
+<span class="kwd">范围查询</span>        | 叶子节点链表，<span class="kwd">高效</span>     | 需要遍历树
+磁盘 IO        | 更少（只读叶子节点）| 更多
+空间利用率     | 更高（节点满）      | 相对较低
+
+<span class="com">-- 为什么 MySQL 选择 B+ Tree？</span>
+<span class="com">-- 1. 范围查询更高效，适合 ORDER BY</span>
+<span class="com">-- 2. 查询效率更稳定（都要到叶子节点）</span>
+<span class="com">-- 3. 更适合磁盘存储，IO 次数少</span></code></pre>
+                </div>
+
+                <h3>3. 哈希索引原理</h3>
+                
+                <h4>3.1 哈希表结构</h4>
+                <p>哈希索引使用哈希表实现，通过哈希函数将索引键转换为哈希值，然后用哈希值定位数据。哈希索引的查询时间复杂度为 O(1)，但只支持精确匹配查询。</p>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 哈希索引结构：</span>
+<span class="com">-- 哈希函数：hash(key) -> hash_value</span>
+<span class="com">-- 哈希表：bucket -> 指向数据行</span>
+
+<span class="com">-- 示例：</span>
+<span class="kwd">key</span> = <span class="str">'zhangsan'</span>
+<span class="func">hash</span>(<span class="str">'zhangsan'</span>) = <span class="num">0x7f3a</span> (哈希值)
+<span class="kwd">bucket</span>[<span class="num">0x7f3a</span>] -> [row1, row2] (哈希冲突链表)
+
+<span class="com">-- 创建哈希索引（Memory/Heal 存储引擎）</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> t1 (
+    id <span class="kwd">INT</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    <span class="kwd">INDEX</span> idx_name (name) <span class="kwd">USING</span> <span class="kwd">HASH</span>
+) ENGINE=MEMORY;</code></pre>
+                </div>
+
+                <h4>3.2 哈希索引的限制</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 哈希索引的限制：</span>
+<span class="com">-- 1. 只支持等值查询，不支持范围查询</span>
+SELECT * FROM users WHERE age > 25;  <span class="com">-- ❌ 无法使用哈希索引</span>
+SELECT * FROM users WHERE name = 'zhangsan';  <span class="com">-- ✅ 可以使用</span>
+
+<span class="com">-- 2. 不支持排序和前缀匹配</span>
+SELECT * FROM users ORDER BY name;  <span class="com">-- ❌ 无法使用</span>
+SELECT * FROM users WHERE name LIKE 'zhang%';  <span class="com">-- ❌ 无法使用</span>
+
+<span class="com">-- 3. 哈希冲突导致性能下降</span>
+<span class="com">-- 4. 无法避免回表查询</span>
+
+<span class="com">-- InnoDB 自适应哈希索引 (AHI)</span>
+<span class="com">-- InnoDB 会自动为热点数据创建哈希索引</span>
+<span class="kwd">SHOW</span> ENGINE INNODB STATUS;  <span class="com">-- 查看自适应哈希索引状态</span></code></pre>
+                </div>
+
+                <h3>4. 全文索引原理</h3>
+                
+                <h4>4.1 倒排索引结构</h4>
+                <p>全文索引采用倒排索引（Inverted Index）结构，与正向索引相反，倒排索引记录每个词条出现在哪些文档中。这使得全文搜索非常高效。</p>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 倒排索引结构：</span>
+<span class="com">-- 正向索引：文档 -> [词条1, 词条2, ...]</span>
+<span class="com">-- 倒排索引：词条 -> [文档1, 文档2, ...]</span>
+
+<span class="com">-- 示例文档：</span>
+<span class="str">Doc1</span>: <span class="str">"MySQL is a database"</span>
+<span class="str">Doc2</span>: <span class="str">"MySQL is open source"</span>
+
+<span class="com">-- 倒排索引：</span>
+<span class="str">"MySQL"</span>   -> [<span class="str">Doc1</span>, <span class="str">Doc2</span>]
+<span class="str">"is"</span>      -> [<span class="str">Doc1</span>, <span class="str">Doc2</span>]
+<span class="str">"database"</span> -> [<span class="str">Doc1</span>]
+<span class="str">"open"</span>     -> [<span class="str">Doc2</span>]
+<span class="str">"source"</span>   -> [<span class="str">Doc2</span>]
+
+<span class="com">-- 创建全文索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> articles (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    title <span class="type">VARCHAR</span>(<span class="num">200</span>),
+    content <span class="type">TEXT</span>,
+    <span class="kwd">FULLTEXT</span> <span class="kwd">INDEX</span> ft_idx (title, content) <span class="kwd">WITH</span> PARSER ngram
+) ENGINE=InnoDB;</code></pre>
+                </div>
+
+                <h4>4.2 全文搜索机制</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 全文搜索模式：</span>
+<span class="com">-- 1. NATURAL LANGUAGE MODE（自然语言模式）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
+<span class="kwd">WHERE</span> <span class="func">MATCH</span>(title, content) <span class="func">AGAINST</span>(<span class="str">'database'</span> <span class="kwd">IN</span> <span class="kwd">NATURAL</span> <span class="kwd">LANGUAGE</span> MODE);
+
+<span class="com">-- 2. BOOLEAN MODE（布尔模式）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
+<span class="kwd">WHERE</span> <span class="func">MATCH</span>(title, content) <span class="func">AGAINST</span>(<span class="str">'+MySQL -database'</span> <span class="kwd">IN</span> BOOLEAN MODE);
+
+<span class="com">-- 3. QUERY EXPANSION（查询扩展）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
+<span class="kwd">WHERE</span> <span class="func">MATCH</span>(title, content) <span class="func">AGAINST</span>(<span class="str">'MySQL'</span> <span class="kwd">WITH</span> <span class="kwd">QUERY</span> EXPANSION);
+
+<span class="com">-- 4. ngram 分词器（中文）</span>
+<span class="kwd">CREATE</span> <span class="kwd">FULLTEXT</span> <span class="kwd">INDEX</span> ft_zh <span class="kwd">ON</span> articles(content) <span class="kwd">WITH</span> PARSER ngram;</code></pre>
+                </div>
+
+                <h3>5. 空间索引原理</h3>
+                
+                <h4>5.1 R-Tree 结构</h4>
+                <p>空间索引使用 R-Tree（区域树）结构，它是一种专门用于处理多维数据的树结构。R-Tree 将空间划分为层次嵌套的矩形区域，能够高效处理空间查询。</p>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- R-Tree 结构原理：</span>
+<span class="com">-- 1. 空间被递归划分为嵌套的最小边界矩形 (MBR)</span>
+<span class="com">-- 2. 每个节点存储子节点的 MBR</span>
+<span class="com">-- 3. 叶子节点存储实际的空间对象</span>
+
+<span class="com">-- R-Tree 示例：</span>
+<span class="com">--        [MBR1]           根节点</span>
+<span class="com">--      /   |   \</span>
+<span class="com">--  [MBR2] [MBR3] [MBR4]  中间节点</span>
+<span class="com">--   / \    |     / \</span>
+<span class="com">-- P1  P2  P3   P4  P5    叶子节点（空间对象）</span>
+
+<span class="com">-- 创建空间索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> locations (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    location GEOMETRY <span class="kwd">NOT</span> NULL</span>,
+    <span class="kwd">SPATIAL</span> <span class="kwd">INDEX</span> idx_location (location)
+) ENGINE=InnoDB;</code></pre>
+                </div>
+
+                <h4>5.2 空间查询类型</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 空间查询示例：</span>
+<span class="com">-- 1. 包含查询：查找多边形内的点</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> locations
+<span class="kwd">WHERE</span> <span class="func">ST_Contains</span>(
+    <span class="func">ST_GeomFromText</span>(<span class="str">'POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))'</span>),
+    location
+);
+
+<span class="com">-- 2. 距离查询：查找距离某点一定范围内的对象</span>
+<span class="kwd">SELECT</span> *, <span class="func">ST_Distance_Sphere</span>(location, <span class="func">ST_GeomFromText</span>(<span class="str">'POINT(116.4 39.9)'</span>))
+<span class="kwd">FROM</span> locations
+<span class="kwd">WHERE</span> <span class="func">ST_Distance_Sphere</span>(location, <span class="func">ST_GeomFromText</span>(<span class="str">'POINT(116.4 39.9)'</span>)) < <span class="num">50000</span>;
+
+<span class="com">-- 3. 相交查询：查找相交的空间对象</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> locations
+<span class="kwd">WHERE</span> <span class="func">ST_Intersects</span>(location, <span class="func">ST_GeomFromText</span>(<span class="str">'LINESTRING(0 0, 10 10)'</span>));</code></pre>
+                </div>
+
+                <h3>6. 聚簇索引 vs 非聚簇索引</h3>
+                
+                <h4>6.1 聚簇索引（Clustered Index）</h4>
+                <p>聚簇索引决定了数据的物理存储顺序。每个表只能有一个聚簇索引，因为数据只能按一种方式物理排序。通常主键就是聚簇索引。</p>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- InnoDB 聚簇索引特点：</span>
+<span class="com">-- 1. 数据行直接存储在叶子节点中</span>
+<span class="com">-- 2. 主键索引就是聚簇索引</span>
+<span class="com">-- 3. 如果没有主键，使用第一个唯一非空索引</span>
+<span class="com">-- 4. 如果没有唯一索引，InnoDB 会生成隐藏的 ROW_ID</span>
+
+<span class="com">-- 聚簇索引结构：</span>
+<span class="com">-- 叶子节点存储完整的数据行</span>
+<span class="com">-- +--------+-------------+-----+-----+</span>
+<span class="com">-- | id (PK)| name        | age | ... |</span>
+<span class="com">-- +--------+-------------+-----+-----+</span>
+<span class="com">-- | 1      | zhangsan    | 25  | ... |</span>
+<span class="com">-- | 2      | lisi        | 30  | ... |</span>
+<span class="com">-- | 3      | wangwu      | 28  | ... |</span>
+<span class="com">-- +--------+-------------+-----+-----+</span>
+
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,  <span class="com">-- 聚簇索引</span>
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    age <span class="kwd">INT</span>,
+    <span class="kwd">INDEX</span> idx_age (age)   <span class="com">-- 非聚簇索引</span>
+);</code></pre>
+                </div>
+
+                <h4>6.2 非聚簇索引（Secondary Index）</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 非聚簇索引（辅助索引）特点：</span>
+<span class="com">-- 1. 叶子节点存储索引键 + 主键值</span>
+<span class="com">-- 2. 一个表可以有多个非聚簇索引</span>
+<span class="com">-- 3. 查询时需要先通过非聚簇索引找到主键</span>
+<span class="com">-- 4. 再通过主键到聚簇索引中获取完整数据（回表）</span>
+
+<span class="com">-- 非聚簇索引 idx_age 结构：</span>
+<span class="com">-- +--------+--------+</span>
+<span class="com">-- | age    | id(PK) |</span>
+<span class="com">-- +--------+--------+</span>
+<span class="com">-- | 25     | 1      |</span>
+<span class="com">-- | 28     | 3      |</span>
+<span class="com">-- | 30     | 2      |</span>
+<span class="com">-- +--------+--------+</span>
+
+<span class="com">-- 查询 SELECT * FROM users WHERE age = 25：</span>
+<span class="com">-- 1. 在 idx_age 中找到 age=25 的记录，获取 id=1</span>
+<span class="com">-- 2. 在聚簇索引中找到 id=1 的完整数据</span>
+<span class="com">-- 3. 返回完整数据行</span></code></pre>
+                </div>
+
+                <h4>6.3 覆盖索引避免回表</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 覆盖索引：索引包含查询所需的所有列</span>
+<span class="com">-- 不需要回表，直接从索引中返回数据</span>
+
+<span class="com">-- 创建覆盖索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_age_name <span class="kwd">ON</span> users(age, name);
+
+<span class="com">-- 使用覆盖索引（不需要回表）</span>
+<span class="kwd">SELECT</span> age, name <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+<span class="com">-- EXPLAIN: Extra = Using index</span>
+
+<span class="com">-- 需要回表的查询</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+<span class="com">-- EXPLAIN: Extra = Using index condition</span>
+
+<span class="com">-- 验证是否使用覆盖索引</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> age, name <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span>;
+<span class="com">-- type=ref, key=idx_age_name, Extra=Using index</span></code></pre>
+                </div>
+
+                <h3>7. 索引存储结构</h3>
+                
+                <h4>7.1 InnoDB 页面结构</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- InnoDB 数据页结构（默认 16KB）：</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | File Header      | 38 bytes - 文件头</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Page Header      | 56 bytes - 页头</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Infimum + Supremum| 26 bytes - 虚拟行</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | User Records     | 变长 - 用户数据</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Free Space       | 变长 - 空闲空间</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Page Directory   | 变长 - 页目录</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | File Trailer     | 8 bytes - 文件尾</span>
+<span class="com">-- +------------------+</span>
+
+<span class="com">-- 页内记录存储：</span>
+<span class="com">-- 1. 记录头信息（变长字段长度、NULL标志等）</span>
+<span class="com">-- 2. 记录实际数据</span>
+<span class="com">-- 3. 记录通过 Page Directory 实现二分查找</span></code></pre>
+                </div>
+
+                <h4>7.2 索引页结构</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- B+ Tree 索引页结构：</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | File Header      | 38 bytes</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Page Header      | 56 bytes</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | User Records     | 索引记录</span>
+<span class="com">-- |  (非叶子节点)    | (最小键, 指向子页指针)</span>
+<span class="com">-- |  (叶子节点)      | (键值, 主键/行指针)</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Free Space       | 空闲空间</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Page Directory   | 槽位目录（记录分组）</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | File Trailer     | 8 bytes</span>
+<span class="com">-- +------------------+</span>
+
+<span class="com">-- 非叶子节点记录格式：</span>
+<span class="com">-- | 记录头 | 索引键值 | 页面指针 |</span>
+
+<span class="com">-- 叶子节点记录格式（聚簇索引）：</span>
+<span class="com">-- | 记录头 | 主键值 | 其他列数据 |</span>
+
+<span class="com">-- 叶子节点记录格式（非聚簇索引）：</span>
+<span class="com">-- | 记录头 | 索引键值 | 主键值 |</span></code></pre>
+                </div>
+
+                <h3>8. 索引优化原理</h3>
+                
+                <h4>8.1 最左前缀原则</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 复合索引 (a, b, c) 的使用规则：</span>
+<span class="kwd">WHERE</span> a = <span class="num">1</span>                 <span class="com">-- ✅ 使用索引 a</span>
+<span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> b = <span class="num">2</span>        <span class="com">-- ✅ 使用索引 a, b</span>
+<span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> b = <span class="num">2</span> <span class="kwd">AND</span> c = <span class="num">3</span>  <span class="com">-- ✅ 使用索引 a, b, c</span>
+<span class="kwd">WHERE</span> b = <span class="num">2</span>                 <span class="com">-- ❌ 不使用索引</span>
+<span class="kwd">WHERE</span> b = <span class="num">2</span> <span class="kwd">AND</span> c = <span class="num">3</span>    <span class="com">-- ❌ 不使用索引</span>
+<span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> c = <span class="num">3</span>    <span class="com">-- ⚠️ 只使用索引 a</span>
+
+<span class="com">-- 原理：复合索引按从左到右的顺序构建 B+ Tree</span>
+<span class="com">-- 必须先使用前面的列，才能利用后续列的索引</span></code></pre>
+                </div>
+
+                <h4>8.2 索引下推（Index Condition Pushdown）</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 索引下推原理：</span>
+<span class="com">-- 在 MySQL 5.6+ 之前：</span>
+<span class="com">-- 1. 通过索引找到满足 a=1 的主键</span>
+<span class="com">-- 2. 回表获取完整数据</span>
+<span class="com">-- 3. 在 server 层过滤 b>100 的条件</span>
+
+<span class="com">-- MySQL 5.6+ 索引下推：</span>
+<span class="com">-- 1. 通过索引找到满足 a=1 的主键</span>
+<span class="com">-- 2. 在存储引擎层直接过滤 b>100 的条件</span>
+<span class="com">-- 3. 只对满足所有条件的记录回表</span>
+
+<span class="com">-- 示例索引：(a, b)</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> t <span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> b > <span class="num">100</span>;
+
+<span class="com">-- 验证索引下推</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> t <span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> b > <span class="num">100</span>;
+<span class="com">-- Extra: Using index condition (使用了索引下推)</span></code></pre>
+                </div>
+
+                <h4>8.3 索引合并（Index Merge）</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 索引合并原理：</span>
+<span class="com">-- MySQL 可以同时使用多个索引</span>
+<span class="com">-- 然后合并结果集</span>
+
+<span class="com">-- 索引合并类型：</span>
+<span class="com">-- 1. intersection（交集）- 多个索引结果取交集</span>
+<span class="com">-- 2. union（并集）- 多个索引结果取并集</span>
+<span class="com">-- 3. sort_union（排序并集）- 先排序再取并集</span>
+
+<span class="com">-- 示例：</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span> <span class="kwd">AND</span> name = <span class="str">'zhangsan'</span>;
+
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span> <span class="kwd">AND</span> name = <span class="str">'zhangsan'</span>;
+<span class="com">-- type: index_merge</span>
+<span class="com">-- key: idx_age, idx_name</span>
+<span class="com">-- Extra: Using intersect(idx_age,idx_name)</span></code></pre>
+                </div>
+
+                <h3>9. 索引实践分析</h3>
+                
+                <h4>9.1 使用 EXPLAIN 分析索引</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- EXPLAIN 关键字段：</span>
+<span class="com">-- type: 连接类型（从好到差）</span>
+<span class="com">--   system > const > eq_ref > ref > range > index > ALL</span>
+<span class="com">--   const: 主键/唯一索引等值查询</span>
+<span class="com">--   ref: 非唯一索引等值查询</span>
+<span class="com">--   range: 索引范围查询</span>
+<span class="com">--   index: 全索引扫描</span>
+<span class="com">--   ALL: 全表扫描（需要优化）</span>
+
+<span class="com">-- key: 实际使用的索引</span>
+<span class="com">-- rows: 预计扫描的行数</span>
+<span class="com">-- Extra: 额外信息</span>
+<span class="com">--   Using index: 使用覆盖索引</span>
+<span class="com">--   Using where: 使用 WHERE 条件过滤</span>
+<span class="com">--   Using index condition: 使用索引下推</span>
+<span class="com">--   Using filesort: 需要额外排序</span>
+<span class="com">--   Using temporary: 使用临时表</span>
+
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span>;
+
+<span class="com">-- 分析结果：</span>
+<span class="com">-- type: ref (使用了非唯一索引)</span>
+<span class="com">-- key: idx_age</span>
+<span class="com">-- rows: 10 (预计扫描 10 行)</span></code></pre>
+                </div>
+
+                <h4>9.2 索引设计最佳实践</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 索引设计原则：</span>
+<span class="com">-- 1. 区分度高的列放在前面</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_status_user <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>);
+<span class="com">-- ✅ user_id 区分度高，放前面</span>
+
+<span class="com">-- 2. 考虑查询的 WHERE 条件顺序</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_age_name <span class="kwd">ON</span> users(age, name);
+<span class="com">-- 适合: WHERE age = ? 或 WHERE age = ? AND name = ?</span>
+
+<span class="com">-- 3. 控制索引数量</span>
+<span class="com">-- - 索引占用空间</span>
+<span class="com">-- - 影响 INSERT/UPDATE/DELETE 性能</span>
+<span class="com">-- - 建议单个表索引数 < 5</span>
+
+<span class="com">-- 4. 使用覆盖索引减少回表</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_cover <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>, created_at);
+<span class="com">-- 覆盖: SELECT user_id, status FROM orders WHERE user_id = ?</span>
+
+<span class="com">-- 5. 避免在区分度低的列上建索引</span>
+<span class="com">-- 如: 性别、状态（0/1）等</span></code></pre>
                 </div>
             </div>
         </section>
