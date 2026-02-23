@@ -59,7 +59,7 @@
                         var details = document.createElement('details');
                         details.className = 'long-content';
                         var title = heading.textContent;
-                        details.innerHTML = '<summary>📖 ' + title + ' (点击展开/折叠 ' + totalLines + ' 行代码)</summary>';
+                        details.innerHTML = '<summary>📖 ' + title + '</summary>';
                         details.appendChild(wrapper);
                         
                         heading.parentNode.replaceChild(details, heading);
