@@ -6,7 +6,7 @@
     <title>MySQL 学习教程 - 从入门到精通</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="mermaid.min.js"></script>
     <script>
         mermaid.initialize({ 
             startOnLoad: true,
@@ -751,28 +751,27 @@ EXPLAIN ANALYZE <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> 
                 
                 <div class="mermaid">
 flowchart TD
-    A[选择数据库] --> B{数据模型?}
+    A([选择数据库]) --> B{数据模型?}
     B -->|结构化| C{一致性要求?}
-    B -->|半结构化| D[选择MongoDB]
-    B -->|键值/缓存| E[选择Redis]
+    B -->|半结构化| D[MongoDB]
+    B -->|键值/缓存| E[Redis]
     
     C -->|强一致| F{数据规模?}
-    C -->|最终一致| G{选择MySQL/PostgreSQL}
+    C -->|最终一致| G[MySQL/PostgreSQL]
     
-    F -->|小规模| H[选择MySQL/PostgreSQL]
-    F -->|中等规模| I{选择MariaDB]
-    F -->|大规模| J{选择TiDB/云数据库]
+    F -->|小规模| H[MySQL/PostgreSQL]
+    F -->|中等规模| I[MariaDB]
+    F -->|大规模| J[TiDB/云数据库]
     
-    K{是否需要分析?} -->|是| L[选择ClickHouse/StarRocks]
-    K -->|否| M[继续业务开发]
-    
-    N{是否开源?} -->|是| O{选择PostgreSQL]
-    N -->|否| P{选择SQL Server/Oracle]
+    K{需要分析?} -->|是| L[ClickHouse/StarRocks]
+    K -->|否| M([继续开发])
     
     style A fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     style D fill:#c8e6c9,stroke:#2e7d32
     style E fill:#fff3e0,stroke:#e65100
     style J fill:#fce4ec,stroke:#c2185b
+    style L fill:#e1f5fe,stroke:#01579b
+    style M fill:#c8e6c9,stroke:#2e7d32
 </div>
                 
                 <div class="comparison-table">
