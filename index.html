@@ -89,6 +89,9 @@
                         <a href="#basics">基础操作</a>
                     </li>
                     <li>
+                        <a href="#datatypes">数据类型</a>
+                    </li>
+                    <li>
                         <a href="#advanced">高级特性</a>
                     </li>
                     <li>
@@ -374,10 +377,291 @@ mysql -h localhost -P <span class="num">3306</span> -u root -p</code></pre>
 <span class="com">-- 清空表</span>
 TRUNCATE <span class="kwd">TABLE</span> users;</code></pre>
                 </div>
+
+                <h3 id="datatypes">8. 数据类型</h3>
+                <p>MySQL 提供了丰富的数据类型，了解各种数据类型的特性对于设计高效的数据库表结构至关重要。</p>
+
+                <h4>8.1 数值类型</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 整数类型</span>
+TINYINT:       <span class="num">-128</span> 到 <span class="num">127</span> (或 <span class="num">0</span> 到 <span class="num">255</span> 无符号)
+SMALLINT:      <span class="num">-32768</span> 到 <span class="num">32767</span>
+MEDIUMINT:     <span class="num">-8388608</span> 到 <span class="num">8388607</span>
+INT:           <span class="num">-2147483648</span> 到 <span class="num">2147483647</span> (常用)
+BIGINT:        <span class="num">-9</span>.<span class="num">22</span>×10^<span class="num">18</span> 到 <span class="num">9</span>.<span class="num">22</span>×10^<span class="num">18</span>
+
+<span class="com">-- 浮点数类型</span>
+FLOAT(p):      单精度浮点数, p 表示精度
+DOUBLE:        双精度浮点数
+DECIMAL(m,d):  精确数值, m 是总位数, d 是小数位数 (用于金融计算)
+
+<span class="com">-- 定点数示例</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> accounts (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    balance <span class="type">DECIMAL</span>(<span class="num">15</span>,<span class="num">2</span>) <span class="kwd">DEFAULT</span> <span class="num">0.00</span>,  <span class="com">-- 最多15位数字,2位小数</span>
+    rate <span class="type">DECIMAL</span>(<span class="num">5</span>,<span class="num">4</span>) <span class="kwd">DEFAULT</span> <span class="num">0.0000</span>
+);
+
+<span class="com">-- BIT 类型 (位字段)</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> flags (
+    flags <span class="type">BIT</span>(<span class="num">8</span>)  <span class="com">-- 存储8位二进制值</span>
+);
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> flags <span class="kwd">VALUES</span>(<span class="num">b</span><span class="str">'10101010'</span>);</code></pre>
+                </div>
+
+                <h4>8.2 字符串类型</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 定长字符串</span>
+CHAR(n):       固定长度, 最多 <span class="num">255</span> 字符, 不足部分用空格填充
+CHAR(<span class="num">10</span>):      <span class="str">'hello'</span> 存储为 <span class="str">'hello     '</span>
+
+<span class="com">-- 变长字符串</span>
+VARCHAR(n):    可变长度, 最多 <span class="num">65535</span> 字节 (使用utf8mb4时最多 <span class="num">16383</span> 字符)
+TINYTEXT:      最多 <span class="num">255</span> 字节
+TEXT:          最多 <span class="num">65535</span> 字节
+MEDIUMTEXT:    最多 <span class="num">16</span>MB
+LONGTEXT:      最多 <span class="num">4</span>GB
+
+<span class="com">-- 字符串示例</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> posts (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    title <span class="type">VARCHAR</span>(<span class="num">200</span>) <span class="kwd">NOT NULL</span>,
+    summary <span class="type">TINYTEXT</span>,
+    content <span class="type">TEXT</span>,
+    bio <span class="type">MEDIUMTEXT</span>
+);
+
+<span class="com">-- ENUM 类型 (枚举)</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> orders (
+    status <span class="type">ENUM</span>(<span class="str">'pending'</span>, <span class="str">'processing'</span>, <span class="str">'shipped'</span>, <span class="str">'delivered'</span>, <span class="str">'cancelled'</span>)
+);
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> orders (status) <span class="kwd">VALUES</span>(<span class="str">'pending'</span>);
+
+<span class="com">-- SET 类型 (集合)</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> user_profile (
+    hobbies <span class="type">SET</span>(<span class="str">'reading'</span>, <span class="str">'sports'</span>, <span class="str">'music'</span>, <span class="str">'travel'</span>)
+);
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> user_profile (hobbies) <span class="kwd">VALUES</span>(<span class="str">'reading,sports'</span>);</code></pre>
+                </div>
+
+                <h4>8.3 日期和时间类型</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 日期时间类型</span>
+DATE:          日期, 格式: <span class="str">'YYYY-MM-DD'</span>, 范围: <span class="str">'1000-01-01'</span> 到 <span class="str">'9999-12-31'</span>
+TIME:          时间, 格式: <span class="str">'HH:MM:SS'</span>, 范围: <span class="str">'-838:59:59'</span> 到 <span class="str">'838:59:59'</span>
+DATETIME:      日期时间, 格式: <span class="str">'YYYY-MM-DD HH:MM:SS'</span>, 范围: <span class="str">'1000-01-01 00:00:00'</span>
+TIMESTAMP:     时间戳, 范围: <span class="str">'1970-01-01 00:00:01'</span> 到 <span class="str">'2038-01-19 03:14:07'</span> (UTC)
+YEAR:          年份, 格式: <span class="str">'YYYY'</span>
+
+<span class="com">-- 日期时间示例</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> events (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    event_date <span class="type">DATE</span>,
+    event_time <span class="type">TIME</span>,
+    created_at <span class="type">DATETIME</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>,
+    updated_at <span class="type">DATETIME</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span> <span class="kwd">ON</span> <span class="kwd">UPDATE</span> <span class="kwd">CURRENT_TIMESTAMP</span>,
+    logged_at <span class="type">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>
+);
+
+<span class="com">-- 插入日期时间值</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> events (event_date, event_time, created_at)
+<span class="kwd">VALUES</span>(<span class="str">'2024-01-15'</span>, <span class="str">'14:30:00'</span>, <span class="str">'2024-01-15 14:30:00'</span>);
+
+<span class="com">-- 使用 NOW() 获取当前时间</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> events (event_date, event_time)
+<span class="kwd">VALUES</span>(<span class="func">CURDATE</span>(), <span class="func">CURTIME</span>());
+
+<span class="com">-- TIMESTAMP 自动更新示例</span>
+<span class="kwd">UPDATE</span> events <span class="kwd">SET</span> event_date = <span class="func">CURDATE</span>() <span class="kwd">WHERE</span> id = <span class="num">1</span>;</code></pre>
+                </div>
+
+                <h4>8.4 JSON 类型 (MySQL 5.7+)</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- JSON 类型用于存储结构化数据</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> user_preferences (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    user_id <span class="kwd">INT</span> <span class="kwd">NOT NULL</span>,
+    preferences <span class="type">JSON</span>,
+    settings <span class="type">JSON</span>
+);
+
+<span class="com">-- 插入 JSON 数据</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> user_preferences (user_id, preferences, settings)
+<span class="kwd">VALUES</span>(
+    <span class="num">1</span>,
+    <span class="str">'{"theme": "dark", "language": "zh-CN", "notifications": true}'</span>,
+    <span class="str">'{"privacy": "public", "two_factor": false}'</span>
+);
+
+<span class="com">-- 使用 JSON_EXTRACT 提取值</span>
+<span class="kwd">SELECT</span>
+    user_id,
+    <span class="func">JSON_EXTRACT</span>(preferences, <span class="str">'$.theme'</span>) <span class="kwd">as</span> theme,
+    <span class="func">JSON_EXTRACT</span>(preferences, <span class="str">'$.language'</span>) <span class="kwd">as</span> <span class="kwd">language</span>,
+    <span class="func">JSON_EXTRACT</span>(preferences, <span class="str">'$.notifications'</span>) <span class="kwd">as</span> notifications
+<span class="kwd">FROM</span> user_preferences;
+
+<span class="com">-- 使用 JSON_SET 更新/添加值</span>
+<span class="kwd">UPDATE</span> user_preferences
+<span class="kwd">SET</span> preferences = <span class="func">JSON_SET</span>(preferences, <span class="str">'$.theme'</span>, <span class="str">'light'</span>, <span class="str">'$.font_size'</span>, <span class="str">'14px'</span>)
+<span class="kwd">WHERE</span> user_id = <span class="num">1</span>;
+
+<span class="com">-- 使用 JSON_REMOVE 删除值</span>
+<span class="kwd">UPDATE</span> user_preferences
+<span class="kwd">SET</span> preferences = <span class="func">JSON_REMOVE</span>(preferences, <span class="str">'$.notifications'</span>)
+<span class="kwd">WHERE</span> user_id = <span class="num">1</span>;
+
+<span class="com">-- 使用 JSON_KEYS 获取所有键</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_KEYS</span>(preferences) <span class="kwd">as</span> keys <span class="kwd">FROM</span> user_preferences;
+
+<span class="com">-- JSON 数组操作</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> user_preferences (user_id, preferences)
+<span class="kwd">VALUES</span>(<span class="num">2</span>, <span class="str">'{"tags": ["mysql", "database", "sql"]}'</span>);
+
+<span class="kwd">SELECT</span> <span class="func">JSON_EXTRACT</span>(preferences, <span class="str">'$.tags[0]'</span>) <span class="kwd">as</span> first_tag <span class="kwd">FROM</span> user_preferences;</code></pre>
+                </div>
+
+                <h4>8.5 空间数据类型 (GIS)</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 空间数据类型</span>
+GEOMETRY:      任意几何类型
+POINT:         点 (x, y)
+LINESTRING:    曲线 (点序列)
+POLYGON:       多边形 (边界点序列)
+MULTIPOINT:    点集合
+MULTILINESTRING: 曲线集合
+MULTIPOLYGON:  多边形集合
+GEOMETRYCOLLECTION: 几何集合
+
+<span class="com">-- 创建空间数据表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> locations (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    location POINT <span class="kwd">NOT NULL</span>,
+    area POLYGON,
+    route LINESTRING,
+    <span class="kwd">SPATIAL</span> <span class="kwd">INDEX</span> idx_location (location)
+);
+
+<span class="com">-- 插入空间数据</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> locations (name, location)
+<span class="kwd">VALUES</span>(
+    <span class="str">'天安门广场'</span>,
+    <span class="func">ST_GeomFromText</span>(<span class="str">'POINT(116.397428 39.90923)'</span>)
+);
+
+<span class="com">-- 查询坐标</span>
+<span class="kwd">SELECT</span> name, <span class="func">ST_X</span>(location) <span class="kwd">as</span> longitude, <span class="func">ST_Y</span>(location) <span class="kwd">as</span> latitude
+<span class="kwd">FROM</span> locations;
+
+<span class="com">-- 计算两点距离 (米)</span>
+<span class="kwd">SELECT</span> <span class="func">ST_Distance_Sphere</span>(
+    <span class="func">ST_GeomFromText</span>(<span class="str">'POINT(116.397428 39.90923)'</span>),
+    <span class="func">ST_GeomFromText</span>(<span class="str">'POINT(121.473701 31.230416)'</span>)
+) <span class="kwd">as</span> distance_meters;
+
+<span class="com">-- 创建多边形</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> locations (name, area)
+<span class="kwd">VALUES</span>(
+    <span class="str">'北京市'</span>,
+    <span class="func">ST_GeomFromText</span>(<span class="str">'POLYGON((116.0 39.0, 117.0 39.0, 117.0 41.0, 116.0 41.0, 116.0 39.0))'</span>)
+);
+
+<span class="com">-- 判断点是否在多边形内</span>
+<span class="kwd">SELECT</span> name <span class="kwd">FROM</span> locations
+<span class="kwd">WHERE</span> <span class="func">ST_Contains</span>(
+    area,
+    <span class="func">ST_GeomFromText</span>(<span class="str">'POINT(116.5 40.0)'</span>)
+);</code></pre>
+                </div>
+
+                <h4>8.6 向量类型 (MySQL 9.0+ AI 增强)</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 向量类型用于存储嵌入向量 (AI/ML 应用)</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> document_embeddings (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    doc_id <span class="kwd">INT</span> <span class="kwd">NOT NULL</span>,
+    embedding VECTOR(<span class="num">768</span>),  <span class="com">-- 768维向量 (BERT等模型常用)</span>
+    <span class="kwd">INDEX</span> idx_embedding (embedding)
+);
+
+<span class="com">-- 插入向量数据 (需要转换为字符串格式)</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> document_embeddings (doc_id, embedding)
+<span class="kwd">VALUES</span>(
+    <span class="num">1</span>,
+    <span class="str">'[0.1, 0.2, 0.3, 0.0, -0.1, 0.5, -0.3, 0.8, ...]'</span>
+);
+
+<span class="com">-- 向量相似性搜索 (余弦相似度)</span>
+<span class="kwd">SELECT</span>
+    doc_id,
+    <span class="func">VECTOR_DISTANCE</span>(embedding, <span class="str">'[0.1, 0.2, 0.3, 0.0, -0.1, 0.5, -0.3, 0.8, ...]'</span>, <span class="str">'cosine'</span>) <span class="kwd">as</span> similarity
+<span class="kwd">FROM</span> document_embeddings
+<span class="kwd">ORDER BY</span> similarity
+<span class="kwd">LIMIT</span> <span class="num">5</span>;
+
+<span class="com">-- 欧氏距离</span>
+<span class="kwd">SELECT</span>
+    doc_id,
+    <span class="func">VECTOR_DISTANCE</span>(embedding, <span class="str">'[0.1, 0.2, 0.3, ...]'</span>, <span class="str">'euclidean'</span>) <span class="kwd">as</span> distance
+<span class="kwd">FROM</span> document_embeddings
+<span class="kwd">ORDER BY</span> distance
+<span class="kwd">LIMIT</span> <span class="num">5</span>;
+
+<span class="com">-- 内积</span>
+<span class="kwd">SELECT</span>
+    doc_id,
+    <span class="func">VECTOR_DISTANCE</span>(embedding, <span class="str">'[0.1, 0.2, 0.3, ...]'</span>, <span class="str">'dot_product'</span>) <span class="kwd">as</span> score
+<span class="kwd">FROM</span> document_embeddings
+<span class="kwd">ORDER BY</span> score DESC
+<span class="kwd">LIMIT</span> <span class="num">5</span>;
+
+<span class="com">-- 使用 HNSW 索引加速向量搜索</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> document_embeddings
+ADD <span class="kwd">INDEX</span> idx_hnsw (embedding) <span class="kwd">INDEX_TYPE</span> = <span class="str">'HNSW'</span> <span class="kwd">PARAMETERS</span> = <span class="str">'{"m": 16, "ef_construction": 200}'</span>;</code></pre>
+                </div>
+
+                <h4>8.7 数据类型选择建议</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 数据类型选择原则</span>
+
+<span class="com">-- 1. 选择最小的数据类型</span>
+<span class="com">-- 不推荐: INT UNSIGNED 对于 0-100 的值</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> age_table (
+    age TINYINT UNSIGNED  <span class="com">-- 0-255, 比 INT 节省3字节</span>
+);
+
+<span class="com">-- 2. 使用 VARCHAR(n) 而非 CHAR(n) 当字符串长度不确定时</span>
+<span class="com">-- CHAR(10) 始终占用10字节, VARCHAR(10) 按实际长度</span>
+
+<span class="com">-- 3. 使用 DECIMAL 而非 FLOAT/DOUBLE 用于精确数值</span>
+<span class="com">-- 金融计算: DECIMAL(15,2) vs FLOAT</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> accounts (
+    balance <span class="type">DECIMAL</span>(<span class="num">15</span>,<span class="num">2</span>)  <span class="com">-- 精确</span>
+);
+
+<span class="com">-- 4. 使用 TIMESTAMP 而非 DATETIME 当需要自动更新时</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> logs (
+    created_at TIMESTAMP <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>,  <span class="com">-- 自动设置</span>
+    updated_at TIMESTAMP <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span> <span class="kwd">ON</span> <span class="kwd">UPDATE</span> <span class="kwd">CURRENT_TIMESTAMP</span>  <span class="com">-- 自动更新</span>
+);
+
+<span class="com">-- 5. 使用 JSON 类型存储灵活的结构化数据</span>
+<span class="com">-- 但不要滥用, 频繁查询的字段应该用独立列</span>
+
+<span class="com">-- 6. 考虑字符集: 使用 utf8mb4 支持emoji</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> messages (
+    content <span class="type">VARCHAR</span>(<span class="num">1000</span>) <span class="kwd">CHARSET</span> utf8mb4 COLLATE utf8mb4_unicode_ci
+);
+
+<span class="com">-- 7. 有符号 vs 无符号</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> counters (
+    positive_count TINYINT UNSIGNED,  <span class="com">-- 0-255</span>
+    signed_count TINYINT               <span class="com">-- -128 到 127</span>
+);</code></pre>
+                </div>
             </div>
         </section>
-
-        <section id="advanced" class="section">
             <h2>高级特性</h2>
             <div class="content">
                 <h3>1. 索引详解（AI 驱动）</h3>
