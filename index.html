@@ -6,6 +6,23 @@
     <title>MySQL 学习教程 - 从入门到精通</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                useMaxWidth: true,
+                diagramMarginX: 50,
+                actorMargin: 50
+            }
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.code-block').forEach(function(block) {
@@ -154,7 +171,27 @@
             <h2>MySQL 发展历程</h2>
             <div class="content">
                 <p>MySQL 由瑞典 MySQL AB 公司开发，于 2008 年被 Sun Microsystems 收购，2009 年随 Sun 被 Oracle 收购。作为最流行的开源关系型数据库，MySQL 经历了多个重要版本的迭代，每个版本都带来了关键的新特性和性能提升。</p>
-
+                
+                <div class="mermaid">
+gantt
+    title MySQL 版本演进时间线
+    dateFormat YYYY
+    axisFormat %Y
+    section 早期
+    MySQL 1.0 诞生         :1995-01-01, 0d
+    MySQL 3.23 发布       :2000-01-01, 0d
+    section 发展
+    MySQL 4.0 发布        :2003-01-01, 0d
+    MySQL 5.0 发布        :2005-01-01, 0d
+    MySQL 5.5 发布        :2010-01-01, 0d
+    MySQL 5.6 发布        :2013-01-01, 0d
+    MySQL 5.7 发布        :2015-01-01, 0d
+    section 现代
+    MySQL 8.0 发布        :2018-01-01, 0d
+    MySQL 8.4 LTS         :2024-04-01, 0d
+    MySQL 9.0 发布        :2024-10-01, 0d
+</div>
+                
                 <h3>1. MySQL 3.23 (2000年) - 奠定基础</h3>
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- MySQL 3.23 是首个广泛使用的稳定版本</span>
@@ -584,6 +621,46 @@ SHOW ENGINES;</code></pre>
         <section id="installation" class="section">
             <h2>安装 MySQL 9.x (最新版本)</h2>
             <div class="content">
+                <h3>版本选择指南</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>版本</th>
+                                <th>类型</th>
+                                <th>适用场景</th>
+                                <th>推荐程度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>MySQL 9.x</td>
+                                <td>创新版</td>
+                                <td>AI/ML应用、向量搜索、新项目测试</td>
+                                <td>⭐⭐⭐⭐</td>
+                            </tr>
+                            <tr>
+                                <td>MySQL 8.4</td>
+                                <td>LTS (长期支持)</td>
+                                <td>生产环境首选，稳定可靠</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                            </tr>
+                            <tr>
+                                <td>MySQL 8.0</td>
+                                <td>标准版</td>
+                                <td>需要窗口函数/CTE的项目</td>
+                                <td>⭐⭐⭐⭐</td>
+                            </tr>
+                            <tr>
+                                <td>MySQL 5.7</td>
+                                <td>遗留版</td>
+                                <td>仅用于遗留系统维护</td>
+                                <td>⭐⭐</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
                 <p><strong>MySQL 9.x 新特性：</strong></p>
                 <ul>
                     <li>• 原生支持 ARM64 架构优化</li>
@@ -684,6 +761,54 @@ volumes:
         <section id="basics" class="section">
             <h2>基础操作</h2>
             <div class="content">
+                <h3>SQL 语句分类</h3>
+                <p>SQL（Structured Query Language）是一种用于管理关系数据库的标准计算机语言。根据功能可分为以下几类：</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>分类</th>
+                                <th>关键字</th>
+                                <th>功能说明</th>
+                                <th>示例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>DDL</strong></td>
+                                <td>CREATE, DROP, ALTER, TRUNCATE</td>
+                                <td>定义数据库对象（表、索引、视图等）</td>
+                                <td>CREATE TABLE, ALTER TABLE</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DML</strong></td>
+                                <td>INSERT, UPDATE, DELETE</td>
+                                <td>操作数据（增、删、改）</td>
+                                <td>INSERT INTO, UPDATE, DELETE</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DQL</strong></td>
+                                <td>SELECT</td>
+                                <td>查询数据</td>
+                                <td>SELECT * FROM users</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DCL</strong></td>
+                                <td>GRANT, REVOKE</td>
+                                <td>控制用户权限</td>
+                                <td>GRANT SELECT ON db</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TCL</strong></td>
+                                <td>COMMIT, ROLLBACK, SAVEPOINT</td>
+                                <td>事务控制</td>
+                                <td>COMMIT, ROLLBACK</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
                 <h3>1. 连接数据库</h3>
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- 连接到 MySQL</span>
@@ -1056,6 +1181,82 @@ ADD <span class="kwd">INDEX</span> idx_hnsw (embedding) <span class="kwd">INDEX_
                 </div>
 
                 <h4>8.7 数据类型选择建议</h4>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>数据类型</th>
+                                <th>存储空间</th>
+                                <th>取值范围</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>TINYINT</td>
+                                <td>1 字节</td>
+                                <td>-128 ~ 127</td>
+                                <td>布尔值、状态码、年龄</td>
+                            </tr>
+                            <tr>
+                                <td>SMALLINT</td>
+                                <td>2 字节</td>
+                                <td>-32768 ~ 32767</td>
+                                <td>数量、计数器</td>
+                            </tr>
+                            <tr>
+                                <td>INT</td>
+                                <td>4 字节</td>
+                                <td>-21亿 ~ 21亿</td>
+                                <td>通用整数、主键</td>
+                            </tr>
+                            <tr>
+                                <td>BIGINT</td>
+                                <td>8 字节</td>
+                                <td>-9.2×10¹⁸ ~ 9.2×10¹⁸</td>
+                                <td>大数值、精确计数</td>
+                            </tr>
+                            <tr>
+                                <td>VARCHAR(n)</td>
+                                <td>变长 + 1-2字节</td>
+                                <td>最大 65535 字节</td>
+                                <td>可变长度字符串</td>
+                            </tr>
+                            <tr>
+                                <td>TEXT</td>
+                                <td>4 字节 + 数据</td>
+                                <td>最大 64KB</td>
+                                <td>长文本文章</td>
+                            </tr>
+                            <tr>
+                                <td>DECIMAL(m,d)</td>
+                                <td>变长</td>
+                                <td>精确数值</td>
+                                <td>金融计算</td>
+                            </tr>
+                            <tr>
+                                <td>DATETIME</td>
+                                <td>8 字节</td>
+                                <td>1000-01-01 ~ 9999-12-31</td>
+                                <td>需要大范围时间</td>
+                            </tr>
+                            <tr>
+                                <td>TIMESTAMP</td>
+                                <td>4 字节</td>
+                                <td>1970-2038</td>
+                                <td>自动记录时间</td>
+                            </tr>
+                            <tr>
+                                <td>JSON</td>
+                                <td>变长</td>
+                                <td>灵活结构化数据</td>
+                                <td>配置、用户偏好</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- 数据类型选择原则</span>
 
@@ -1552,6 +1753,71 @@ ADD <span class="kwd">INDEX</span> idx_hnsw (embedding) <span class="kwd">INDEX_
                 </div>
 
                 <h3>2. 事务处理（支持分布式事务）</h3>
+                <p>事务是数据库管理系统执行过程中的一个逻辑单位，由一系列SQL语句组成。事务具有ACID特性：原子性(Atomicity)、一致性(Consistency)、隔离性(Isolation)、持久性(Durability)。</p>
+                
+                <div class="mermaid">
+flowchart TD
+    A[开始事务] --> B{执行SQL语句}
+    
+    B --> C[写UNDO日志]
+    C --> D[修改数据缓存]
+    D --> E{操作成功?}
+    
+    E -->|是| F{提交还是回滚?}
+    E -->|否| G[回滚事务]
+    
+    G --> H[读取UNDO日志]
+    H --> I[恢复数据]
+    I --> J[结束事务]
+    
+    F -->|COMMIT| K[写入COMMIT标记]
+    K --> L[刷新REDO日志到磁盘]
+    L --> M[释放锁]
+    M --> J
+    
+    F -->|ROLLBACK| G
+    
+    style A fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style J fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style G fill:#ffcdd2,stroke:#c62828,stroke-width:2px
+    style L fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+</div>
+                
+                <h4>ACID 特性说明：</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>描述</th>
+                                <th>实现原理</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>原子性 (A)</strong></td>
+                                <td>事务中的所有操作要么全部成功，要么全部失败</td>
+                                <td>UNDO日志</td>
+                            </tr>
+                            <tr>
+                                <td><strong>一致性 (C)</strong></td>
+                                <td>事务执行前后，数据库状态保持一致</td>
+                                <td>约束、触发器</td>
+                            </tr>
+                            <tr>
+                                <td><strong>隔离性 (I)</strong></td>
+                                <td>并发事务之间互不干扰</td>
+                                <td>锁机制、MVCC</td>
+                            </tr>
+                            <tr>
+                                <td><strong>持久性 (D)</strong></td>
+                                <td>事务提交后，修改永久保存</td>
+                                <td>REDO日志</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- 开始事务</span>
 START TRANSACTION;
@@ -1720,6 +1986,73 @@ FOR EACH STATEMENT
                 
                 <h4>2.1 B+ Tree 结构</h4>
                 <p>B+ Tree 是 MySQL 中 InnoDB 存储引擎默认使用的索引结构。它是一种自平衡的多路搜索树，所有数据都存储在叶子节点，非叶子节点只存储索引键。</p>
+                
+                <div class="mermaid">
+graph TD
+    subgraph 根节点
+    R["[20 40 60 80]"]
+    end
+    
+    subgraph 第一层节点
+    L1_1["[10 15]"]
+    L1_2["[20 30]"]
+    L1_3["[40 50]"]
+    L1_4["[60 70]"]
+    L1_5["[80 90]"]
+    end
+    
+    subgraph 叶子节点层
+    L2_1["[1,5,8]<br/>→data1"]
+    L2_2["[10,12,15]<br/>→data2"]
+    L2_3["[20,25,30]<br/>→data3"]
+    L2_4["[40,45,50]<br/>→data4"]
+    L2_5["[60,65,70]<br/>→data5"]
+    L2_6["[80,85,90]<br/>→data6"]
+    end
+    
+    R --> L1_1
+    R --> L1_2
+    R --> L1_3
+    R --> L1_4
+    R --> L1_5
+    
+    L1_1 --> L2_1
+    L1_1 --> L2_2
+    L1_2 --> L2_2
+    L1_2 --> L2_3
+    L1_3 --> L2_3
+    L1_3 --> L2_4
+    L1_4 --> L2_4
+    L1_4 --> L2_5
+    L1_5 --> L2_5
+    L1_5 --> L2_6
+    
+    L2_1 -.->|双向链表| L2_2
+    L2_2 -.->|双向链表| L2_3
+    L2_3 -.->|双向链表| L2_4
+    L2_4 -.->|双向链表| L2_5
+    L2_5 -.->|双向链表| L2_6
+    
+    style R fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style L1_1 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style L1_2 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style L1_3 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style L1_4 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style L1_5 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style L2_1 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style L2_2 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style L2_3 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style L2_4 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style L2_5 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style L2_6 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+</div>
+                <p style="margin-top: 15px;"><strong>图示说明：</strong></p>
+                <ul>
+                    <li><strong style="color: #01579b;">蓝色节点</strong>：非叶子节点（索引页，仅存储键值）</li>
+                    <li><strong style="color: #2e7d32;">绿色节点</strong>：叶子节点（数据页，存储完整数据）</li>
+                    <li><strong>虚线</strong>：叶子节点间的双向链表连接</li>
+                </ul>
+                
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- B+ Tree 结构特点：</span>
 <span class="com">-- 1. 非叶子节点只存储索引键（冗余存储），不存储实际数据</span>
@@ -1903,6 +2236,65 @@ SELECT * FROM users WHERE name LIKE 'zhang%';  <span class="com">-- ❌ 无法�
                 </div>
 
                 <h3>6. 聚簇索引 vs 非聚簇索引</h3>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>聚簇索引</th>
+                                <th>非聚簇索引</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>数据存储</td>
+                                <td>数据行存储在叶子节点</td>
+                                <td>叶子节点存储索引键+主键</td>
+                            </tr>
+                            <tr>
+                                <td>数量限制</td>
+                                <td>每个表只能有1个</td>
+                                <td>每个表可以有多个</td>
+                            </tr>
+                            <tr>
+                                <td>查询效率</td>
+                                <td>查找主键直接返回数据</td>
+                                <td>需要回表获取完整数据</td>
+                            </tr>
+                            <tr>
+                                <td>磁盘顺序</td>
+                                <td>数据按索引键物理排序</td>
+                                <td>不影响数据物理顺序</td>
+                            </tr>
+                            <tr>
+                                <td>适用场景</td>
+                                <td>主键查询、范围查询</td>
+                                <td>辅助查询、联合查询</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mermaid">
+flowchart TD
+    A[SQL查询: SELECT * FROM users WHERE age = 25] --> B{使用哪个索引?}
+    
+    B -->|聚簇索引 PK| C[在主键索引中查找 id=1]
+    C --> D[叶子节点包含完整数据]
+    D --> E[直接返回结果]
+    
+    B -->|非聚簇索引 idx_age| F[在idx_age中查找 age=25]
+    F --> G[获取主键 id=1]
+    G --> H[回表: 在聚簇索引中查找id=1]
+    H --> I[获取完整数据]
+    I --> E
+    
+    style A fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style E fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style I fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+</div>
                 
                 <h4>6.1 聚簇索引（Clustered Index）</h4>
                 <p>聚簇索引决定了数据的物理存储顺序。每个表只能有一个聚簇索引，因为数据只能按一种方式物理排序。通常主键就是聚簇索引。</p>
@@ -2239,7 +2631,77 @@ SELECT * FROM users WHERE name LIKE 'zhang%';  <span class="com">-- ❌ 无法�
         <section id="performance" class="section">
             <h2>性能优化</h2>
             <div class="content">
-                <h3>1. AI 查询优化器</h3>
+                <h3>1. SQL 执行流程</h3>
+                <p>了解SQL语句的执行流程有助于进行性能优化。以下是MySQL处理SQL查询的完整流程：</p>
+                
+                <div class="mermaid">
+flowchart TD
+    A[SQL语句] --> B[语法解析器]
+    B --> C[语义检查]
+    C --> D{查询缓存?}
+    
+    D -->|命中| E[直接返回缓存结果]
+    D -->|未命中| F[查询优化器]
+    
+    F --> G[生成执行计划]
+    G --> H[成本评估]
+    H --> I[选择最优计划]
+    
+    I --> J[执行器]
+    J --> K[存储引擎]
+    K --> L[读取数据]
+    L --> M[返回结果]
+    
+    M --> N[写入查询缓存]
+    
+    E --> O[返回客户端]
+    N --> O
+    
+    style A fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style F fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style I fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style O fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+</div>
+                
+                <h4>各组件说明：</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>组件</th>
+                                <th>功能</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>语法解析器</td>
+                                <td>将SQL解析为语法树，检查语法错误</td>
+                            </tr>
+                            <tr>
+                                <td>语义检查</td>
+                                <td>检查表、列是否存在，权限是否足够</td>
+                            </tr>
+                            <tr>
+                                <td>查询缓存</td>
+                                <td>缓存查询结果，避免重复执行</td>
+                            </tr>
+                            <tr>
+                                <td>查询优化器</td>
+                                <td>生成多种执行计划，选择最优方案</td>
+                            </tr>
+                            <tr>
+                                <td>执行器</td>
+                                <td>调用存储引擎执行计划</td>
+                            </tr>
+                            <tr>
+                                <td>存储引擎</td>
+                                <td>实际读取/写入数据 (InnoDB/MyISAM)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>2. AI 查询优化器</h3>
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- 启用 <span class="kwd">AI</span> 查询优化器</span>
 <span class="kwd">SET</span> GLOBAL optimizer_switch = <span class="str">'ai_optimization=on'</span>;
@@ -2552,7 +3014,70 @@ LINES TERMINATED BY <span class="str">'\n'</span>
                 </div>
 
                 <h3>7. 读写分离与负载均衡</h3>
-
+                
+                <div class="mermaid">
+sequenceDiagram
+    participant App as 应用服务器
+    participant Master as 主库 (Master)
+    participant Slave1 as 从库 (Slave1)
+    participant Slave2 as 从库 (Slave2)
+    
+    App->>Master: 1. INSERT/UPDATE/DELETE
+    Master->>Master: 写入binlog
+    Master-->>App: 返回成功
+    
+    par 异步复制
+        Master->>Slave1: 2. 传输binlog
+        Master->>Slave2: 2. 传输binlog
+    end
+    
+    Slave1->>Slave1: 3. 重放binlog
+    Slave2->>Slave2: 3. 重放binlog
+    
+    Note over App,Master: 读写分离: 写操作→主库, 读操作→从库
+    
+    App->>Slave1: 4. SELECT查询
+    Slave1-->>App: 返回查询结果
+    
+    App->>Slave2: 5. SELECT查询
+    Slave2-->>App: 返回查询结果
+</div>
+                
+                <h4>主从复制原理：</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>步骤</th>
+                                <th>主库操作</th>
+                                <th>从库操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1. 日志记录</td>
+                                <td>将写操作记录到 binlog</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>2. 日志传输</td>
+                                <td>将 binlog 发送到从库</td>
+                                <td>接收 binlog</td>
+                            </tr>
+                            <tr>
+                                <td>3. 日志重放</td>
+                                <td>-</td>
+                                <td>执行 binlog 中的操作</td>
+                            </tr>
+                            <tr>
+                                <td>4. 同步完成</td>
+                                <td>-</td>
+                                <td>更新 relay log 位置</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
                 <h4>7.1 主从复制配置</h4>
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- 主库配置</span>
