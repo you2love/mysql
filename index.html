@@ -121,6 +121,9 @@
                         <a href="#index-theory">索引原理</a>
                     </li>
                     <li>
+                        <a href="#sql-theory">SQL原理</a>
+                    </li>
+                    <li>
                         <a href="#performance">性能优化</a>
                     </li>
                     <li>
@@ -3290,6 +3293,669 @@ flowchart TD
 
 <span class="com">-- 5. 避免在区分度低的列上建索引</span>
 <span class="com">-- 如: 性别、状态（0/1）等</span></code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="sql-theory" class="section">
+            <h2>SQL原理</h2>
+            <div class="content">
+                <p>理解SQL语句的执行原理对于编写高效查询和进行性能优化至关重要。本节详细介绍MySQL如何执行SELECT、INSERT、UPDATE、DELETE等常用SQL语句。</p>
+
+                <h3>1. SELECT执行过程</h3>
+                <p>一条SELECT语句的执行需要经过多个阶段，MySQL的查询优化器会尽可能高效地完成数据检索。</p>
+
+                <div class="mermaid">
+flowchart TD
+    A[SQL语句] --> B[连接器]
+    B --> C[查询缓存]
+    C --> D[解析器]
+    D --> E[预处理器]
+    E --> F[查询优化器]
+    F --> G[执行器]
+    G --> H[存储引擎]
+    H --> I[返回结果]
+
+    C -->|未命中| D
+    F --> J{使用索引?}
+    J -->|是| K[索引扫描]
+    J -->|否| L[全表扫描]
+    K --> M[回表获取数据]
+    L --> M
+    M --> G
+
+    style A fill:#e3f2fd,stroke:#1565c0
+    style F fill:#fff3e0,stroke:#e65100
+    style H fill:#e8f5e9,stroke:#2e7d32
+    style I fill:#c8e6c9,stroke:#2e7d32
+                </div>
+
+                <h4>1.1 SELECT执行流程详解</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- SELECT语句执行流程：
+
+-- 1. 连接器 (Connection Handler)
+--    - 建立/管理客户端连接
+--    - 验证用户身份
+--    - 维护会话状态
+
+-- 2. 查询缓存 (Query Cache)  [MySQL 8.0已移除]
+--    - 缓存查询结果和对应SQL
+--    - 命中则直接返回（非常快）
+--    - 全表更新时缓存失效
+
+-- 3. 解析器 (Parser)
+--    - 词法分析：识别SQL关键字、表名、列名
+--    - 语法分析：构建语法树(AST)
+--    - 检查SQL语法是否正确
+
+-- 4. 预处理器 (Preprocessor)
+--    - 语义检查：表是否存在、列是否存在
+--    - 权限检查：用户是否有访问权限
+--    - 解析别名和列引用
+
+-- 5. 查询优化器 (Query Optimizer)
+--    - 生成执行计划
+--    - 选择最优路径（索引选择、连接顺序）
+--    - 成本估算
+
+-- 6. 执行器 (Executor)
+--    - 按执行计划调用存储引擎
+--    - 过滤数据
+--    - 返回结果集
+
+-- 7. 存储引擎 (Storage Engine)
+--    - 读取数据（InnoDB/MyISAM等）
+--    - 返回数据页
+</code></pre>
+                </div>
+
+                <h4>1.2 执行计划分析</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 使用 EXPLAIN 分析查询执行计划
+EXPLAIN SELECT u.name, o.order_id, o.total_amount
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+WHERE u.age > 25 AND o.status = 'completed';
+
+<span class="com">-- EXPLAIN 输出字段说明：</span>
+<span class="com">-- id:         查询编号（嵌套子查询时有用）</span>
+<span class="com">-- select_type: 查询类型（SIMPLE/PRIMARY/SUBQUERY等）</span>
+<span class="com">-- table:      访问的表</span>
+<span class="com">-- type:       连接类型（性能从好到差）</span>
+<span class="com">--            const > eq_ref > ref > range > index > ALL</span>
+<span class="com">-- key:        实际使用的索引</span>
+<span class="com">-- rows:       预计扫描的行数</span>
+<span class="com">-- Extra:      额外信息（Using index/Using filesort等）</span>
+
+<span class="com">-- 更详细的分析（包含执行时间）</span>
+EXPLAIN ANALYZE SELECT * FROM users WHERE age > 25;</code></pre>
+                </div>
+
+                <h3>2. 联表执行过程</h3>
+                <p>联表查询（JOIN）是SQL中最复杂也最重要的操作之一。理解联表的执行原理有助于编写高效的查询。</p>
+
+                <h4>2.1 联表算法</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 支持的联表算法：
+
+-- 1. 嵌套循环连接 (Nested Loop Join)
+--    - 外层表逐行扫描
+--    - 内层表通过索引查找匹配行
+--    - 适合小表驱动大表，且有索引的情况
+SELECT * FROM users u
+INNER JOIN orders o ON u.id = o.user_id;
+
+<span class="com">-- 2. 块嵌套循环连接 (Block Nested Loop Join)
+--    - 将外层表多行加载到join buffer
+--    - 扫描内层表进行匹配
+--    - 无索引时使用，效率较低
+SET join_buffer_size = 1048576;
+SELECT * FROM users u
+INNER JOIN orders o ON u.name = o.customer_name;
+
+<span class="com">-- 3. 索引嵌套循环连接 (Index Nested Loop Join)
+--    - 使用内层表的索引进行连接
+--    - 效率较高
+SELECT * FROM users u
+INNER JOIN orders o ON u.id = o.user_id;
+
+<span class="com">-- 4. 哈希连接 (Hash Join) [MySQL 8.0+]
+--    - 将小表加载到哈希表
+--    - 扫描大表进行哈希匹配
+--    - 适合等值连接，大数据量
+SELECT /*+ HASH_JOIN(u, o) */ * FROM users u
+INNER JOIN orders o ON u.id = o.user_id;
+
+<span class="com">-- 5. 合并连接 (Merge Join)
+--    - 两表按连接键排序
+--    - 依次扫描合并
+--    - 适合有序数据</code></pre>
+                </div>
+
+                <h4>2.2 联表执行流程图</h4>
+                <div class="mermaid">
+flowchart TD
+    A[SELECT语句] --> B[优化器分析]
+    B --> C{选择驱动表?}
+    
+    C -->|小表驱动大表| D[确定连接顺序]
+    C -->|大表驱动小表| D
+    
+    D --> E[选择连接算法]
+    E --> F{有索引?}
+    F -->|是| G[Index Nested Loop]
+    F -->|否| H{数据量小?}
+    
+    H -->|是| I[Block Nested Loop]
+    H -->|否| J[Hash Join]
+    
+    G --> K[执行连接]
+    I --> K
+    J --> K
+    
+    K --> L[生成结果集]
+    L --> M[返回客户端]
+
+    style B fill:#fff3e0,stroke:#e65100
+    style D fill:#e1f5fe,stroke:#01579b
+                    style G fill:#c8e6c9,stroke:#2e7d32
+                    style J fill:#fce4ec,stroke:#c2185b
+                </div>
+
+                <h4>2.3 连接顺序优化</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 联表查询示例：users -> orders -> order_items -> products
+
+-- 假设：users表100行，orders表10000行，order_items表50000行，products表1000行
+-- 优化原则：小表驱动大表，有索引的表放在内层
+
+<span class="com">-- ❌ 错误的连接顺序（大表驱动小表）</span>
+SELECT *
+FROM orders o
+INNER JOIN users u ON o.user_id = u.id
+INNER JOIN order_items oi ON o.id = oi.order_id
+INNER JOIN products p ON oi.product_id = p.id;
+
+<span class="com">-- ✅ 正确的连接顺序（小表驱动大表）</span>
+SELECT *
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+INNER JOIN order_items oi ON o.id = oi.order_id
+INNER JOIN products p ON oi.product_id = p.id;
+
+<span class="com">-- 查看优化器选择的执行计划</span>
+EXPLAIN SELECT *
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+INNER JOIN order_items oi ON o.id = oi.order_id
+INNER JOIN products p ON oi.product_id = p.id;
+
+<span class="com">-- 强制使用小表作为驱动表</span>
+SELECT STRAIGHT_JOIN *
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+INNER JOIN order_items oi ON o.id = oi.order_id
+INNER JOIN products p ON oi.product_id = p.id;</code></pre>
+                </div>
+
+                <h4>2.4 联接条件详解</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 不同的JOIN类型执行过程：
+
+-- 1. INNER JOIN（内连接）
+--    只返回两个表中满足连接条件的记录
+SELECT u.name, o.order_id
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id;
+<span class="com">-- 执行过程：遍历驱动表，查找匹配行，组合返回</span>
+
+-- 2. LEFT JOIN（左外连接）
+--    返回左表所有记录，右表无匹配则显示NULL
+SELECT u.name, o.order_id
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id;
+<span class="com">-- 执行过程：遍历左表每行，查找右表匹配，无匹配则NULL填充</span>
+
+-- 3. RIGHT JOIN（右外连接）
+--    返回右表所有记录，左表无匹配显示NULL
+SELECT u.name, o.order_id
+FROM users u
+RIGHT JOIN orders o ON u.id = o.user_id;
+
+-- 4. CROSS JOIN（笛卡尔积）
+--    返回两表所有记录的组合
+SELECT u.name, o.order_id
+FROM users u
+CROSS JOIN orders o;
+<span class="com">-- 执行过程：左表每行 × 右表每行 = 结果集</span>
+
+-- 5. 自连接
+--    表与自身连接，用于层级数据
+SELECT a.name AS employee, b.name AS manager
+FROM employees a
+LEFT JOIN employees b ON a.manager_id = b.id;</code></pre>
+                </div>
+
+                <h4>2.5 联表性能优化</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 联表查询性能优化技巧：
+
+-- 1. 确保连接列有索引
+<span class="com">--    索引加速连接条件的匹配</span>
+CREATE INDEX idx_user_id ON orders(user_id);
+CREATE INDEX idx_order_id ON order_items(order_id);
+CREATE INDEX idx_product_id ON order_items(product_id);
+
+-- 2. 使用覆盖索引
+<span class="com">--    减少回表操作</span>
+CREATE INDEX idx_covering ON orders(user_id, status, total_amount);
+SELECT user_id, status, total_amount
+FROM orders WHERE user_id = 1;
+
+-- 3. 减少连接数量
+<span class="com">--    过多的表连接会显著降低性能</span>
+<span class="com">--    将不需要的表移除，或使用子查询替代</span>
+
+-- 4. 合理使用连接类型
+<span class="com">--    优先使用INNER JOIN，避免笛卡尔积</span>
+SELECT u.name, o.order_id
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+WHERE o.status = 'completed';
+
+-- 5. 添加过滤条件
+<span class="com">--    先过滤减少数据量，再连接</span>
+SELECT u.name, o.order_id
+FROM users u
+INNER JOIN (
+    SELECT * FROM orders WHERE status = 'completed'
+) o ON u.id = o.user_id;
+
+-- 6. 使用EXPLAIN分析
+EXPLAIN FORMAT=JSON
+SELECT u.name, o.order_id
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+WHERE o.status = 'completed';</code></pre>
+                </div>
+
+                <h3>3. INSERT执行过程</h3>
+                <p>INSERT语句用于向表中插入数据，其执行过程涉及多个步骤以确保数据的完整性和持久性。</p>
+
+                <h4>3.1 INSERT执行流程</h4>
+                <div class="mermaid">
+flowchart TD
+    A[INSERT语句] --> B[解析器解析]
+                    B --> C[检查表结构和权限]
+                    C --> D[获取表锁/MDL锁]
+                    D --> E[准备数据页]
+                    E --> F[写入UNDO日志]
+                    F --> G[修改数据页]
+                    G --> H[写入REDO日志]
+                    H --> I[准备Binlog]
+                    I --> J[提交事务]
+                    J --> K[返回结果]
+
+                    E -->|唯一索引?| L[检查唯一约束]
+                    L -->|冲突| M[报错或更新]
+                    M --> G
+
+                    style A fill:#e3f2fd,stroke:#1565c0
+                    style F fill:#fff3e0,stroke:#e65100
+                    style G fill:#ffebee,stroke:#c62828
+                    style H fill:#e8f5e9,stroke:#2e7d32
+                    style J fill:#c8e6c9,stroke:#2e7d32
+                </div>
+
+                <h4>3.2 INSERT详细过程</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- INSERT语句执行详解：
+
+-- 示例表结构
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    age INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+<span class="com">-- 执行过程：</span>
+<span class="com">-- 1. 解析SQL，验证语法和表结构</span>
+<span class="com">-- 2. 检查用户权限</span>
+<span class="com">-- 3. 获取MDL锁（Metadata Lock）保护表结构</span>
+<span class="com">-- 4. 开启BUF_PAGE，定位插入位置</span>
+<span class="com">-- 5. 检查唯一索引约束（记录到undo log）</span>
+<span class="com">-- 6. 修改数据页，插入新记录</span>
+<span class="com">-- 7. 写入redo log（物理日志，确保持久性）</span>
+<span class="com">-- 8. 写入binlog（逻辑日志，用于复制）</span>
+<span class="com">-- 9. 提交事务（两阶段提交）</span>
+<span class="com">-- 10. 释放锁，返回自增ID</span>
+
+<span class="com">-- 普通INSERT</span>
+INSERT INTO users (name, email, age) VALUES ('张三', 'zhangsan@example.com', 25);
+
+<span class="com">-- 批量INSERT</span>
+INSERT INTO users (name, email, age) VALUES 
+    ('李四', 'lisi@example.com', 30),
+    ('王五', 'wangwu@example.com', 28);
+
+<span class="com">-- INSERT...SELECT</span>
+INSERT INTO users (name, email, age)
+SELECT name, email, age FROM old_users;
+
+<span class="com">-- INSERT...ON DUPLICATE KEY UPDATEUPS（ERT）</span>
+INSERT INTO users (name, email, age) VALUES ('张三', 'zhangsan@example.com', 30)
+ON DUPLICATE KEY UPDATE age = 30;
+
+<span class="com">-- REPLACE（存在则删除后插入）</span>
+REPLACE INTO users (id, name, email, age) VALUES (1, '张三', 'zhangsan@example.com', 28);</code></pre>
+                </div>
+
+                <h4>3.3 事务日志机制</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- InnoDB事务日志机制：
+
+-- 1. UNDO日志（回滚日志）
+<span class="com">--    记录修改前的数据，用于回滚</span>
+<span class="com">--    INSERT: 记录插入的主键</span>
+<span class="com">--    UPDATE: 记录修改前的数据</span>
+<span class="com">--    DELETE: 记录删除前的完整数据</span>
+
+-- 2. REDO日志（重做日志）
+<span class="com">--    记录修改后的数据，用于崩溃恢复</span>
+<span class="com">--    循环写入，先于数据页刷新到磁盘</span>
+<span class="com">--    innodb_log_file_size 控制大小</span>
+<span class="com">--    innodb_log_buffer_size 控制缓冲区大小</span>
+
+-- 3. BINLOG（二进制日志）
+<span class="com">--    记录SQL语句，用于主从复制</span>
+<span class="com">--    statement: 记录SQL语句</span>
+<span class="com">--    row: 记录行数据变化</span>
+<span class="com">--    mixed: 混合模式</span>
+
+<span class="com">-- 查看事务相关配置</span>
+SHOW VARIABLES LIKE 'innodb_log%';
+SHOW VARIABLES LIKE 'binlog_format';
+
+<span class="com">-- 两阶段提交（保证数据一致性）</span>
+<span class="com">-- 1. .prepare阶段：写redo log，标记为prepare</span>
+<span class="com">-- 2. 写入binlog</span>
+<span class="com">-- 3. .commit阶段：标记为commit，完成提交</span></code></pre>
+                </div>
+
+                <h3>4. UPDATE执行过程</h3>
+                <p>UPDATE语句用于修改表中已存在的记录，其执行过程比INSERT更复杂，因为需要先定位数据再进行修改。</p>
+
+                <h4>4.1 UPDATE执行流程</h4>
+                <div class="mermaid">
+flowchart TD
+    A[UPDATE语句] --> B[解析器解析]
+                    B --> C[检查表结构和权限]
+                    C --> D[查询数据]
+                    D --> E{找到记录?}
+                    E -->|否| F[返回0行更新]
+                    E -->|是| G[获取排他锁]
+                    G --> H[写入UNDO日志]
+                    H --> I[修改数据页]
+                    I --> J[写入REDO日志]
+                    J --> K[写入Binlog]
+                    K --> L[提交事务]
+                    L --> M[返回影响行数]
+
+                    D -->|涉及索引| N[更新索引]
+                    N --> G
+
+                    style A fill:#e3f2fd,stroke:#1565c0
+                    style H fill:#fff3e0,stroke:#e65100
+                    style I fill:#ffebee,stroke:#c62828
+                    style L fill:#c8e6c9,stroke:#2e7d32
+                </div>
+
+                <h4>4.2 UPDATE详细过程</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- UPDATE语句执行详解：
+
+-- 示例
+UPDATE users SET age = 30, name = '张三' WHERE id = 1;
+
+<span class="com">-- 执行过程：</span>
+<span class="com">-- 1. 解析SQL，确定要修改的列和条件</span>
+<span class="com">-- 2. 根据WHERE条件定位要修改的行</span>
+<span class="com">-- 3. 对要修改的行加排他锁（X锁）</span>
+<span class="com">-- 4. 记录旧值到UNDO日志（用于回滚）</span>
+<span class="com">-- 5. 修改数据页中的数据</span>
+<span class="com">-- 6. 如果有索引，更新索引</span>
+<span class="com">-- 7. 写入REDO日志</span>
+<span class="com">-- 8. 写入BINLOG</span>
+<span class="com">-- 9. 提交事务</span>
+<span class="com">-- 10. 返回影响行数</span>
+
+<span class="com">-- 简单UPDATE</span>
+UPDATE users SET age = 30 WHERE id = 1;
+
+<span class="com">-- 条件UPDATE</span>
+UPDATE users SET age = age + 1 WHERE age < 30;
+
+<span class="com">-- 关联UPDATE</span>
+UPDATE users u
+INNER JOIN orders o ON u.id = o.user_id
+SET u.total_orders = u.total_orders + 1,
+    o.updated_at = NOW()
+WHERE o.status = 'completed';
+
+<span class="com">-- ORDER BY + LIMIT UPDATE</span>
+UPDATE users SET status = 'inactive' 
+WHERE last_login < '2023-01-01'
+ORDER BY last_login ASC LIMIT 100;</code></pre>
+                </div>
+
+                <h4>4.3 行锁与死锁</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- UPDATE语句的锁机制：
+
+-- 1. 行锁（Record Lock）
+<span class="com">--    锁定满足条件的行</span>
+UPDATE users SET age = 30 WHERE id = 1;
+<span class="com">--    只锁定id=1这一行</span>
+
+-- 2. 间隙锁（Gap Lock）
+<span class="com">--    锁定记录之间的间隙，防止幻读</span>
+UPDATE users SET age = 30 WHERE age > 20 AND age < 30;
+<span class="com">--    锁定(20,30)这个间隙</span>
+
+-- 3. 临键锁（Next-Key Lock）
+<span class="com">--    行锁+间隙锁的组合</span>
+
+<span class="com">-- 查看当前锁</span>
+SELECT * FROM information_schema.INNODB_TRX;
+SELECT * FROM information_schema.INNODB_LOCKS;
+SELECT * FROM information_schema.INNODB_LOCK_WAITS;
+
+<span class="com">-- 死锁示例</span>
+<span class="com">-- 会话1: UPDATE users SET age = 30 WHERE id = 1;  (获取id=1锁)</span>
+<span class="com">-- 会话2: UPDATE users SET age = 31 WHERE id = 2;  (获取id=2锁)</span>
+<span class="com">-- 会话1: UPDATE users SET age = 32 WHERE id = 2;  (等待id=2锁)</span>
+<span class="com">-- 会话2: UPDATE users SET age = 33 WHERE id = 1;  (死锁!)</span>
+
+<span class="com">-- 避免死锁</span>
+<span class="com">-- 1. 保持一致的锁顺序</span>
+<span class="com">-- 2. 使用低隔离级别</span>
+<span class="com">-- 3. 尽量使用索引，减少锁范围</span>
+<span class="com">-- 4. 减小事务大小，缩短持有锁的时间</span></code></pre>
+                </div>
+
+                <h3>5. DELETE执行过程</h3>
+                <p>DELETE语句用于删除表中记录，其执行过程需要先定位记录，然后标记删除，最后清理空间。</p>
+
+                <h4>5.1 DELETE执行流程</h4>
+                <div class="mermaid">
+flowchart TD
+    A[DELETE语句] --> B[解析器解析]
+                    B --> C[检查表结构和权限]
+                    C --> D[定位要删除的记录]
+                    D --> E[获取排他锁]
+                    E --> F[写入UNDO日志]
+                    F --> G[标记记录为已删除]
+                    G --> H[更新索引]
+                    H --> I[写入REDO日志]
+                    I --> J[写入Binlog]
+                    J --> K[提交事务]
+                    K --> L[后台Purge线程清理]
+
+                    D -->|有外键?| M[检查外键约束]
+                    M -->|级联删除| N[删除关联数据]
+                    M -->|不删除| O[报错或忽略]
+
+                    style A fill:#e3f2fd,stroke:#1565c0
+                    style F fill:#fff3e0,stroke:#e65100
+                    style G fill:#ffebee,stroke:#c62828
+                    style L fill:#e0e0e0,stroke:#616161
+                </div>
+
+                <h4>5.2 DELETE详细过程</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- DELETE语句执行详解：
+
+-- 示例
+DELETE FROM users WHERE id = 1;
+
+<span class="com">-- 执行过程：</span>
+<span class="com">-- 1. 解析SQL，确定删除条件</span>
+<span class="com">-- 2. 根据WHERE条件定位要删除的行</span>
+<span class="com">-- 3. 对要删除的行加排他锁（X锁）</span>
+<span class="com">-- 4. 记录完整数据到UNDO日志（支持回滚）</span>
+<span class="com">-- 5. 将记录标记为"已删除"（不是立即删除）</span>
+<span class="com">-- 6. 更新所有相关索引</span>
+<span class="com">-- 7. 写入REDO日志</span>
+<span class="com">-- 8. 写入BINLOG</span>
+<span class="com">-- 9. 提交事务</span>
+<span class="com">-- 10. 后台Purge线程真正删除数据</span>
+
+<span class="com">-- 简单DELETE</span>
+DELETE FROM users WHERE id = 1;
+
+<span class="com">-- 条件DELETE</span>
+DELETE FROM users WHERE age < 18;
+
+<span class="com">-- 关联DELETE</span>
+DELETE u FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+WHERE o.status = 'cancelled';
+
+<span class="com">-- ORDER BY + LIMIT DELETE</span>
+DELETE FROM users 
+WHERE status = 'inactive'
+ORDER BY created_at ASC
+LIMIT 100;
+
+<span class="com">-- TRUNCATE（高效清空表）</span>
+TRUNCATE TABLE users;
+<span class="com">-- TRUNCATE vs DELETE：</span>
+<span class="com">-- - TRUNCATE: 重建表，自增计数重置，快</span>
+<span class="com">-- - DELETE: 逐行删除，记录日志，慢</span></code></pre>
+                </div>
+
+                <h4>5.3 删除机制说明</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- DELETE的删除机制：
+
+-- 1. 标记删除 vs 真正删除
+<span class="com">--    InnoDB中，DELETE只是标记记录为已删除</span>
+<span class="com">--    真正删除由后台Purge线程处理</span>
+<span class="com">--    这是为了支持MVCC和事务回滚</span>
+
+-- 2. 空间回收
+<span class="com">--    删除后空间不会立即归还操作系统</span>
+<span class="com">--    InnoDB会复用这些空间存储新数据</span>
+
+-- 3. 释放空间
+<span class="com">--    OPTIMIZE TABLE: 重建表，释放空间</span>
+OPTIMIZE TABLE users;
+
+<span class="com">--    ALTER TABLE ENGINE=InnoDB: 同样效果</span>
+ALTER TABLE users ENGINE=InnoDB;
+
+-- 4. Purge机制
+<span class="com">--    后台线程定期清理已标记删除的记录</span>
+<span class="com">--    清理undo log和索引</span>
+SHOW VARIABLES LIKE 'innodb_purge_threads';
+
+-- 5. 快速删除大量数据
+<span class="com">--    分批删除，避免长时间锁表</span>
+DELETE FROM logs 
+WHERE created_at < '2023-01-01' 
+LIMIT 10000;
+<span class="com">--    循环执行直到删除完成</span></code></pre>
+                </div>
+
+                <h3>6. 总结</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>操作类型</th>
+                                <th>关键步骤</th>
+                                <th>涉及日志</th>
+                                <th>锁类型</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>SELECT</strong></td>
+                                <td>解析→优化→执行→读取</td>
+                                <td>一般无日志</td>
+                                <td>共享锁(可选)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>INSERT</strong></td>
+                                <td>解析→锁表→插入→提交</td>
+                                <td>UNDO+REDO+BIN</td>
+                                <td>排他锁</td>
+                            </tr>
+                            <tr>
+                                <td><strong>UPDATE</strong></td>
+                                <td>解析→查询→锁行→修改→提交</td>
+                                <td>UNDO+REDO+BIN</td>
+                                <td>排他锁+间隙锁</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DELETE</strong></td>
+                                <td>解析→查询→锁行→标记→提交</td>
+                                <td>UNDO+REDO+BIN</td>
+                                <td>排他锁+间隙锁</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 性能优化建议：
+
+-- SELECT优化
+<span class="com">-- 1. 使用索引，避免全表扫描</span>
+<span class="com">-- 2. 只查询需要的列</span>
+<span class="com">-- 3. 避免在WHERE中对字段使用函数</span>
+<span class="com">-- 4. 使用EXPLAIN分析执行计划</span>
+
+-- INSERT优化
+<span class="com">-- 1. 批量INSERT比单条快</span>
+<span class="com">-- 2. 禁用唯一索引检查：SET unique_checks=0;</span>
+<span class="com">-- 3. 禁用外键检查：SET foreign_key_checks=0;</span>
+<span class="com">-- 4. 使用LOAD DATA INFILE批量导入</span>
+
+-- UPDATE优化
+<span class="com">-- 1. 尽量使用主键或索引列更新</span>
+<span class="com">-- 2. 减少更新字段数量</span>
+<span class="com">-- 3. 批量更新时使用LIMIT分批</span>
+<span class="com">-- 4. 避免更新大字段</span>
+
+-- DELETE优化
+<span class="com">-- 1. 使用主键删除最快</span>
+<span class="com">-- 2. 大量删除时使用分批</span>
+<span class="com">-- 3. 使用TRUNCATE替代DELETE清空表</span>
+<span class="com">-- 4. 删除后使用OPTIMIZE TABLE回收空间</span></code></pre>
                 </div>
             </div>
         </section>
