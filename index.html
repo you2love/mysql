@@ -127,6 +127,9 @@
                         <a href="#security">安全特性</a>
                     </li>
                     <li>
+                        <a href="#backup">备份恢复</a>
+                    </li>
+                    <li>
                         <a href="#ai">AI 增强</a>
                     </li>
                     <li>
@@ -3885,6 +3888,506 @@ USING (user_id = <span class="func">CURRENT_USER_ID</span>());
 
 <span class="com">-- 查看权限</span>
 <span class="kwd">SHOW</span> GRANTS FOR <span class="str">'user1'</span>@<span class="str">'%'</span>;</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="backup" class="section">
+            <h2>备份与恢复</h2>
+            <div class="content">
+                <p>数据库备份是保证数据安全的最后一道防线。MySQL 提供了多种备份和恢复方案，本节将详细介绍各种备份方法的原理、使用场景和最佳实践。</p>
+                
+                <h3>备份方式对比</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>备份方式</th>
+                                <th>备份类型</th>
+                                <th>数据完整性</th>
+                                <th>备份速度</th>
+                                <th>恢复速度</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>mysqldump</td>
+                                <td>逻辑备份</td>
+                                <td>高</td>
+                                <td>慢</td>
+                                <td>慢</td>
+                                <td>小数据量、开发测试</td>
+                            </tr>
+                            <tr>
+                                <td>mysqlpump</td>
+                                <td>逻辑备份</td>
+                                <td>高</td>
+                                <td>中</td>
+                                <td>慢</td>
+                                <td>中等数据量</td>
+                            </tr>
+                            <tr>
+                                <td>mydumper</td>
+                                <td>逻辑备份</td>
+                                <td>高</td>
+                                <td>快</td>
+                                <td>中</td>
+                                <td>大数据量、并行备份</td>
+                            </tr>
+                            <tr>
+                                <td>xtrabackup</td>
+                                <td>物理备份</td>
+                                <td>高</td>
+                                <td>快</td>
+                                <td>快</td>
+                                <td>生产环境、大数据量</td>
+                            </tr>
+                            <tr>
+                                <td>复制备份</td>
+                                <td>物理备份</td>
+                                <td>高</td>
+                                <td>快</td>
+                                <td>最快</td>
+                                <td>高可用架构</td>
+                            </tr>
+                            <tr>
+                                <td>binlog备份</td>
+                                <td>增量备份</td>
+                                <td>高</td>
+                                <td>快</td>
+                                <td>中</td>
+                                <td>Point-in-time恢复</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>1. mysqldump 逻辑备份</h3>
+                <p>mysqldump 是 MySQL 自带的逻辑备份工具，通过 SELECT 语句导出数据，生成 SQL 脚本。</p>
+                
+                <div class="mermaid">
+flowchart LR
+    A[MySQL Server] --> B[mysqldump]
+    B --> C[.sql 文件]
+    C --> D[CREATE TABLE 语句]
+    C --> E[INSERT 语句]
+    C --> F[数据]
+    
+    style A fill:#e3f2fd,stroke:#1565c0
+    style B fill:#fff3e0,stroke:#e65100
+    style C fill:#c8e6c9,stroke:#2e7d32
+</div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># 1. 备份单个数据库
+mysqldump -u root -p mydb > mydb_backup.sql
+
+<span class="com"># 2. 备份多个数据库
+mysqldump -u root -p --databases db1 db2 > multi_db_backup.sql
+
+<span class="com"># 3. 备份所有数据库
+mysqldump -u root -p --all-databases > all_db_backup.sql
+
+<span class="com"># 4. 备份指定表
+mysqldump -u root -p mydb users orders > tables_backup.sql
+
+<span class="com"># 5. 只备份表结构（不包含数据）
+mysqldump -u root -p --no-data mydb > mydb_schema.sql
+
+<span class="com"># 6. 只备份数据（不包含表结构）
+mysqldump -u root -p --no-create-info mydb > mydb_data.sql
+
+<span class="com"># 7. 备份远程数据库
+mysqldump -h remote_host -u root -p mydb > remote_backup.sql
+
+<span class="com"># 8. 压缩备份（节省磁盘空间）
+mysqldump -u root -p mydb | gzip > mydb_backup.sql.gz
+
+<span class="com"># 9. 定时自动备份脚本
+# 添加到 crontab
+0 2 * * * mysqldump -u root -p'mypassword' mydb | gzip > /backup/mydb_$(date +\%Y\%m\%d).sql.gz</code></pre>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># mysqldump 高级选项
+
+<span class="com"># 1. 添加 DROP TABLE 语句（恢复时先删除旧表）
+mysqldump -u root -p --add-drop-table mydb > backup.sql
+
+<span class="com"># 2. 添加 CREATE DATABASE 语句
+mysqldump -u root -p --add-drop-database mydb > backup.sql
+
+<span class="com"># 3. 完全禁用外键检查（加快恢复速度）
+mysqldump -u root -p --add-drop-table --disable-keys mydb > backup.sql
+
+<span class="com"># 4. 备份触发器、存储过程、函数
+mysqldump -u root -p --routines --triggers --functions mydb > backup.sql
+
+<span class="com"># 5. 备份事件和视图
+mysqldump -u root -p --events --views mydb > backup.sql
+
+<span class="com"># 6. 使用 extended-insert 减少 SQL 语句数量
+mysqldump -u root -p --extended-insert mydb > backup.sql
+
+<span class="com"># 7. 导出事务安全的备份（用于 InnoDB）
+mysqldump -u root -p --single-transaction --master-data=2 mydb > backup.sql
+
+<span class="com"># 8. 锁表备份（用于 MyISAM）
+mysqldump -u root -p --lock-tables --read-only mydb > backup.sql
+
+<span class="com"># 9. 备份时刷新日志
+mysqldump -u root -p --flush-logs mydb > backup.sql
+
+<span class="com"># 10. 完整选项组合示例
+mysqldump -u root -p \
+    --single-transaction \
+    --routines \
+    --triggers \
+    --events \
+    --master-data=2 \
+    --flush-logs \
+    --add-drop-database \
+    --add-drop-table \
+    mydb > full_backup.sql</code></pre>
+                </div>
+
+                <h3>2. mysqldump 恢复</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># 1. 恢复整个数据库
+mysql -u root -p mydb < mydb_backup.sql
+
+<span class="com"># 2. 恢复压缩的备份
+gunzip < mydb_backup.sql.gz | mysql -u root -p
+
+<span class="com"># 3. 恢复指定数据库（从全量备份中）
+mysql -u root -p mydb < all_db_backup.sql
+
+<span class="com"># 4. 恢复单个表
+mysql -u root -p mydb < backup_with_tables.sql
+<span class="com"># 或者使用 SOURCE 命令
+mysql -u root -p mydb
+SOURCE /path/to/backup.sql;
+
+<span class="com"># 5. 恢复时忽略错误继续执行
+mysql -u root -p --force mydb < backup.sql
+
+<span class="com"># 6. 恢复时显示详细进度
+mysql -u root -p -v mydb < backup.sql
+
+<span class="com"># 7. 恢复并记录日志
+mysql -u root -p mydb < backup.sql 2>&1 | tee restore.log</code></pre>
+                </div>
+
+                <h3>3. xtrabackup 物理备份</h3>
+                <p>xtrabackup 是 Percona 开发的开源物理备份工具，支持在线热备份，性能优于 mysqldump。</p>
+                
+                <div class="mermaid">
+flowchart TD
+    A[开始备份] --> B[拷贝InnoDB数据文件]
+    B --> C[记录LSN]
+    C --> D[后台拷贝 redo log]
+    D --> E[锁表拷贝非InnoDB表]
+    E --> F[记录binlog位置]
+    F --> G[准备备份]
+    G --> H[应用事务日志]
+    H --> I[生成备份]
+    
+    style A fill:#e3f2fd,stroke:#1565c0
+    style I fill:#c8e6c9,stroke:#2e7d32
+</div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># 1. 安装 xtrabackup（CentOS/RHEL）
+yum install percona-xtrabackup
+
+<span class="com"># 2. 完全备份
+xtrabackup --backup \
+    --target-dir=/backup/full \
+    --user=root \
+    --password=yourpassword
+
+<span class="com"># 3. 准备备份（恢复前必须执行）
+xtrabackup --prepare \
+    --target-dir=/backup/full
+
+<span class="com"># 4. 恢复数据
+systemctl stop mysql
+xtrabackup --copy-back \
+    --target-dir=/backup/full \
+    --user=root \
+    --password=yourpassword
+chown -R mysql:mysql /var/lib/mysql
+systemctl start mysql
+
+<span class="com"># 5. 增量备份
+<span class="com"># 先做完全备份
+xtrabackup --backup --target-dir=/backup/base
+
+<span class="com"># 基于完全备份做增量备份
+xtrabackup --backup \
+    --target-dir=/backup/inc1 \
+    --incremental-basedir=/backup/base
+
+<span class="com"># 6. 增量备份准备
+xtrabackup --prepare --apply-log-only --target-dir=/backup/base
+xtrabackup --prepare --incremental-dir=/backup/inc1 --target-dir=/backup/base
+
+<span class="com"># 7. 压缩备份
+xtrabackup --backup \
+    --compress \
+    --target-dir=/backup/compressed \
+    --user=root --password=yourpassword
+
+<span class="com"># 8. 加密备份
+xtrabackup --backup \
+    --encrypt=AES256 \
+    --encrypt-key-file=/backup/keyfile \
+    --target-dir=/backup/encrypted \</code></pre>
+                </div>
+
+                <h3>4. binlog 增量备份与时间点恢复</h3>
+                <p>binlog 记录了所有数据变更操作，结合全量备份可以实现任意时间点恢复（PITR）。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>binlog 格式</th>
+                                <th>说明</th>
+                                <th>优缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>STATEMENT</td>
+                                <td>记录SQL语句</td>
+                                <td>日志量小，但有不确定性函数</td>
+                            </tr>
+                            <tr>
+                                <td>ROW</td>
+                                <td>记录行数据变化</td>
+                                <td>日志量大，但最可靠</td>
+                            </tr>
+                            <tr>
+                                <td>MIXED</td>
+                                <td>混合模式</td>
+                                <td>平衡选项，推荐使用</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># 1. 查看 binlog 是否开启
+SHOW VARIABLES LIKE 'log_bin';
+SHOW VARIABLES LIKE 'binlog_format';
+
+<span class="com"># 2. 查看 binlog 文件列表
+SHOW BINARY LOGS;
+
+<span class="com"># 3. 查看当前 binlog 位置
+SHOW MASTER STATUS;
+
+<span class="com"># 4. 查看 binlog 事件
+SHOW BINLOG EVENTS IN 'mysql-bin.000001';
+
+<span class="com"># 5. 使用 mysqlbinlog 查看 binlog 内容
+mysqlbinlog mysql-bin.000001 | head -50
+
+<span class="com"># 6. 查看特定时间段的 binlog
+mysqlbinlog --start-datetime="2024-01-15 10:00:00" \
+    --stop-datetime="2024-01-15 12:00:00" \
+    mysql-bin.000001
+
+<span class="com"># 7. 导出 binlog 为 SQL
+mysqlbinlog mysql-bin.000001 > binlog.sql
+
+<span class="com"># 8. 基于 position 恢复
+mysqlbinlog --start-position=1234 --stop-position=5678 mysql-bin.000001 | mysql -u root -p
+
+<span class="com"># 9. 恢复到指定时间点
+mysqlbinlog --stop-datetime="2024-01-15 11:30:00" mysql-bin.000001 | mysql -u root -p
+
+<span class="com"># 10. 定期清理 binlog（保留7天）
+PURGE BINARY LOGS BEFORE DATE(NOW() - INTERVAL 7 DAY);</code></pre>
+                </div>
+
+                <h3>5. Point-in-Time Recovery (PITR) 实践</h3>
+                <div class="mermaid">
+flowchart LR
+    A[全量备份] --> B[恢复全量备份]
+    B --> C[应用binlog]
+    C --> D[恢复到指定时间点]
+    
+    style A fill:#e3f2fd,stroke:#1565c0
+    style D fill:#c8e6c9,stroke:#2e7d32
+</div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># PITR 恢复步骤示例
+
+<span class="com"># 步骤1：查找需要恢复的时间点和 binlog 位置
+<span class="com"># 假设用户在 2024-01-15 14:30:00 误删除了数据
+<span class="com"># 需要恢复到 2024-01-15 14:25:00
+
+<span class="com"># 步骤2：恢复最新的全量备份
+mysql -u root -p mydb < /backup/full_backup_20240115.sql
+
+<span class="com"># 步骤3：应用 binlog 到指定时间点
+mysqlbinlog --stop-datetime="2024-01-15 14:25:00" \
+    mysql-bin.000001 \
+    mysql-bin.000002 | mysql -u root -p mydb
+
+<span class="com"># 步骤4：验证数据恢复成功
+SELECT * FROM deleted_table WHERE id = 1;
+
+<span class="com"># 高级：跳过有问题的 SQL
+<span class="com"># 假设某个 DELETE 语句需要跳过
+mysqlbinlog mysql-bin.000001 | grep -v "DELETE FROM" | mysql -u root -p</code></pre>
+                </div>
+
+                <h3>6. 主从复制备份策略</h3>
+                <p>利用主从复制架构，可以从从库进行备份，避免影响主库性能。</p>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># 1. 在从库上停止复制
+STOP SLAVE;
+
+<span class="com"># 2. 记录复制位置
+SHOW SLAVE STATUS\G
+<span class="com"># 记录 Relay_Master_Log_File 和 Exec_Master_Log_Pos
+
+<span class="com"># 3. 从从库进行备份
+mysqldump -u root -p --single-transaction mydb > slave_backup.sql
+
+<span class="com"># 4. 重新启动复制
+START SLAVE;
+
+<span class="com"># 5. 或者使用 xtrabackup 在从库备份（热备份）
+xtrabackup --backup --slave-info --target-dir=/backup/from_slave/
+
+<span class="com"># 6. 从库备份信息文件内容示例：
+<span class="com"># mysqlbinlog --start-position=12345 mysql-bin.000001 > to_replay.sql
+<span class="com"># 表示从库备份后需要应用这些 binlog 来同步</code></pre>
+                </div>
+
+                <h3>7. 自动备份脚本示例</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">#!/bin/bash
+# MySQL 自动备份脚本
+
+<span class="com"># 配置变量
+BACKUP_DIR="/backup/mysql"
+DATE=$(date +%Y%m%d_%H%M%S)
+DB_NAME="mydb"
+DB_USER="root"
+DB_PASS="yourpassword"
+RETENTION_DAYS=7
+
+<span class="com"># 创建备份目录
+mkdir -p $BACKUP_DIR
+
+<span class="com"># 执行备份
+echo "Starting backup at $(date)"
+
+<span class="com"># 逻辑备份
+mysqldump -u $DB_USER -p$DB_PASS \
+    --single-transaction \
+    --routines \
+    --triggers \
+    --events \
+    --master-data=2 \
+    --flush-logs \
+    $DB_NAME | gzip > $BACKUP_DIR/${DB_NAME}_${DATE}.sql.gz
+
+<span class="com"># 检查备份是否成功
+if [ $? -eq 0 ]; then
+    echo "Backup completed successfully"
+    
+    <span class="com"># 删除过期备份
+    find $BACKUP_DIR -name "*.sql.gz" -mtime +$RETENTION_DAYS -delete
+    
+    <span class="com"># 记录备份信息
+    echo "$(date) - Backup successful" >> $BACKUP_DIR/backup.log
+else
+    echo "Backup failed!"
+    echo "$(date) - Backup FAILED" >> $BACKUP_DIR/backup.log
+    exit 1
+fi
+
+<span class="com"># 添加到 crontab（每天凌晨2点执行）
+# 0 2 * * * /path/to/backup.sh</code></pre>
+                </div>
+
+                <h3>8. 备份最佳实践</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># 备份策略建议
+
+<span class="com">-- 1. 3-2-1 备份法则
+<span class="com">-- - 至少3份数据副本
+<span class="com">-- - 存储在2种不同介质上
+<span class="com">-- - 1份异地备份
+
+<span class="com">-- 2. 备份频率建议
+<span class="com">-- - 全量备份：每天或每周
+<span class="com">-- - 增量备份：每小时或每几小时
+<span class="com">-- - binlog：实时备份
+
+<span class="com">-- 3. 备份验证
+<span class="com">-- - 定期测试恢复流程
+<span class="com">-- - 验证备份完整性
+<span class="com">-- - 测试 Point-in-Time 恢复
+
+<span class="com">-- 4. 备份监控
+<span class="com">-- - 监控备份任务执行状态
+<span class="com">-- - 监控备份文件大小变化
+<span class="com">-- - 监控磁盘空间使用
+
+<span class="com">-- 5. 安全建议
+<span class="com">-- - 备份文件加密存储
+<span class="com">-- - 限制备份目录访问权限
+<span class="com">-- - 定期轮换备份密钥</code></pre>
+                </div>
+
+                <h3>9. 常见备份问题与解决方案</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>问题</th>
+                                <th>原因</th>
+                                <th>解决方案</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>备份文件过大</td>
+                                <td>未压缩、冗余数据</td>
+                                <td>使用压缩、增量备份</td>
+                            </tr>
+                            <tr>
+                                <td>备份速度慢</td>
+                                <td>单线程、网络延迟</td>
+                                <td>使用 mydumper 并行备份</td>
+                            </tr>
+                            <tr>
+                                <td>恢复失败</td>
+                                <td>备份不完整、外键冲突</td>
+                                <td>使用 --force、禁用外键检查</td>
+                            </tr>
+                            <tr>
+                                <td>binlog 损坏</td>
+                                <td>磁盘故障、未刷新</td>
+                                <td>定期 PURGE、配置双写</td>
+                            </tr>
+                            <tr>
+                                <td>备份丢失</td>
+                                <td>单点存储、误删除</td>
+                                <td>异地备份、多副本</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
