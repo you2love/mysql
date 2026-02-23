@@ -100,6 +100,9 @@
                         <a href="#introduction">简介</a>
                     </li>
                     <li>
+                        <a href="#alternatives">替代品</a>
+                    </li>
+                    <li>
                         <a href="#history">发展历程</a>
                     </li>
                     <li>
@@ -163,6 +166,667 @@
                         <h3>📊 实时分析</h3>
                         <p>HTAP 混合事务分析，实时 BI 和 OLAP 能力</p>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="alternatives" class="section">
+            <h2>MySQL 替代品</h2>
+            <div class="content">
+                <p>在选择数据库时，需要根据业务需求、技术栈和团队技能来权衡。MySQL 是最流行的关系型数据库之一，但市场上还有许多优秀的替代方案。以下是主流数据库的对比分析：</p>
+                
+                <h3>主流关系型数据库对比</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>数据库</th>
+                                <th>类型</th>
+                                <th>开源</th>
+                                <th>许可证</th>
+                                <th>最擅长</th>
+                                <th>不适合</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>MySQL</strong></td>
+                                <td>关系型</td>
+                                <td>✅</td>
+                                <td>GPL v2</td>
+                                <td>Web应用、电商、内容管理</td>
+                                <td>复杂分析、GIS</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PostgreSQL</strong></td>
+                                <td>关系型</td>
+                                <td>✅</td>
+                                <td>PostgreSQL License</td>
+                                <td>企业级应用、数据分析、GIS</td>
+                                <td>超高性能场景</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MongoDB</strong></td>
+                                <td>文档型</td>
+                                <td>✅</td>
+                                <td>SSPL</td>
+                                <td>灵活Schema、日志、内容管理</td>
+                                <td>强事务需求</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Redis</strong></td>
+                                <td>键值型</td>
+                                <td>✅</td>
+                                <td>BSD</td>
+                                <td>缓存、会话、实时分析</td>
+                                <td>主数据存储</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SQL Server</strong></td>
+                                <td>关系型</td>
+                                <td>❌</td>
+                                <td>商业</td>
+                                <td>企业应用、BI、Windows生态</td>
+                                <td>开源项目、跨平台</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Oracle</strong></td>
+                                <td>关系型</td>
+                                <td>❌</td>
+                                <td>商业</td>
+                                <td>大型企业、金融、电信</td>
+                                <td>中小型项目</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MariaDB</strong></td>
+                                <td>关系型</td>
+                                <td>✅</td>
+                                <td>GPL v2</td>
+                                <td>MySQL兼容、高性能</td>
+                                <td>特定企业功能</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TiDB</strong></td>
+                                <td>NewSQL</td>
+                                <td>✅</td>
+                                <td>Apache 2.0</td>
+                                <td>分布式、强一致、弹性扩展</td>
+                                <td>简单小应用</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>1. PostgreSQL - 最强大的开源数据库</h3>
+                <p>PostgreSQL 是功能最强大的开源关系型数据库，以其 extensibility 和标准兼容性著称。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 支持复杂的SQL特性（CTE、窗口函数、物化视图）</td>
+                                <td>❌ 写入性能略低于MySQL</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 丰富的索引类型（GIN、GiST、BRIN、表达式索引）</td>
+                                <td>❌ 社区相对较小</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 强大的GIS支持（PostGIS）</td>
+                                <td>❌ 文档相对分散</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 完整的ACID支持</td>
+                                <td>❌ 配置复杂度较高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 支持JSON/JSONB、数组、全文搜索</td>
+                                <td>❌ 不支持多源复制</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 活跃的社区和丰富的插件生态</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- PostgreSQL 特色功能示例</span>
+
+<span class="com">-- 1. 递归CTE（查询组织架构）</span>
+<span class="kwd">WITH</span> <span class="kwd">RECURSIVE</span> org_tree <span class="kwd">AS</span> (
+    <span class="kwd">SELECT</span> id, name, manager_id, <span class="num">1</span> <span class="kwd">as</span> <span class="kwd">level</span>
+    <span class="kwd">FROM</span> employees <span class="kwd">WHERE</span> manager_id <span class="kwd">IS</span> NULL
+    <span class="kwd">UNION ALL</span>
+    <span class="kwd">SELECT</span> e.id, e.name, e.manager_id, ot.<span class="kwd">level</span> + <span class="num">1</span>
+    <span class="kwd">FROM</span> employees e
+    <span class="kwd">JOIN</span> org_tree ot <span class="kwd">ON</span> e.manager_id = ot.id
+)
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> org_tree;
+
+<span class="com">-- 2. 窗口函数（排名统计）</span>
+<span class="kwd">SELECT</span> 
+    name,
+    department,
+    salary,
+    <span class="func">RANK</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary DESC) <span class="kwd">as</span> dept_rank,
+    <span class="func">SUM</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_total
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 3. JSONB 操作</span>
+<span class="kwd">SELECT</span> data->><span class="str">'name'</span> <span class="kwd">FROM</span> orders
+<span class="kwd">WHERE</span> data @> <span class="str">'{"status": "completed"}'</span>;
+
+<span class="com">-- 4. 数组类型</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> tags (
+    id <span class="kwd">INT</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">50</span>),
+    tags <span class="type">TEXT</span>[]
+);
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> tags <span class="kwd">VALUES</span>(<span class="num">1</span>, <span class="str">'PostgreSQL'</span>, ARRAY[<span class="str">'database'</span>, <span class="str">'open source'</span>, <span class="str">'relational'</span>]);
+
+<span class="com">-- 5. PostGIS 空间查询</span>
+<span class="kwd">SELECT</span> name <span class="kwd">FROM</span> locations
+<span class="kwd">WHERE</span> ST_DWithin(location, ST_MakePoint(<span class="num">116.4</span>, <span class="num">39.9</span>)::geography, <span class="num">5000</span>);</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>需要复杂分析查询的企业应用</li>
+                    <li>GIS地理信息系统开发</li>
+                    <li>需要JSON和结构化数据混合存储</li>
+                    <li>数据仓库和BI分析</li>
+                    <li>需要全文搜索功能</li>
+                </ul>
+
+                <h3>2. MongoDB - 文档数据库首选</h3>
+                <p>MongoDB是最流行的文档型数据库，采用灵活的JSON风格文档模型。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 灵活的Schema，无需预定义表结构</td>
+                                <td>❌ 事务支持有限（4.0+有所改善）</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 强大的查询语言和聚合框架</td>
+                                <td>❌ 不适合强一致性要求场景</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 高性能，高并发写入</td>
+                                <td>❌ 内存占用较高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 易于水平扩展（分片）</td>
+                                <td>❌ 磁盘空间消耗较大</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 丰富的索引支持</td>
+                                <td>❌ 学习曲线较陡</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 完善的生态系统</td>
+                                <td>❌ 社区版功能受限</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">// MongoDB 特色操作示例
+
+<span class="com">// 1. 插入文档（无需预定义结构）</span>
+db.users.insertOne({
+    username: <span class="str">"john"</span>,
+    email: <span class="str">"john@example.com"</span>,
+    profile: {
+        age: <span class="num">30</span>,
+        city: <span class="str">"Beijing"</span>,
+        interests: [<span class="str">"coding"</span>, <span class="str">"music"</span>]
+    },
+    createdAt: <span class="kwd">new</span> Date()
+});
+
+<span class="com">// 2. 灵活查询</span>
+db.users.find({
+    <span class="str">"profile.age"</span>: { $gt: <span class="num">25</span> },
+    <span class="str">"profile.city"</span>: <span class="str">"Beijing"</span>
+});
+
+<span class="com">// 3. 聚合管道</span>
+db.orders.aggregate([
+    { $match: { status: <span class="str">"completed"</span> } },
+    { $group: {
+        _id: <span class="str">"$customer_id"</span>,
+        totalAmount: { $sum: <span class="str">"$amount"</span> },
+        orderCount: { $sum: <span class="num">1</span> }
+    }},
+    { $sort: { totalAmount: -<span class="num">1</span> } },
+    { $limit: <span class="num">10</span> }
+]);
+
+<span class="com">// 4. 更新数组元素</span>
+db.users.updateOne(
+    { username: <span class="str">"john"</span> },
+    { $push: { <span class="str">"profile.interests"</span>: <span class="str">"travel"</span> } }
+);
+
+<span class="com">// 5. 事务操作（4.0+）</span>
+<span class="kwd">const</span> session = db.getMongo().startSession();
+session.startTransaction();
+<span class="kwd">try</span> {
+    session.getDatabase(<span class="str">"shop"</span>).orders.insertOne({ ... });
+    session.getDatabase(<span class="str">"shop"</span>).inventory.updateOne({ ... });
+    session.commitTransaction();
+} <span class="kwd">catch</span> (e) {
+    session.abortTransaction();
+}</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>内容管理系统（文章、评论、元数据）</li>
+                    <li>用户行为日志和分析</li>
+                    <li>物联网（IoT）数据存储</li>
+                    <li>敏捷开发，快速迭代的项目</li>
+                    <li>需要存储半结构化数据的场景</li>
+                </ul>
+
+                <h3>3. Redis - 高速缓存首选</h3>
+                <p>Redis是高性能的内存键值数据库，常用作缓存、消息队列和实时分析。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 极高的读写性能（百万级QPS）</td>
+                                <td>❌ 数据存储在内存，成本高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 支持多种数据结构</td>
+                                <td>❌ 不适合作为主数据存储</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 丰富的特性（发布订阅、Lua脚本、事务）</td>
+                                <td>❌ 持久化可能丢失数据</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 简单易用的客户端</td>
+                                <td>❌ 单线程模型（部分场景受限）</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 集群支持</td>
+                                <td>❌ 大value性能下降</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 完善的主从复制</td>
+                                <td>❌ 需要足够的内存</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># Redis 特色操作示例
+
+<span class="com"># 1. 字符串操作</span>
+SET user:1001 <span class="str">'{"name":"John","age":30}'</span>
+GET user:1001
+INCR page:views:2024
+DECR product:stock:500
+
+<span class="com"># 2. 哈希操作（存储对象）</span>
+HSET user:1001 name John age 30 city Beijing
+HGET user:1001 name
+HGETALL user:1001
+
+<span class="com"># 3. 列表操作（消息队列）</span>
+RPUSH queue:tasks <span class="str">"task1"</span> <span class="str">"task2"</span> <span class="str">"task3"</span>
+LPOP queue:tasks
+LRANGE queue:tasks 0 -<span class="num">1</span>
+
+<span class="com"># 4. 集合操作（标签、共同好友）</span>
+SADD user:1001:tags mysql postgres redis
+SADD user:1002:tags mysql python
+SINTER user:1001:tags user:1002:tags  <span class="com"># 共同标签</span>
+
+<span class="com"># 5. 有序集合（排行榜）</span>
+ZADD leaderboard <span class="num">2500</span> player1 <span class="num">1800</span> player2 <span class="num">3000</span> player3
+ZREVRANGE leaderboard 0 9 WITHSCORES
+ZINCRBY leaderboard <span class="num">500</span> player1
+
+<span class="com"># 6. 发布/订阅</span>
+PSUBSCRIBE news:*
+PUBLISH news:sports <span class="str">"New match today!"</span>
+
+<span class="com"># 7. 事务</span>
+MULTI
+SET key1 value1
+SET key2 value2
+EXEC
+
+<span class="com"># 8. Lua脚本（原子操作）</span>
+EVAL <span class="str">"return redis.call('get', KEYS[1])"</span> <span class="num">1</span> mykey</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>缓存层（减少数据库压力）</li>
+                    <li>会话存储（Session Store）</li>
+                    <li>实时排行榜</li>
+                    <li>消息队列</li>
+                    <li>分布式锁</li>
+                    <li>实时分析和计数</li>
+                </ul>
+
+                <h3>4. MariaDB - MySQL的最佳替代</h3>
+                <p>MariaDB是MySQL的fork，由MySQL原开发者维护，保持高度兼容性。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 完全兼容MySQL，迁移成本低</td>
+                                <td>❌ 新特性落后于MySQL企业版</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 更多的存储引擎选择</td>
+                                <td>❌ 部分MySQL工具不兼容</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 更好的性能（MyRocks、InnoDB优化）</td>
+                                <td>❌ 社区相对较小</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 开源免费，无Oracle控制</td>
+                                <td>❌ 企业支持选项较少</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 积极开发新特性</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>✅ 支持JSON、窗口函数</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MariaDB 特色功能示例
+
+<span class="com">-- 1. 窗口函数支持</span>
+<span class="kwd">SELECT</span> 
+    name, department, salary,
+    <span class="func">SUM</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_total
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 2. JSON支持</span>
+<span class="kwd">SELECT</span> JSON_VALUE(info, <span class="str">'$.name'</span>) <span class="kwd">FROM</span> users;
+
+<span class="com">-- 3. 动态列</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> products (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    attributes DYNAMIC
+);
+INSERT <span class="kwd">INTO</span> products VALUES(<span class="num">1</span>, <span class="str">'Shirt'</span>, COLUMNS(<span class="str">'color'</span>=<span class="str">'red'</span>, <span class="str">'size'</span>=<span class="str">'L'</span>));
+
+<span class="com">-- 4.  Invisible 列</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">50</span>),
+    email <span class="type">VARCHAR</span>(<span class="num">100</span>) INVISIBLE
+);
+
+<span class="com">-- 5. 并行复制</span>
+SET GLOBAL slave_parallel_threads = <span class="num">4</span>;
+SET GLOBAL slave_parallel_mode = <span class="str">'optimistic'</span>;
+
+<span class="com">-- 6. 序列引擎</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> seq_1_to_100;</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>需要从MySQL迁移的项目</li>
+                    <li>对MySQL许可证有顾虑的企业</li>
+                    <li>需要高性能写入（MyRocks引擎）</li>
+                    <li>需要更多存储引擎选择</li>
+                </ul>
+
+                <h3>5. TiDB - 分布式NewSQL</h3>
+                <p>TiDB是PingCAP开发的分布式NewSQL数据库，兼容MySQL协议，支持水平扩展。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 水平扩展，自动分片</td>
+                                <td>❌ 资源消耗较大</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 强一致性（分布式事务）</td>
+                                <td>❌ 延迟高于单机数据库</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 兼容MySQL协议和语法</td>
+                                <td>❌ 运维复杂度高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ HTAP能力（事务+分析）</td>
+                                <td>❌ 学习曲线较陡</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 高可用，自动故障恢复</td>
+                                <td>❌ 社区相对较小</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 云原生支持</td>
+                                <td>❌ 价格较高</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- TiDB 特色功能示例
+
+<span class="com">-- 1. 自动分片和分布式事务</span>
+<span class="kwd">BEGIN</span>;
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> users (name, age) <span class="kwd">VALUES</span>(<span class="str">'John'</span>, <span class="num">30</span>);
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> orders (user_id, amount) <span class="kwd">VALUES</span>(LAST_INSERT_ID(), <span class="num">100</span>);
+COMMIT;
+
+<span class="com">-- 2. 智能选择（TiFlash列式存储）</span>
+<span class="kwd">SELECT</span> /*+ READ_FROM_STORAGE(tiflash[orders]) */ 
+    <span class="func">SUM</span>(amount) <span class="kwd">as</span> total
+<span class="kwd">FROM</span> orders
+<span class="kwd">WHERE</span> date > <span class="str">'2024-01-01'</span>;
+
+<span class="com">-- 3. 热点小表合并</span>
+<span class="kwd">SPLIT</span> <span class="kwd">TABLE</span> users <span class="kwd">BETWEEN</span> (<span class="num">0</span>) <span class="kwd">AND</span> (<span class="num">1000000</span>) REGIONS <span class="num">10</span>;
+
+<span class="com">-- 4. 查看分布式执行计划</span>
+EXPLAIN ANALYZE <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = <span class="num">100</span>;
+
+<span class="com">-- 5. 跨区域复制 (DR 集群)</span>
+<span class="com">-- 配置主集群和灾备集群</span>
+
+<span class="com">-- 6. 在线DDL</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">ADD</span> COLUMN phone <span class="type">VARCHAR</span>(<span class="num">20</span>);</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>需要处理海量数据的OLTP场景</li>
+                    <li>需要强一致性的分布式事务</li>
+                    <li>需要HTAP混合负载</li>
+                    <li>云原生架构的中大型企业</li>
+                    <li>需要全球化部署的应用</li>
+                </ul>
+
+                <h3>6. SQL Server - 企业级选择</h3>
+                <p>Microsoft SQL Server是企业级关系型数据库，与Windows生态深度集成。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 完整的商业支持和服务</td>
+                                <td>❌ 许可证费用高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 与.NET生态完美集成</td>
+                                <td>❌ 仅支持Windows（Linux版本功能有限）</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 强大的BI和分析功能</td>
+                                <td>❌ 开源支持有限</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 优秀的性能调优工具</td>
+                                <td>❌ 资源消耗大</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 完善的备份恢复方案</td>
+                                <td>❌ 迁移到其他数据库困难</td>
+                            </tr>
+                            <tr>
+                                <td>✅ Always On高可用</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>使用.NET技术栈的企业应用</li>
+                    <li>需要完整商业支持的大型企业</li>
+                    <li>需要强大BI和报表功能</li>
+                    <li>微软技术生态的现有系统</li>
+                </ul>
+
+                <h3>数据库选择决策指南</h3>
+                
+                <div class="mermaid">
+flowchart TD
+    A[选择数据库] --> B{数据模型?}
+    B -->|结构化| C{一致性要求?}
+    B -->|半结构化| D[选择MongoDB]
+    B -->|键值/缓存| E[选择Redis]
+    
+    C -->|强一致| F{数据规模?}
+    C -->|最终一致| G{选择MySQL/PostgreSQL}
+    
+    F -->|小规模| H[选择MySQL/PostgreSQL]
+    F -->|中等规模| I{选择MariaDB]
+    F -->|大规模| J{选择TiDB/云数据库]
+    
+    K{是否需要分析?} -->|是| L[选择ClickHouse/StarRocks]
+    K -->|否| M[继续业务开发]
+    
+    N{是否开源?} -->|是| O{选择PostgreSQL]
+    N -->|否| P{选择SQL Server/Oracle]
+    
+    style A fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#2e7d32
+    style E fill:#fff3e0,stroke:#e65100
+    style J fill:#fce4ec,stroke:#c2185b
+</div>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>业务场景</th>
+                                <th>推荐数据库</th>
+                                <th>原因</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>博客/CMS网站</td>
+                                <td>MySQL + Redis</td>
+                                <td>成熟稳定，生态丰富</td>
+                            </tr>
+                            <tr>
+                                <td>电商平台</td>
+                                <td>MySQL/PostgreSQL</td>
+                                <td>事务支持，ACID</td>
+                            </tr>
+                            <tr>
+                                <td>金融系统</td>
+                                <td>PostgreSQL/TiDB/Oracle</td>
+                                <td>强一致性，分布式</td>
+                            </tr>
+                            <tr>
+                                <td>社交网络</td>
+                                <td>MongoDB + Redis</td>
+                                <td>灵活Schema，高并发</td>
+                            </tr>
+                            <tr>
+                                <td>数据分析</td>
+                                <td>ClickHouse/StarRocks</td>
+                                <td>列式存储，OLAP</td>
+                            </tr>
+                            <tr>
+                                <td>实时大屏</td>
+                                <td>Redis + ClickHouse</td>
+                                <td>高速读写+分析</td>
+                            </tr>
+                            <tr>
+                                <td>物联网</td>
+                                <td>InfluxDB/TimescaleDB</td>
+                                <td>时序数据优化</td>
+                            </tr>
+                            <tr>
+                                <td>SaaS应用</td>
+                                <td>PostgreSQL</td>
+                                <td>多租户，JSON支持</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
