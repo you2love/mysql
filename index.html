@@ -32,6 +32,42 @@
                 code.appendChild(copyBtn);
                 block.insertBefore(code, pre);
             });
+
+            function wrapLongContent(container) {
+                var children = Array.from(container.querySelectorAll(':scope > h3, :scope > h4'));
+                
+                children.forEach(function(heading) {
+                    var contentElements = [];
+                    var totalLines = 0;
+                    var sibling = heading.nextElementSibling;
+                    
+                    while (sibling && sibling.tagName !== 'H3' && sibling.tagName !== 'H4') {
+                        contentElements.push(sibling);
+                        if (sibling.classList && sibling.classList.contains('code-block')) {
+                            totalLines += (sibling.textContent || '').split('\n').length;
+                        }
+                        sibling = sibling.nextElementSibling;
+                    }
+                    
+                    if (totalLines > 15) {
+                        var wrapper = document.createElement('div');
+                        wrapper.className = 'collapsible-content';
+                        contentElements.forEach(function(el) {
+                            wrapper.appendChild(el);
+                        });
+                        
+                        var details = document.createElement('details');
+                        details.className = 'long-content';
+                        var title = heading.textContent;
+                        details.innerHTML = '<summary>📖 ' + title + ' (点击展开/折叠 ' + totalLines + ' 行代码)</summary>';
+                        details.appendChild(wrapper);
+                        
+                        heading.parentNode.replaceChild(details, heading);
+                    }
+                });
+            }
+
+            document.querySelectorAll('.content').forEach(wrapLongContent);
         });
     </script>
 </head>
