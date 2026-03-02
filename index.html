@@ -1613,78 +1613,196 @@ TRUNCATE <span class="kwd">TABLE</span> users;</code></pre>
                 <p>MySQL 提供了丰富的数据类型，了解各种数据类型的特性对于设计高效的数据库表结构至关重要。</p>
 
                 <h4>8.1 数值类型</h4>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 整数类型</span>
-TINYINT:       <span class="num">-128</span> 到 <span class="num">127</span> (或 <span class="num">0</span> 到 <span class="num">255</span> 无符号)
-SMALLINT:      <span class="num">-32768</span> 到 <span class="num">32767</span>
-MEDIUMINT:     <span class="num">-8388608</span> 到 <span class="num">8388607</span>
-INT:           <span class="num">-2147483648</span> 到 <span class="num">2147483647</span> (常用)
-BIGINT:        <span class="num">-9</span>.<span class="num">22</span>×10^<span class="num">18</span> 到 <span class="num">9</span>.<span class="num">22</span>×10^<span class="num">18</span>
-
-<span class="com">-- 浮点数类型</span>
-FLOAT(p):      单精度浮点数, p 表示精度
-DOUBLE:        双精度浮点数
-DECIMAL(m,d):  精确数值, m 是总位数, d 是小数位数 (用于金融计算)
-
-<span class="com">-- 定点数示例</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> accounts (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    balance <span class="type">DECIMAL</span>(<span class="num">15</span>,<span class="num">2</span>) <span class="kwd">DEFAULT</span> <span class="num">0.00</span>,  <span class="com">-- 最多15位数字,2位小数</span>
-    rate <span class="type">DECIMAL</span>(<span class="num">5</span>,<span class="num">4</span>) <span class="kwd">DEFAULT</span> <span class="num">0.0000</span>
-);
-
-<span class="com">-- BIT 类型 (位字段)</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> flags (
-    flags <span class="type">BIT</span>(<span class="num">8</span>)  <span class="com">-- 存储8位二进制值</span>
-);
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> flags <span class="kwd">VALUES</span>(<span class="num">b</span><span class="str">'10101010'</span>);</code></pre>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>存储空间</th>
+                                <th>有符号范围</th>
+                                <th>无符号范围</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>TINYINT</strong></td>
+                                <td>1 字节</td>
+                                <td>-128 ~ 127</td>
+                                <td>0 ~ 255</td>
+                                <td>布尔值、状态码</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SMALLINT</strong></td>
+                                <td>2 字节</td>
+                                <td>-32768 ~ 32767</td>
+                                <td>0 ~ 65535</td>
+                                <td>小数量计數</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MEDIUMINT</strong></td>
+                                <td>3 字节</td>
+                                <td>-8388608 ~ 8388607</td>
+                                <td>0 ~ 16777215</td>
+                                <td>中等数量</td>
+                            </tr>
+                            <tr>
+                                <td><strong>INT</strong></td>
+                                <td>4 字节</td>
+                                <td>-2147483648 ~ 2147483647</td>
+                                <td>0 ~ 4294967295</td>
+                                <td>常规整数（最常用）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>BIGINT</strong></td>
+                                <td>8 字节</td>
+                                <td>-9.22×10¹⁸ ~ 9.22×10¹⁸</td>
+                                <td>0 ~ 1.84×10¹⁹</td>
+                                <td>大整数、金融计算</td>
+                            </tr>
+                            <tr>
+                                <td><strong>FLOAT</strong></td>
+                                <td>4 字节</td>
+                                <td>±3.4×10³⁸</td>
+                                <td>0 ~ ±3.4×10³⁸</td>
+                                <td>科学计算</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DOUBLE</strong></td>
+                                <td>8 字节</td>
+                                <td>±1.8×10³⁰⁸</td>
+                                <td>0 ~ ±1.8×10³⁰⁸</td>
+                                <td>高精度计算</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DECIMAL</strong></td>
+                                <td>变长</td>
+                                <td>精确值</td>
+                                <td>精确值</td>
+                                <td>金融货币（推荐）</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <h4>8.2 字符串类型</h4>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 定长字符串</span>
-CHAR(n):       固定长度, 最多 <span class="num">255</span> 字符, 不足部分用空格填充
-CHAR(<span class="num">10</span>):      <span class="str">'hello'</span> 存储为 <span class="str">'hello     '</span>
-
-<span class="com">-- 变长字符串</span>
-VARCHAR(n):    可变长度, 最多 <span class="num">65535</span> 字节 (使用utf8mb4时最多 <span class="num">16383</span> 字符)
-TINYTEXT:      最多 <span class="num">255</span> 字节
-TEXT:          最多 <span class="num">65535</span> 字节
-MEDIUMTEXT:    最多 <span class="num">16</span>MB
-LONGTEXT:      最多 <span class="num">4</span>GB
-
-<span class="com">-- 字符串示例</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> posts (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    title <span class="type">VARCHAR</span>(<span class="num">200</span>) <span class="kwd">NOT NULL</span>,
-    summary <span class="type">TINYTEXT</span>,
-    content <span class="type">TEXT</span>,
-    bio <span class="type">MEDIUMTEXT</span>
-);
-
-<span class="com">-- ENUM 类型 (枚举)</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> orders (
-    status <span class="type">ENUM</span>(<span class="str">'pending'</span>, <span class="str">'processing'</span>, <span class="str">'shipped'</span>, <span class="str">'delivered'</span>, <span class="str">'cancelled'</span>)
-);
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> orders (status) <span class="kwd">VALUES</span>(<span class="str">'pending'</span>);
-
-<span class="com">-- SET 类型 (集合)</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> user_profile (
-    hobbies <span class="type">SET</span>(<span class="str">'reading'</span>, <span class="str">'sports'</span>, <span class="str">'music'</span>, <span class="str">'travel'</span>)
-);
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> user_profile (hobbies) <span class="kwd">VALUES</span>(<span class="str">'reading,sports'</span>);</code></pre>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>最大长度</th>
+                                <th>存储特点</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>CHAR(n)</strong></td>
+                                <td>255 字符</td>
+                                <td>定长，不足部分用空格填充</td>
+                                <td>固定长度（性别、国家代码）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>VARCHAR(n)</strong></td>
+                                <td>65535 字节</td>
+                                <td>变长，需要1-2字节存储长度</td>
+                                <td>大多数字符串场景（最常用）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TINYTEXT</strong></td>
+                                <td>255 字节</td>
+                                <td>变长</td>
+                                <td>短文本、标签</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TEXT</strong></td>
+                                <td>65535 字节</td>
+                                <td>变长，独立存储</td>
+                                <td>文章内容、评论</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MEDIUMTEXT</strong></td>
+                                <td>16 MB</td>
+                                <td>变长</td>
+                                <td>长文章、简历</td>
+                            </tr>
+                            <tr>
+                                <td><strong>LONGTEXT</strong></td>
+                                <td>4 GB</td>
+                                <td>变长</td>
+                                <td>大型文本、日志</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ENUM</strong></td>
+                                <td>65535 个值</td>
+                                <td>单选，内部存储为整数</td>
+                                <td>状态、类型（性能好）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SET</strong></td>
+                                <td>64 个值</td>
+                                <td>多选，内部存储为位掩码</td>
+                                <td>多选标签、权限</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <h4>8.3 日期和时间类型</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>格式</th>
+                                <th>存储</th>
+                                <th>范围</th>
+                                <th>特点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>DATE</strong></td>
+                                <td>YYYY-MM-DD</td>
+                                <td>3 字节</td>
+                                <td>1000-01-01 ~ 9999-12-31</td>
+                                <td>仅日期</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TIME</strong></td>
+                                <td>HH:MM:SS</td>
+                                <td>3 字节</td>
+                                <td>-838:59:59 ~ 838:59:59</td>
+                                <td>仅时间，支持负值</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DATETIME</strong></td>
+                                <td>YYYY-MM-DD HH:MM:SS</td>
+                                <td>8 字节</td>
+                                <td>1000-01-01 ~ 9999-12-31</td>
+                                <td>日期+时间，与时区无关</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TIMESTAMP</strong></td>
+                                <td>YYYY-MM-DD HH:MM:SS</td>
+                                <td>4 字节</td>
+                                <td>1970-01-01 ~ 2038-01-19</td>
+                                <td>自动更新，时区敏感</td>
+                            </tr>
+                            <tr>
+                                <td><strong>YEAR</strong></td>
+                                <td>YYYY</td>
+                                <td>1 字节</td>
+                                <td>1901 ~ 2155</td>
+                                <td>仅年份</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
                 <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 日期时间类型</span>
-DATE:          日期, 格式: <span class="str">'YYYY-MM-DD'</span>, 范围: <span class="str">'1000-01-01'</span> 到 <span class="str">'9999-12-31'</span>
-TIME:          时间, 格式: <span class="str">'HH:MM:SS'</span>, 范围: <span class="str">'-838:59:59'</span> 到 <span class="str">'838:59:59'</span>
-DATETIME:      日期时间, 格式: <span class="str">'YYYY-MM-DD HH:MM:SS'</span>, 范围: <span class="str">'1000-01-01 00:00:00'</span>
-TIMESTAMP:     时间戳, 范围: <span class="str">'1970-01-01 00:00:01'</span> 到 <span class="str">'2038-01-19 03:14:07'</span> (UTC)
-YEAR:          年份, 格式: <span class="str">'YYYY'</span>
-
-<span class="com">-- 日期时间示例</span>
+                    <pre><code class="sql"><span class="com">-- 日期时间示例</span>
 <span class="kwd">CREATE</span> <span class="kwd">TABLE</span> events (
     id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
     event_date <span class="type">DATE</span>,
@@ -1692,18 +1810,7 @@ YEAR:          年份, 格式: <span class="str">'YYYY'</span>
     created_at <span class="type">DATETIME</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>,
     updated_at <span class="type">DATETIME</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span> <span class="kwd">ON</span> <span class="kwd">UPDATE</span> <span class="kwd">CURRENT_TIMESTAMP</span>,
     logged_at <span class="type">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>
-);
-
-<span class="com">-- 插入日期时间值</span>
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> events (event_date, event_time, created_at)
-<span class="kwd">VALUES</span>(<span class="str">'2024-01-15'</span>, <span class="str">'14:30:00'</span>, <span class="str">'2024-01-15 14:30:00'</span>);
-
-<span class="com">-- 使用 NOW() 获取当前时间</span>
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> events (event_date, event_time)
-<span class="kwd">VALUES</span>(<span class="func">CURDATE</span>(), <span class="func">CURTIME</span>());
-
-<span class="com">-- TIMESTAMP 自动更新示例</span>
-<span class="kwd">UPDATE</span> events <span class="kwd">SET</span> event_date = <span class="func">CURDATE</span>() <span class="kwd">WHERE</span> id = <span class="num">1</span>;</code></pre>
+);</code></pre>
                 </div>
 
                 <h4>8.4 JSON 类型 (MySQL 5.7+)</h4>
@@ -1969,8 +2076,83 @@ ADD <span class="kwd">INDEX</span> idx_hnsw (embedding) <span class="kwd">INDEX_
                 </div>
             </div>
         </section>
+
+        <section id="advanced" class="section">
             <h2>高级特性</h2>
             <div class="content">
+                <h3>存储引擎对比</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>InnoDB</th>
+                                <th>MyISAM</th>
+                                <th>Memory</th>
+                                <th>CSV</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>事务支持</strong></td>
+                                <td>✅ ACID</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>行锁</strong></td>
+                                <td>✅</td>
+                                <td>表锁</td>
+                                <td>✅</td>
+                                <td>表锁</td>
+                            </tr>
+                            <tr>
+                                <td><strong>外键</strong></td>
+                                <td>✅</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>全文索引</strong></td>
+                                <td>✅ 5.6+</td>
+                                <td>✅</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>集群索引</strong></td>
+                                <td>✅</td>
+                                <td>❌</td>
+                                <td>N/A</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>崩溃恢复</strong></td>
+                                <td>✅ 自动</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>存储限制</strong></td>
+                                <td>64TB</td>
+                                <td>256TB</td>
+                                <td>RAM</td>
+                                <td>无</td>
+                            </tr>
+                            <tr>
+                                <td><strong>适用场景</strong></td>
+                                <td>生产环境<br>事务需求</td>
+                                <td>只读/日志<br>全文搜索</td>
+                                <td>缓存/临时<br>高速访问</td>
+                                <td>数据交换<br>日志分析</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <h3>1. 索引详解（AI 驱动）</h3>
 
                 <h4>1.1 什么是索引？</h4>
@@ -1990,6 +2172,64 @@ ADD <span class="kwd">INDEX</span> idx_hnsw (embedding) <span class="kwd">INDEX_
 
                 <details>
                     <summary>1.2 索引类型（点击展开）</summary>
+
+                <h5>索引类型概览</h5>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>关键字</th>
+                                <th>特点</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>主键索引</strong></td>
+                                <td>PRIMARY KEY</td>
+                                <td>唯一、非空、自动创建聚簇索引</td>
+                                <td>唯一标识记录</td>
+                            </tr>
+                            <tr>
+                                <td><strong>唯一索引</strong></td>
+                                <td>UNIQUE</td>
+                                <td>值唯一，可为NULL</td>
+                                <td>邮箱、手机号等唯一字段</td>
+                            </tr>
+                            <tr>
+                                <td><strong>普通索引</strong></td>
+                                <td>INDEX/KEY</td>
+                                <td>最基本的索引，无限制</td>
+                                <td>加速WHERE查询</td>
+                            </tr>
+                            <tr>
+                                <td><strong>复合索引</strong></td>
+                                <td>INDEX(a,b,c)</td>
+                                <td>多列组合，遵循最左前缀</td>
+                                <td>多条件查询</td>
+                            </tr>
+                            <tr>
+                                <td><strong>全文索引</strong></td>
+                                <td>FULLTEXT</td>
+                                <td>文本搜索，支持中文分词</td>
+                                <td>文章、内容搜索</td>
+                            </tr>
+                            <tr>
+                                <td><strong>空间索引</strong></td>
+                                <td>SPATIAL</td>
+                                <td>地理空间数据</td>
+                                <td>LBS、地图应用</td>
+                            </tr>
+                            <tr>
+                                <td><strong>前缀索引</strong></td>
+                                <td>INDEX(col(10))</td>
+                                <td>只索引前缀部分</td>
+                                <td>长字符串列</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 <h5>1.2.1 主键索引（PRIMARY KEY）</h5>
                 <div class="code-block">
@@ -3374,22 +3614,61 @@ flowchart TD
                 </div>
 
                 <h4>1.2 执行计划分析</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>字段</th>
+                                <th>说明</th>
+                                <th>重要取值</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>id</strong></td>
+                                <td>查询编号</td>
+                                <td>子查询时不同</td>
+                            </tr>
+                            <tr>
+                                <td><strong>select_type</strong></td>
+                                <td>查询类型</td>
+                                <td>SIMPLE/PRIMARY/SUBQUERY</td>
+                            </tr>
+                            <tr>
+                                <td><strong>type</strong></td>
+                                <td>连接类型</td>
+                                <td>const > eq_ref > ref > range > index > ALL</td>
+                            </tr>
+                            <tr>
+                                <td><strong>possible_keys</strong></td>
+                                <td>可用的索引</td>
+                                <td>可能使用的索引列表</td>
+                            </tr>
+                            <tr>
+                                <td><strong>key</strong></td>
+                                <td>实际使用的索引</td>
+                                <td>选中的索引名</td>
+                            </tr>
+                            <tr>
+                                <td><strong>rows</strong></td>
+                                <td>预计扫描行数</td>
+                                <td>越少越好</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Extra</strong></td>
+                                <td>额外信息</td>
+                                <td>Using index/Using filesort/Using temporary</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
                 <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 使用 EXPLAIN 分析查询执行计划
+                    <pre><code class="sql"><span class="com">-- 使用 EXPLAIN 分析查询执行计划</span>
 EXPLAIN SELECT u.name, o.order_id, o.total_amount
 FROM users u
 INNER JOIN orders o ON u.id = o.user_id
 WHERE u.age > 25 AND o.status = 'completed';
-
-<span class="com">-- EXPLAIN 输出字段说明：</span>
-<span class="com">-- id:         查询编号（嵌套子查询时有用）</span>
-<span class="com">-- select_type: 查询类型（SIMPLE/PRIMARY/SUBQUERY等）</span>
-<span class="com">-- table:      访问的表</span>
-<span class="com">-- type:       连接类型（性能从好到差）</span>
-<span class="com">--            const > eq_ref > ref > range > index > ALL</span>
-<span class="com">-- key:        实际使用的索引</span>
-<span class="com">-- rows:       预计扫描的行数</span>
-<span class="com">-- Extra:      额外信息（Using index/Using filesort等）</span>
 
 <span class="com">-- 更详细的分析（包含执行时间）</span>
 EXPLAIN ANALYZE SELECT * FROM users WHERE age > 25;</code></pre>
@@ -3398,7 +3677,53 @@ EXPLAIN ANALYZE SELECT * FROM users WHERE age > 25;</code></pre>
                 <h3>2. 联表执行过程</h3>
                 <p>联表查询（JOIN）是SQL中最复杂也最重要的操作之一。理解联表的执行原理有助于编写高效的查询。</p>
 
-                <h4>2.1 联表算法</h4>
+                <h4>2.1 JOIN 类型对比</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>说明</th>
+                                <th>图示</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>INNER JOIN</strong></td>
+                                <td>内连接</td>
+                                <td>A ∩ B</td>
+                                <td>获取两表交集数据</td>
+                            </tr>
+                            <tr>
+                                <td><strong>LEFT JOIN</strong></td>
+                                <td>左连接</td>
+                                <td>A</td>
+                                <td>保留左表所有数据</td>
+                            </tr>
+                            <tr>
+                                <td><strong>RIGHT JOIN</strong></td>
+                                <td>右连接</td>
+                                <td>B</td>
+                                <td>保留右表所有数据</td>
+                            </tr>
+                            <tr>
+                                <td><strong>FULL OUTER JOIN</strong></td>
+                                <td>全外连接</td>
+                                <td>A ∪ B</td>
+                                <td>获取两表全部数据</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CROSS JOIN</strong></td>
+                                <td>交叉连接</td>
+                                <td>A × B</td>
+                                <td>笛卡尔积、生成测试数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>2.2 联表算法</h4>
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- MySQL 支持的联表算法：
 
