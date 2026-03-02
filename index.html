@@ -136,6 +136,9 @@
                         <a href="#ai">AI 增强</a>
                     </li>
                     <li>
+                        <a href="#vector">向量数据库</a>
+                    </li>
+                    <li>
                         <a href="#practice">实战练习</a>
                     </li>
                 </ul>
@@ -1536,7 +1539,7 @@ mysql -h localhost -P <span class="num">3306</span> -u root -p</code></pre>
     (<span class="str">'wangwu'</span>, <span class="str">'wangwu@example.com'</span>, <span class="num">28</span>);</code></pre>
                 </div>
 
-                <h3>5. 查询数据（使用 AI 优化）</h3>
+                <h3>5. 查询数据</h3>
                 <div class="code-block">
                     <pre><code class="sql"><span class="com">-- 查询所有数据</span>
 <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users;
@@ -5892,6 +5895,195 @@ DO
 <span class="com">-- 基于预测自动扩容建议</span>
 <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.scaling_recommendations
 <span class="kwd">WHERE</span> recommendation_type = <span class="str">'storage'</span>;</code></pre>
+                </div>
+
+                <h3>8. 向量数据库支持</h3>
+                
+                <h4>8.1 什么是向量数据库？</h4>
+                <p>向量数据库是一种专门用于存储和检索高维 AI向量数据的数据库，在 和机器学习领域应用广泛。MySQL 8.0+ 开始支持向量存储和相似性搜索，使得它可以用于构建语义搜索、推荐系统、AI 应用等场景。</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>🔢 向量嵌入</h3>
+                        <p>支持将文本、图像、音频等数据转换为高维向量表示</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🔍 相似性搜索</h3>
+                        <p>支持余弦相似度、欧氏距离等多种相似性度量</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🤖 AI 应用</h3>
+                        <p>支持大语言模型记忆存储、语义搜索、RAG 应用</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>⚡ 高性能</h3>
+                        <p>专门优化的向量索引，支持百万级向量快速检索</p>
+                    </div>
+                </div>
+
+                <h4>8.2 创建向量列</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 创建支持向量存储的表（MySQL 8.0.32+）</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> document_embeddings (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    document_id <span class="kwd">INT</span> <span class="kwd">NOT NULL</span>,
+    content <span class="type">TEXT</span>,
+    embedding <span class="type">VECTOR</span>(<span class="num">1536</span>),  <span class="com">-- 1536维向量（如 OpenAI embedding）</span>
+    created_at <span class="kwd">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>,
+    <span class="kwd">INDEX</span> idx_embedding (embedding)
+);
+
+<span class="com">-- 使用 JSON 格式插入向量（兼容旧版本）</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> document_embeddings (document_id, content, embedding)
+<span class="kwd">VALUES</span> (
+    <span class="num">1</span>, 
+    <span class="str">'MySQL 是一个开源关系型数据库'</span>,
+    <span class="str">'[0.12, -0.34, 0.56, ...]'</span>  <span class="com">-- 实际为1536维向量</span>
+);</code></pre>
+                </div>
+
+                <h4>8.3 向量相似性搜索</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 余弦相似度搜索</span>
+<span class="kwd">SELECT</span> 
+    id,
+    document_id,
+    content,
+    <span class="func">COSINE_DISTANCE</span>(embedding, <span class="str">'[0.1, -0.2, 0.3, ...]'</span>) <span class="kwd">AS</span> distance
+<span class="kwd">FROM</span> document_embeddings
+<span class="kwd">ORDER BY</span> distance <span class="kwd">ASC</span>
+<span class="kwd">LIMIT</span> <span class="num">5</span>;
+
+<span class="com">-- 欧氏距离搜索</span>
+<span class="kwd">SELECT</span> 
+    id,
+    document_id,
+    content,
+    <span class="func">L2_DISTANCE</span>(embedding, <span class="str">'[0.1, -0.2, 0.3, ...]'</span>) <span class="kwd">AS</span> distance
+<span class="kwd">FROM</span> document_embeddings
+<span class="kwd">ORDER BY</span> distance <span class="kwd">ASC</span>
+<span class="kwd">LIMIT</span> <span class="num">5</span>;
+
+<span class="com">-- 内积相似度搜索</span>
+<span class="kwd">SELECT</span> 
+    id,
+    document_id,
+    content,
+    <span class="func">INNER_PRODUCT</span>(embedding, <span class="str">'[0.1, -0.2, 0.3, ...]'</span>) <span class="kwd">AS</span> similarity
+<span class="kwd">FROM</span> document_embeddings
+<span class="kwd">ORDER BY</span> similarity <span class="kwd">DESC</span>
+<span class="kwd">LIMIT</span> <span class="num">5</span>;</code></pre>
+                </div>
+
+                <h4>8.4 使用 HNSW 索引加速检索</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 创建 HNSW 向量索引（MySQL 8.0.32+）</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> document_embeddings
+<span class="kwd">ADD</span> <span class="kwd">INDEX</span> idx_hnsw (embedding)
+<span class="kwd">USING</span> <span class="kwd">HNSW</span> (
+    <span class="num">16</span>,    <span class="com">-- 邻居数（m）</span>
+    <span class="num">200</span>    <span class="com">-- 搜索候选列表大小（ef_construction）</span>
+);
+
+<span class="com">-- 使用索引进行近似最近邻搜索</span>
+<span class="kwd">SELECT</span> 
+    id,
+    document_id,
+    content,
+    <span class="func">COSINE_DISTANCE</span>(embedding, <span class="str">'[0.1, -0.2, 0.3, ...]'</span>) <span class="kwd">AS</span> distance
+<span class="kwd">FROM</span> document_embeddings
+<span class="kwd">ORDER BY</span> embedding <span class="kwd">LIMIT</span> <span class="kwd">K</span> <span class="num">5</span>;</code></pre>
+                </div>
+
+                <h4>8.5 RAG（检索增强生成）应用示例</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 1. 创建知识库表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> knowledge_base (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    title <span class="type">VARCHAR</span>(<span class="num">500</span>),
+    content <span class="kwd">TEXT</span>,
+    embedding <span class="type">VECTOR</span>(<span class="num">1536</span>),
+    <span class="kwd">INDEX</span> idx_embedding (embedding <span class="kwd">USING</span> <span class="kwd">HNSW</span>)
+);
+
+<span class="com">-- 2. 语义搜索函数</span>
+<span class="kwd">DELIMITER</span> //
+<span class="kwd">CREATE</span> <span class="kwd">FUNCTION</span> semantic_search(
+    query_vector <span class="type">VECTOR</span>(<span class="num">1536</span>),
+    top_k <span class="kwd">INT</span>
+)
+<span class="kwd">RETURNS</span> <span class="kwd">TABLE</span> (
+    id <span class="kwd">INT</span>,
+    title <span class="type">VARCHAR</span>(<span class="num">500</span>),
+    content <span class="kwd">TEXT</span>,
+    similarity <span class="type">FLOAT</span>
+)
+<span class="kwd">BEGIN</span>
+    <span class="kwd">RETURN</span>
+    <span class="kwd">SELECT</span> 
+        id,
+        title,
+        content,
+        <span class="num">1</span> - <span class="func">COSINE_DISTANCE</span>(embedding, query_vector) <span class="kwd">AS</span> similarity
+    <span class="kwd">FROM</span> knowledge_base
+    <span class="kwd">ORDER BY</span> embedding <span class="kwd">LIMIT</span> <span class="kwd">K</span> top_k;
+<span class="kwd">END</span> //
+<span class="kwd">DELIMITER</span> ;
+
+<span class="com">-- 3. 使用语义搜索</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> semantic_search(<span class="str">'[query_vector_here]'</span>, <span class="num">3</span>);</code></pre>
+                </div>
+
+                <h4>8.6 向量数据库对比</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>MySQL Vector</th>
+                                <th>Pinecone</th>
+                                <th>Milvus</th>
+                                <th>Weaviate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>类型</strong></td>
+                                <td>关系型+向量</td>
+                                <td>专用向量</td>
+                                <td>专用向量</td>
+                                <td>专用向量</td>
+                            </tr>
+                            <tr>
+                                <td><strong>部署方式</strong></td>
+                                <td>自建/云</td>
+                                <td>云服务</td>
+                                <td>自建/云</td>
+                                <td>自建/云</td>
+                            </tr>
+                            <tr>
+                                <td><strong>向量维度</strong></td>
+                                <td>≤4096</td>
+                                <td>无限制</td>
+                                <td>无限制</td>
+                                <td>无限制</td>
+                            </tr>
+                            <tr>
+                                <td><strong>索引类型</strong></td>
+                                <td>HNSW, IVF</td>
+                                <td>HNSW</td>
+                                <td>HNSW, IVF, PQ</td>
+                                <td>HNSW, BF</td>
+                            </tr>
+                            <tr>
+                                <td><strong>适用场景</strong></td>
+                                <td>中小规模向量<br>需要 SQL 能力</td>
+                                <td>大规模云端部署<br>快速原型</td>
+                                <td>大规模生产环境<br>需要精细控制</td>
+                                <td>语义搜索<br>知识图谱</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
