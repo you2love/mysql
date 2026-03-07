@@ -110,52 +110,6 @@ graph TD
                         <li><strong>虚线</strong>：叶子节点间的双向链表连接</li>
                     </ul>
 
-                    <h4>1.2 不同数据量下的性能表现</h4>
-                    <div class="comparison-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>数据量</th>
-                                    <th>B+ Tree 高度</th>
-                                    <th>磁盘 IO 次数</th>
-                                    <th>查询性能</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1 万条</td>
-                                    <td>2 层</td>
-                                    <td>2 次</td>
-                                    <td>毫秒级</td>
-                                </tr>
-                                <tr>
-                                    <td>100 万条</td>
-                                    <td>3 层</td>
-                                    <td>3 次</td>
-                                    <td>毫秒级</td>
-                                </tr>
-                                <tr>
-                                    <td>1000 万条</td>
-                                    <td>3 层</td>
-                                    <td>3 次</td>
-                                    <td>毫秒级</td>
-                                </tr>
-                                <tr>
-                                    <td>1 亿条</td>
-                                    <td>4 层</td>
-                                    <td>4 次</td>
-                                    <td>10毫秒级</td>
-                                </tr>
-                                <tr>
-                                    <td>10 亿条</td>
-                                    <td>4 层</td>
-                                    <td>4 次</td>
-                                    <td>10-50毫秒</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
                     <h4>1.3 B+ Tree 优缺点分析</h4>
                     <div class="comparison-table">
                         <table>
@@ -209,31 +163,478 @@ graph TD
                         </table>
                     </div>
 
-                    <h4>1.4 数据量与索引设计建议</h4>
-                    <div class="code-block">
-                        <pre><code class="sql"><span class="com">-- 不同数据量的索引设计：</span>
-
-<span class="com">-- 小数据量 (< 10万)</span>
-<span class="com">-- - 简单索引即可，无需过度优化</span>
-<span class="com">-- - 优先考虑查询便利性</span>
-<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_name <span class="kwd">ON</span> users(name);
-
-<span class="com">-- 中等数据量 (10万 - 1000万)</span>
-<span class="com">-- - 考虑复合索引覆盖查询</span>
-<span class="com">-- - 关注索引选择性</span>
-<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_status <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>);
-
-<span class="com">-- 大数据量 (> 1000万)</span>
-<span class="com">-- - 考虑分区表</span>
-<span class="com">-- - 使用覆盖索引避免回表</span>
-<span class="com">-- - 定期分析索引效率</span>
-<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_cover <span class="kwd">ON</span> logs(device_id, event_type, created_at);
-
-<span class="com">-- 超大数据量 (> 1亿)</span>
-<span class="com">-- - 考虑分库分表</span>
-<span class="com">-- - 使用近似查询代替精确查询</span>
-<span class="com">-- - 考虑 ClickHouse/ES 等分析型数据库</span></code></pre>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>数据量</th>
+                                    <th>B+ Tree 高度</th>
+                                    <th>磁盘 IO 次数</th>
+                                    <th>查询性能</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1 万条</td>
+                                    <td>2 层</td>
+                                    <td>2 次</td>
+                                    <td>毫秒级</td>
+                                </tr>
+                                <tr>
+                                    <td>100 万条</td>
+                                    <td>3 层</td>
+                                    <td>3 次</td>
+                                    <td>毫秒级</td>
+                                </tr>
+                                <tr>
+                                    <td>1000 万条</td>
+                                    <td>3 层</td>
+                                    <td>3 次</td>
+                                    <td>毫秒级</td>
+                                </tr>
+                                <tr>
+                                    <td>1 亿条</td>
+                                    <td>4 层</td>
+                                    <td>4 次</td>
+                                    <td>10毫秒级</td>
+                                </tr>
+                                <tr>
+                                    <td>10 亿条</td>
+                                    <td>4 层</td>
+                                    <td>4 次</td>
+                                    <td>10-50毫秒</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>数据量</th>
+                                    <th>建议</th>
+                                    <th>示例</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>< 10万</td>
+                                    <td>简单索引，优先考虑查询便利性</td>
+                                    <td><code>CREATE INDEX idx_name ON users(name);</code></td>
+                                </tr>
+                                <tr>
+                                    <td>10万 - 1000万</td>
+                                    <td>复合索引覆盖查询，关注索引选择性</td>
+                                    <td><code>CREATE INDEX idx_user_status ON orders(user_id, status);</code></td>
+                                </tr>
+                                <tr>
+                                    <td>> 1000万</td>
+                                    <td>分区表、覆盖索引、定期分析效率</td>
+                                    <td><code>CREATE INDEX idx_cover ON logs(device_id, event_type, created_at);</code></td>
+                                </tr>
+                                <tr>
+                                    <td>> 1亿</td>
+                                    <td>分库分表、近似查询、考虑 ES/ClickHouse</td>
+                                    <td>分布式方案或多数据库组合</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <h3>6. 聚簇索引 vs 非聚簇索引</h3>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>聚簇索引</th>
+                                <th>非聚簇索引</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>数据存储</td>
+                                <td>数据行存储在叶子节点</td>
+                                <td>叶子节点存储索引键+主键</td>
+                            </tr>
+                            <tr>
+                                <td>数量限制</td>
+                                <td>每个表只能有1个</td>
+                                <td>每个表可以有多个</td>
+                            </tr>
+                            <tr>
+                                <td>查询效率</td>
+                                <td>查找主键直接返回数据</td>
+                                <td>需要回表获取完整数据</td>
+                            </tr>
+                            <tr>
+                                <td>磁盘顺序</td>
+                                <td>数据按索引键物理排序</td>
+                                <td>不影响数据物理顺序</td>
+                            </tr>
+                            <tr>
+                                <td>适用场景</td>
+                                <td>主键查询、范围查询</td>
+                                <td>辅助查询、联合查询</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mermaid">
+flowchart TD
+    A[SQL查询: SELECT * FROM users WHERE age = 25] --> B{使用哪个索引?}
+    
+    B -->|聚簇索引 PK| C[在主键索引中查找 id=1]
+    C --> D[叶子节点包含完整数据]
+    D --> E[直接返回结果]
+    
+    B -->|非聚簇索引 idx_age| F[在idx_age中查找 age=25]
+    F --> G[获取主键 id=1]
+    G --> H[回表: 在聚簇索引中查找id=1]
+    H --> I[获取完整数据]
+    I --> E
+    
+    style A fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style E fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style I fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+</div>
+                
+                <h4>6.1 聚簇索引（Clustered Index）</h4>
+                <p>聚簇索引决定了数据的物理存储顺序。每个表只能有一个聚簇索引，因为数据只能按一种方式物理排序。通常主键就是聚簇索引。</p>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- InnoDB 聚簇索引特点：</span>
+<span class="com">-- 1. 数据行直接存储在叶子节点中</span>
+<span class="com">-- 2. 主键索引就是聚簇索引</span>
+<span class="com">-- 3. 如果没有主键，使用第一个唯一非空索引</span>
+<span class="com">-- 4. 如果没有唯一索引，InnoDB 会生成隐藏的 ROW_ID</span>
+
+<span class="com">-- 聚簇索引结构：</span>
+<span class="com">-- 叶子节点存储完整的数据行</span>
+<span class="com">-- +--------+-------------+-----+-----+</span>
+<span class="com">-- | id (PK)| name        | age | ... |</span>
+<span class="com">-- +--------+-------------+-----+-----+</span>
+<span class="com">-- | 1      | zhangsan    | 25  | ... |</span>
+<span class="com">-- | 2      | lisi        | 30  | ... |</span>
+<span class="com">-- | 3      | wangwu      | 28  | ... |</span>
+<span class="com">-- +--------+-------------+-----+-----+</span>
+
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,  <span class="com">-- 聚簇索引</span>
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    age <span class="kwd">INT</span>,
+    <span class="kwd">INDEX</span> idx_age (age)   <span class="com">-- 非聚簇索引</span>
+);</code></pre>
+                </div>
+
+                <h4>6.2 非聚簇索引（Secondary Index）</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 非聚簇索引（辅助索引）特点：</span>
+<span class="com">-- 1. 叶子节点存储索引键 + 主键值</span>
+<span class="com">-- 2. 一个表可以有多个非聚簇索引</span>
+<span class="com">-- 3. 查询时需要先通过非聚簇索引找到主键</span>
+<span class="com">-- 4. 再通过主键到聚簇索引中获取完整数据（回表）</span>
+
+<span class="com">-- 非聚簇索引 idx_age 结构：</span>
+<span class="com">-- +--------+--------+</span>
+<span class="com">-- | age    | id(PK) |</span>
+<span class="com">-- +--------+--------+</span>
+<span class="com">-- | 25     | 1      |</span>
+<span class="com">-- | 28     | 3      |</span>
+<span class="com">-- | 30     | 2      |</span>
+<span class="com">-- +--------+--------+</span>
+
+<span class="com">-- 查询 SELECT * FROM users WHERE age = 25：</span>
+<span class="com">-- 1. 在 idx_age 中找到 age=25 的记录，获取 id=1</span>
+<span class="com">-- 2. 在聚簇索引中找到 id=1 的完整数据</span>
+<span class="com">-- 3. 返回完整数据行</span></code></pre>
+                </div>
+
+                <h4>6.3 覆盖索引避免回表</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 覆盖索引：索引包含查询所需的所有列</span>
+<span class="com">-- 不需要回表，直接从索引中返回数据</span>
+
+<span class="com">-- 创建覆盖索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_age_name <span class="kwd">ON</span> users(age, name);
+
+<span class="com">-- 使用覆盖索引（不需要回表）</span>
+<span class="kwd">SELECT</span> age, name <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+<span class="com">-- EXPLAIN: Extra = Using index</span>
+
+<span class="com">-- 需要回表的查询</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+<span class="com">-- EXPLAIN: Extra = Using index condition</span>
+
+<span class="com">-- 验证是否使用覆盖索引</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> age, name <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span>;
+<span class="com">-- type=ref, key=idx_age_name, Extra=Using index</span></code></pre>
+                </div>
+
+                <h4>6.4 回表原理详解</h4>
+                <p>回表是指查询过程中，先通过非聚簇索引找到主键值，再根据主键值到聚簇索引中查找完整数据行的过程。这是 InnoDB 存储引擎的重要特性。</p>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 回表的完整过程：</span>
+<span class="com">-- 1. 在非聚簇索引树中查找</span>
+<span class="com">-- 2. 获取满足条件的主键值</span>
+<span class="com">-- 3. 使用主键值在聚簇索引中查找完整数据</span>
+<span class="com">-- 4. 返回完整的用户数据</span>
+
+<span class="com">-- 示例表结构：</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> orders (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,           <span class="com">-- 聚簇索引</span>
+    order_no <span class="type">VARCHAR</span>(<span class="num">20</span>),       <span class="com">-- 唯一索引</span>
+    customer_id <span class="kwd">INT</span>,
+    amount <span class="kwd">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>),
+    status <span class="type">VARCHAR</span>(<span class="num">10</span>),
+    created_at <span class="type">DATETIME</span>,
+    <span class="kwd">INDEX</span> idx_customer (customer_id) <span class="com">-- 非聚簇索引</span>
+);
+
+<span class="com">-- 执行 SELECT * FROM orders WHERE customer_id = 100</span>
+<span class="com">-- 1. 在 idx_customer 中找到 customer_id=100 的记录</span>
+<span class="com">-- 2. 获取主键 id（如 id=500）</span>
+<span class="com">-- 3. 在聚簇索引中查找 id=500 的完整记录</span>
+<span class="com">-- 4. 返回所有列数据</span>
+
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id = <span class="num">100</span>;
+<span class="com">-- type: ref, key: idx_customer</span>
+<span class="com">-- Extra: Using index condition (需要回表)</span></code></pre>
+                </div>
+
+                <h4>6.5 回表性能影响</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 回表的性能影响：</span>
+<span class="com">-- 1. 增加磁盘 IO：每次回表可能产生一次磁盘读取</span>
+<span class="com">-- 2. 随机 IO：聚簇索引中查找是随机 IO</span>
+<span class="com">-- 3. 回表次数 = 索引命中的记录数</span>
+
+<span class="com">-- 回表次数过多的例子</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id > <span class="num">100</span>;
+<span class="com">-- 假设 customer_id > 100 有 10000 条记录</span>
+<span class="com">-- 需要回表 10000 次，性能很差</span>
+
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id > <span class="num">100</span>;
+<span class="com">-- type: range, key: idx_customer</span>
+<span class="com">-- rows: 10000 (预计回表次数)</span>
+
+<span class="com">-- 优化方案：使用覆盖索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_cover <span class="kwd">ON</span> orders(customer_id, order_no, amount, status);
+
+<span class="com">-- 如果查询的列都在索引中，不需要回表</span>
+<span class="kwd">SELECT</span> customer_id, order_no, amount, status 
+<span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id > <span class="num">100</span>;
+
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> customer_id, order_no, amount, status 
+<span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id > <span class="num">100</span>;
+<span class="com">-- Extra: Using index (覆盖索引，无需回表)</span></code></pre>
+                </div>
+
+                <h4>6.6 减少回表的方法</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 方法1：使用覆盖索引</span>
+<span class="com">-- 将需要查询的列都包含在索引中</span>
+
+<span class="com">-- 方法2：优化查询条件</span>
+<span class="com">-- 避免返回大量数据</span>
+<span class="kwd">SELECT</span> id, order_no <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id = <span class="num">100</span>
+<span class="kwd">LIMIT</span> <span class="num">100</span>;  <span class="com">-- 限制返回数量</span>
+
+<span class="com">-- 方法3：使用主键查询</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> id = <span class="num">500</span>;
+<span class="com">-- 直接在聚簇索引中查找，不需要回表</span>
+
+<span class="com">-- 方法4：分页优化</span>
+<span class="com">-- 避免 OFFSET 过大导致的深度分页问题</span>
+
+<span class="com">-- 低效（回表次数多）：</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">ORDER BY</span> id <span class="kwd">LIMIT</span> <span class="num">10000</span>, <span class="num">10</span>;
+
+<span class="com">-- 高效（基于主键范围）：</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> id > <span class="num">10000</span> <span class="kwd">LIMIT</span> <span class="num">10</span>;
+<span class="com">-- 上一页最后一条记录的 id 作为起点</span>
+
+<span class="com">-- 方法5：使用延迟关联</span>
+<span class="kwd">SELECT</span> o.* 
+<span class="kwd">FROM</span> orders o 
+<span class="kwd">INNER JOIN</span> (
+    <span class="kwd">SELECT</span> id <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id = <span class="num">100</span>
+    <span class="kwd">LIMIT</span> <span class="num">100</span>
+) t <span class="kwd">ON</span> o.id = t.id;</code></pre>
+                </div>
+
+                
+            </div>
+                </div>
+
+                <h3>索引存储结构</h3>
+                
+                <h4>InnoDB 页面结构</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- InnoDB 数据页结构（默认 16KB）：</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | File Header      | 38 bytes - 文件头</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Page Header      | 56 bytes - 页头</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Infimum + Supremum| 26 bytes - 虚拟行</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | User Records     | 变长 - 用户数据</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Free Space       | 变长 - 空闲空间</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Page Directory   | 变长 - 页目录</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | File Trailer     | 8 bytes - 文件尾</span>
+<span class="com">-- +------------------+</span>
+
+<span class="com">-- 页内记录存储：</span>
+<span class="com">-- 1. 记录头信息（变长字段长度、NULL标志等）</span>
+<span class="com">-- 2. 记录实际数据</span>
+<span class="com">-- 3. 记录通过 Page Directory 实现二分查找</span></code></pre>
+                </div>
+
+                <h4>索引页结构</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- B+ Tree 索引页结构：</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | File Header      | 38 bytes</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Page Header      | 56 bytes</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | User Records     | 索引记录</span>
+<span class="com">-- |  (非叶子节点)    | (最小键, 指向子页指针)</span>
+<span class="com">-- |  (叶子节点)      | (键值, 主键/行指针)</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Free Space       | 空闲空间</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | Page Directory   | 槽位目录（记录分组）</span>
+<span class="com">-- +------------------+</span>
+<span class="com">-- | File Trailer     | 8 bytes</span>
+<span class="com">-- +------------------+</span>
+
+<span class="com">-- 非叶子节点记录格式：</span>
+<span class="com">-- | 记录头 | 索引键值 | 页面指针 |</span>
+
+<span class="com">-- 叶子节点记录格式（聚簇索引）：</span>
+<span class="com">-- | 记录头 | 主键值 | 其他列数据 |</span>
+
+<span class="com">-- 叶子节点记录格式（非聚簇索引）：</span>
+<span class="com">-- | 记录头 | 索引键值 | 主键值 |</span></code></pre>
+                </div>
+
+                <h3>索引优化原理</h3>
+                
+                <h4>最左前缀原则</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 复合索引 (a, b, c) 的使用规则：</span>
+<span class="kwd">WHERE</span> a = <span class="num">1</span>                 <span class="com">-- ✅ 使用索引 a</span>
+<span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> b = <span class="num">2</span>        <span class="com">-- ✅ 使用索引 a, b</span>
+<span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> b = <span class="num">2</span> <span class="kwd">AND</span> c = <span class="num">3</span>  <span class="com">-- ✅ 使用索引 a, b, c</span>
+<span class="kwd">WHERE</span> b = <span class="num">2</span>                 <span class="com">-- ❌ 不使用索引</span>
+<span class="kwd">WHERE</span> b = <span class="num">2</span> <span class="kwd">AND</span> c = <span class="num">3</span>    <span class="com">-- ❌ 不使用索引</span>
+<span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> c = <span class="num">3</span>    <span class="com">-- ⚠️ 只使用索引 a</span>
+
+<span class="com">-- 原理：复合索引按从左到右的顺序构建 B+ Tree</span>
+<span class="com">-- 必须先使用前面的列，才能利用后续列的索引</span></code></pre>
+                </div>
+
+                <h4>索引下推（Index Condition Pushdown）</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 索引下推原理：</span>
+<span class="com">-- 在 MySQL 5.6+ 之前：</span>
+<span class="com">-- 1. 通过索引找到满足 a=1 的主键</span>
+<span class="com">-- 2. 回表获取完整数据</span>
+<span class="com">-- 3. 在 server 层过滤 b>100 的条件</span>
+
+<span class="com">-- MySQL 5.6+ 索引下推：</span>
+<span class="com">-- 1. 通过索引找到满足 a=1 的主键</span>
+<span class="com">-- 2. 在存储引擎层直接过滤 b>100 的条件</span>
+<span class="com">-- 3. 只对满足所有条件的记录回表</span>
+
+<span class="com">-- 示例索引：(a, b)</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> t <span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> b > <span class="num">100</span>;
+
+<span class="com">-- 验证索引下推</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> t <span class="kwd">WHERE</span> a = <span class="num">1</span> <span class="kwd">AND</span> b > <span class="num">100</span>;
+<span class="com">-- Extra: Using index condition (使用了索引下推)</span></code></pre>
+                </div>
+
+                <h4>索引合并（Index Merge）</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 索引合并原理：</span>
+<span class="com">-- MySQL 可以同时使用多个索引</span>
+<span class="com">-- 然后合并结果集</span>
+
+<span class="com">-- 索引合并类型：</span>
+<span class="com">-- 1. intersection（交集）- 多个索引结果取交集</span>
+<span class="com">-- 2. union（并集）- 多个索引结果取并集</span>
+<span class="com">-- 3. sort_union（排序并集）- 先排序再取并集</span>
+
+<span class="com">-- 示例：</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span> <span class="kwd">AND</span> name = <span class="str">'zhangsan'</span>;
+
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span> <span class="kwd">AND</span> name = <span class="str">'zhangsan'</span>;
+<span class="com">-- type: index_merge</span>
+<span class="com">-- key: idx_age, idx_name</span>
+<span class="com">-- Extra: Using intersect(idx_age,idx_name)</span></code></pre>
+                </div>
+
+                <h3>索引实践分析</h3>
+                
+                <h4>使用 EXPLAIN 分析索引</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- EXPLAIN 关键字段：</span>
+<span class="com">-- type: 连接类型（从好到差）</span>
+<span class="com">--   system > const > eq_ref > ref > range > index > ALL</span>
+<span class="com">--   const: 主键/唯一索引等值查询</span>
+<span class="com">--   ref: 非唯一索引等值查询</span>
+<span class="com">--   range: 索引范围查询</span>
+<span class="com">--   index: 全索引扫描</span>
+<span class="com">--   ALL: 全表扫描（需要优化）</span>
+
+<span class="com">-- key: 实际使用的索引</span>
+<span class="com">-- rows: 预计扫描的行数</span>
+<span class="com">-- Extra: 额外信息</span>
+<span class="com">--   Using index: 使用覆盖索引</span>
+<span class="com">--   Using where: 使用 WHERE 条件过滤</span>
+<span class="com">--   Using index condition: 使用索引下推</span>
+<span class="com">--   Using filesort: 需要额外排序</span>
+<span class="com">--   Using temporary: 使用临时表</span>
+
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span>;
+
+<span class="com">-- 分析结果：</span>
+<span class="com">-- type: ref (使用了非唯一索引)</span>
+<span class="com">-- key: idx_age</span>
+<span class="com">-- rows: 10 (预计扫描 10 行)</span></code></pre>
+                </div>
+
+                <h4>索引设计最佳实践</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 索引设计原则：</span>
+<span class="com">-- 1. 区分度高的列放在前面</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_status_user <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>);
+<span class="com">-- ✅ user_id 区分度高，放前面</span>
+
+<span class="com">-- 2. 考虑查询的 WHERE 条件顺序</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_age_name <span class="kwd">ON</span> users(age, name);
+<span class="com">-- 适合: WHERE age = ? 或 WHERE age = ? AND name = ?</span>
+
+<span class="com">-- 3. 控制索引数量</span>
+<span class="com">-- - 索引占用空间</span>
+<span class="com">-- - 影响 INSERT/UPDATE/DELETE 性能</span>
+<span class="com">-- - 建议单个表索引数 < 5</span>
+
+<span class="com">-- 4. 使用覆盖索引减少回表</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_cover <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>, created_at);
+<span class="com">-- 覆盖: SELECT user_id, status FROM orders WHERE user_id = ?</span>
+
+<span class="com">-- 5. 避免在区分度低的列上建索引</span>
+<span class="com">-- 如: 性别、状态（0/1）等</span></code></pre>
                 </div>
             </section>
         </main>

@@ -45,8 +45,8 @@
                     <p>InnoDB 中，B+ Tree 索引的每个节点就是一个物理数据页（16KB）。非叶子节点存储索引键和子页指针，叶子节点存储完整的数据行。</p>
 
                     <div class="mermaid">
-graph TD
-    subgraph "B+ Tree 物理存储"
+flowchart TD
+    subgraph BTree[B+ Tree 物理存储]
         ND1["非叶子节点页<br/>索引页<br/>存储键+指针"]
         ND2["非叶子节点页<br/>索引页<br/>存储键+指针"]
         ND3["非叶子节点页<br/>索引页"]
@@ -122,7 +122,7 @@ flowchart TD
     style J fill:#ffcdd2,stroke:#c62828
     style E fill:#c8e6c9,stroke:#2e7d32
     style K fill:#c8e6c9,stroke:#2e7d32
-</flowchart>
+</div>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- 索引查找的磁盘IO过程：
@@ -171,7 +171,7 @@ flowchart TD
     style F fill:#ffcdd2,stroke:#c62828
     style G fill:#c8e6c9,stroke:#2e7d32
     style C fill:#c8e6c9,stroke:#2e7d32
-</flowchart>
+</div>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- 页分裂详解：
@@ -252,8 +252,8 @@ flowchart TD
                     <h4>2.1 数据页 16KB 内部结构</h4>
 
                     <div class="mermaid">
-graph TD
-    subgraph "InnoDB 数据页 (16KB)"
+flowchart TD
+    subgraph Page[InnoDB 数据页 16KB]
         FH["File Header<br/>38字节<br/>页ID、checksum"]
         PH["Page Header<br/>56字节<br/>页目录信息"]
         INF["Infimum<br/>13字节<br/>虚拟记录"]
@@ -343,8 +343,8 @@ graph TD
                     <h4>3.1 ibd 文件物理布局</h4>
 
                     <div class="mermaid">
-graph TD
-    subgraph "ibd 文件结构"
+flowchart TD
+    subgraph IBD[ibd 文件结构]
         H1["Space Header<br/>第1页<br/>表空间头信息"]
         H2["FSP Header<br/>第2页<br/>空闲空间管理"]
         XDES["XDES<br/>第3-64页<br/>区描述符"]
@@ -394,28 +394,21 @@ graph TD
                     <h4>3.2 区(Extent)与段(Segment)</h4>
 
                     <div class="mermaid">
-graph TD
-    subgraph "Extent = 64页 = 1MB"
-        P1["页1"]
-        P2["页2"]
-        P3["..."]
-        P64["页64"]
+flowchart TD
+    subgraph Pages[数据页]
+        P1["页 1"] --> P2["页 2"]
+        P2 --> P3["页 3"]
+        P3 --> P64["页 64"]
     end
 
-    P1 --> P2
-    P2 --> P3
-    P3 --> P64
-
-    subgraph "Segment"
-        E1["Extent 1"]
-        E2["Extent 2"]
-        E3["Extent N"]
+    subgraph Extents[区]
+        E1["Extent 1"] --> E2["Extent 2"]
+        E2 --> E3["Extent N"]
     end
 
-    E1 --> E2
-    E2 --> E3
+    style P1 fill:#e3f2fd,stroke:#1565c0
+    style E1 fill:#c8e6c9,stroke:#2e7d32
 </div>
-
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- Extent（区）结构：
 --   - 1 Extent = 64 连续页 = 1MB
@@ -492,57 +485,148 @@ CREATE TABLE t1 (id INT) TABLESPACE ts1;
 
                     <h3>4. Buffer Pool 与数据页读写</h3>
 
-                    <h4>4.1 Buffer Pool 机制</h4>
-
-                    <div class="mermaid">
-flowchart LR
-    subgraph Disk
-        IBD[ibd文件<br/>数据页]
-    end
-
-    subgraph BufferPool
-        BP[Buffer Pool<br/>内存缓存]
-    end
-
-    subgraph Pages
-        C[干净页]
-        D[脏页]
-    end
-
-    IBD -->|"读取"| BP
-    BP -->|"修改"| D
-    D -->|"flush"| IBD
-    BP -.->|"命中"| C
-</flowchart>
-
-                    <div class="code-block">
-<pre><code class="sql"><span class="com">-- Buffer Pool 工作原理：
-
--- 1. 读取流程
---    a. 查询数据页时，先查Buffer Pool
---    b. 命中则直接返回（内存访问 ~100ns）
---    c. 未命中则从磁盘读取（磁盘IO ~10ms）
---    d. 放入Buffer Pool，返回数据
-
--- 2. 写入流程
---    a. 修改数据时，只修改Buffer Pool中的页
---    b. 该页标记为"脏页"
---    c. 后台线程定期刷新到磁盘
---    d. 写入Redo Log确保持久性
-
--- 3. LRU 淘汰策略
---    - 新读取的页插入LRU链表头部
---    - 经常访问的页保持在头部
---    - 长时间未访问的页被淘汰
---    - 改进的LRU：冷数据区隔
-
--- Buffer Pool 配置：
---    innodb_buffer_pool_size = 4G  (建议50-70%内存)
---    innodb_buffer_pool_instances = 4  (减少锁竞争)
---    innodb_old_blocks_pct = 37  (冷数据区比例)</code></pre>
+                    <h4>Buffer Pool 核心概念</h4>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>指标</th>
+                                    <th>数值</th>
+                                    <th>说明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>内存访问</td>
+                                    <td>~100ns</td>
+                                    <td>纳秒级，极快</td>
+                                </tr>
+                                <tr>
+                                    <td>磁盘IO</td>
+                                    <td>~10ms</td>
+                                    <td>毫秒级，相差10万倍</td>
+                                </tr>
+                                <tr>
+                                    <td>建议配置</td>
+                                    <td>50-70%</td>
+                                    <td>可用内存比例</td>
+                                </tr>
+                                <tr>
+                                    <td>页大小</td>
+                                    <td>16KB</td>
+                                    <td>与数据页一致</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
 
-                    <h4>4.2 脏页刷新机制</h4>
+                    <h4>Buffer Pool 工作原理</h4>
+                    <div class="mermaid">
+flowchart TD
+    subgraph Read[读取流程]
+        R1[查询数据] --> R2{命中Buffer Pool?}
+        R2 -->|Yes| R3[直接返回 ~100ns]
+        R2 -->|No| R4[磁盘读取 ~10ms]
+        R4 --> R5[放入Buffer Pool]
+        R5 --> R3
+    end
+
+    subgraph Write[写入流程]
+        W1[修改数据] --> W2[修改Buffer Pool页]
+        W2 --> W3[标记为脏页]
+        W3 --> W4[后台刷新到磁盘]
+    end
+
+    style R3 fill:#c8e6c9,stroke:#2e7d32
+    style R4 fill:#ffcdd2,stroke:#c62828
+    style W2 fill:#fff3e0,stroke:#e65100
+</div>
+
+                    <h4>LRU 淘汰策略</h4>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>区域</th>
+                                    <th>比例</th>
+                                    <th>说明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>New Sublist</td>
+                                    <td>~37%</td>
+                                    <td>热数据区，最近访问</td>
+                                </tr>
+                                <tr>
+                                    <td>Old Sublist</td>
+                                    <td>~63%</td>
+                                    <td>冷数据区，较早访问</td>
+                                </tr>
+                                <tr>
+                                    <td> midpoint</td>
+                                    <td>位置</td>
+                                    <td>新页插入的分界点</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4>Buffer Pool 配置参数</h4>
+                    <div class="code-block">
+<pre><code class="sql"><span class="com">-- 核心配置参数
+
+-- 1. Buffer Pool 大小（建议50-70%可用内存）
+SET GLOBAL innodb_buffer_pool_size = 4 * 1024 * 1024 * 1024;  -- 4GB
+
+-- 2. Buffer Pool 实例数（减少锁竞争）
+SET GLOBAL innodb_buffer_pool_instances = 4;
+
+-- 3. 冷数据区比例（默认37%）
+SET GLOBAL innodb_old_blocks_pct = 37;
+
+-- 4. 预热时间（访问后多久进入热区）
+SET GLOBAL innodb_old_blocks_time = 1000;  -- 1000ms
+
+-- 5. 脏页刷新策略
+SET GLOBAL innodb_max_dirty_pages_pct = 75;  -- 超过比例强制刷新
+
+-- 6. 查看状态
+SHOW ENGINE INNODB STATUS;
+SHOW VARIABLES LIKE 'innodb_buffer_pool%';</code></pre>
+                    </div>
+
+                    <h4>Buffer Pool 性能监控</h4>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>指标</th>
+                                    <th>计算公式</th>
+                                    <th>理想值</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>命中率</td>
+                                    <td>(1 - Key_reads/Key_requests) * 100%</td>
+                                    <td>> 99%</td>
+                                </tr>
+                                <tr>
+                                    <td>脏页比例</td>
+                                    <td>Pages_dirty / Pages_total * 100%</td>
+                                    <td>< 10%</td>
+                                </tr>
+                                <tr>
+                                    <td>读取效率</td>
+                                    <td>Key_reads / Key_requests</td>
+                                    <td>< 0.01</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4>脏页刷新机制</h4>
 
                     <div class="mermaid">
 flowchart TD
@@ -560,7 +644,7 @@ flowchart TD
 
     style B fill:#fff3e0,stroke:#e65100
     style I fill:#c8e6c9,stroke:#2e7d32
-</flowchart>
+</div>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- 脏页刷新机制：
@@ -595,7 +679,7 @@ SHOW ENGINE INNODB STATUS;
 --    - 刷新过快：IO争用</code></pre>
                     </div>
 
-                    <h4>4.3 预读机制</h4>
+                    <h4>预读机制</h4>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- InnoDB 预读 (Read Ahead)：
@@ -627,7 +711,7 @@ SHOW ENGINE INNODB STATUS;
 
                     <h3>5. 空间管理与回收</h3>
 
-                    <h4>5.1 空间分配流程</h4>
+                    <h4>空间分配流程</h4>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- InnoDB 空间分配流程：
@@ -662,7 +746,7 @@ FROM information_schema.tables
 WHERE engine = 'InnoDB';</code></pre>
                     </div>
 
-                    <h4>5.2 空间回收机制</h4>
+                    <h4>空间回收机制</h4>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- 空间回收机制：
@@ -699,7 +783,7 @@ WHERE engine = 'InnoDB';</code></pre>
 --    - TRUNCATE会重建表，释放空间</code></pre>
                     </div>
 
-                    <h4>5.3 常见问题与优化</h4>
+                    <h4>常见问题与优化</h4>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- 常见空间问题：
