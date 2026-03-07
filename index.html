@@ -3798,8 +3798,8 @@ ADD COLUMN description <span class="type">VARCHAR</span>(<span class="num">500</
             </div>
         </section>
 
-        <section id="index-theory" class="section">
-            <h2>索引原理</h2>
+        <section id="sql-theory" class="section">
+            <h2>SQL原理</h2>
             <div class="content">
                 <h3>1. 索引概述</h3>
                 <p>索引是数据库中用于加速数据检索的特殊数据结构。在 MySQL 中，索引本质上是帮助快速定位数据的数据结构，类似于书籍的目录。理解索引的实现原理对于设计高性能数据库至关重要。</p>
@@ -4661,10 +4661,10 @@ flowchart TD
             </div>
         </section>
 
-        <section id="sql-theory" class="section">
-            <h2>SQL原理</h2>
+        <section id="index-theory" class="section">
+            <h2>索引原理</h2>
             <div class="content">
-                <p>理解SQL语句的执行原理对于编写高效查询和进行性能优化至关重要。本节详细介绍MySQL如何执行SELECT、INSERT、UPDATE、DELETE等常用SQL语句。</p>
+                <p>理解索引的实现原理对于设计高性能数据库至关重要。本节详细介绍MySQL中索引的数据结构和工作方式。</p>
 
                 <h3>1. SELECT执行过程</h3>
                 <p>一条SELECT语句的执行需要经过多个阶段，MySQL的查询优化器会尽可能高效地完成数据检索。</p>
@@ -6004,6 +6004,20 @@ USING (user_id = <span class="func">CURRENT_USER_ID</span>());
 <span class="com">-- 查看权限</span>
 <span class="kwd">SHOW</span> GRANTS FOR <span class="str">'user1'</span>@<span class="str">'%'</span>;</code></pre>
                 </div>
+            </div>
+        </section>
+
+        <section id="alternatives" class="section">
+            <h2>MySQL 替代品</h2>
+            <div class="content">
+                <p>在选择数据库时，需要根据业务需求、技术栈和团队技能来权衡。MySQL 是最流行的关系型数据库之一，但市场上还有许多优秀的替代方案。</p>
+            </div>
+        </section>
+
+        <section id="history" class="section">
+            <h2>MySQL 发展历程</h2>
+            <div class="content">
+                <p>MySQL 由瑞典 MySQL AB 公司开发，历经二十多年发展，已成为全球最流行的开源数据库。</p>
             </div>
         </section>
 
