@@ -181,1118 +181,6 @@
                 </div>
             </div>
         </section>
-
-        <section id="alternatives" class="section">
-            <h2>MySQL 替代品</h2>
-            <div class="content">
-                <p>在选择数据库时，需要根据业务需求、技术栈和团队技能来权衡。MySQL 是最流行的关系型数据库之一，但市场上还有许多优秀的替代方案。以下是主流数据库的对比分析：</p>
-                
-                <h3>主流关系型数据库对比</h3>
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>数据库</th>
-                                <th>类型</th>
-                                <th>开源</th>
-                                <th>许可证</th>
-                                <th>最擅长</th>
-                                <th>不适合</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>MySQL</strong></td>
-                                <td>关系型</td>
-                                <td>✅</td>
-                                <td>GPL v2</td>
-                                <td>Web应用、电商、内容管理</td>
-                                <td>复杂分析、GIS</td>
-                            </tr>
-                            <tr>
-                                <td><strong>PostgreSQL</strong></td>
-                                <td>关系型</td>
-                                <td>✅</td>
-                                <td>PostgreSQL License</td>
-                                <td>企业级应用、数据分析、GIS</td>
-                                <td>超高性能场景</td>
-                            </tr>
-                            <tr>
-                                <td><strong>MongoDB</strong></td>
-                                <td>文档型</td>
-                                <td>✅</td>
-                                <td>SSPL</td>
-                                <td>灵活Schema、日志、内容管理</td>
-                                <td>强事务需求</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Redis</strong></td>
-                                <td>键值型</td>
-                                <td>✅</td>
-                                <td>BSD</td>
-                                <td>缓存、会话、实时分析</td>
-                                <td>主数据存储</td>
-                            </tr>
-                            <tr>
-                                <td><strong>SQL Server</strong></td>
-                                <td>关系型</td>
-                                <td>❌</td>
-                                <td>商业</td>
-                                <td>企业应用、BI、Windows生态</td>
-                                <td>开源项目、跨平台</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Oracle</strong></td>
-                                <td>关系型</td>
-                                <td>❌</td>
-                                <td>商业</td>
-                                <td>大型企业、金融、电信</td>
-                                <td>中小型项目</td>
-                            </tr>
-                            <tr>
-                                <td><strong>MariaDB</strong></td>
-                                <td>关系型</td>
-                                <td>✅</td>
-                                <td>GPL v2</td>
-                                <td>MySQL兼容、高性能</td>
-                                <td>特定企业功能</td>
-                            </tr>
-                            <tr>
-                                <td><strong>TiDB</strong></td>
-                                <td>NewSQL</td>
-                                <td>✅</td>
-                                <td>Apache 2.0</td>
-                                <td>分布式、强一致、弹性扩展</td>
-                                <td>简单小应用</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3>1. PostgreSQL - 最强大的开源数据库</h3>
-                <p>PostgreSQL 是功能最强大的开源关系型数据库，以其 extensibility 和标准兼容性著称。</p>
-                
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>优点</th>
-                                <th>缺点</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>✅ 支持复杂的SQL特性（CTE、窗口函数、物化视图）</td>
-                                <td>❌ 写入性能略低于MySQL</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 丰富的索引类型（GIN、GiST、BRIN、表达式索引）</td>
-                                <td>❌ 社区相对较小</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 强大的GIS支持（PostGIS）</td>
-                                <td>❌ 文档相对分散</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 完整的ACID支持</td>
-                                <td>❌ 配置复杂度较高</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 支持JSON/JSONB、数组、全文搜索</td>
-                                <td>❌ 不支持多源复制</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 活跃的社区和丰富的插件生态</td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- PostgreSQL 特色功能示例</span>
-
-<span class="com">-- 1. 递归CTE（查询组织架构）</span>
-<span class="kwd">WITH</span> <span class="kwd">RECURSIVE</span> org_tree <span class="kwd">AS</span> (
-    <span class="kwd">SELECT</span> id, name, manager_id, <span class="num">1</span> <span class="kwd">as</span> <span class="kwd">level</span>
-    <span class="kwd">FROM</span> employees <span class="kwd">WHERE</span> manager_id <span class="kwd">IS</span> NULL
-    <span class="kwd">UNION ALL</span>
-    <span class="kwd">SELECT</span> e.id, e.name, e.manager_id, ot.<span class="kwd">level</span> + <span class="num">1</span>
-    <span class="kwd">FROM</span> employees e
-    <span class="kwd">JOIN</span> org_tree ot <span class="kwd">ON</span> e.manager_id = ot.id
-)
-<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> org_tree;
-
-<span class="com">-- 2. 窗口函数（排名统计）</span>
-<span class="kwd">SELECT</span> 
-    name,
-    department,
-    salary,
-    <span class="func">RANK</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary DESC) <span class="kwd">as</span> dept_rank,
-    <span class="func">SUM</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_total
-<span class="kwd">FROM</span> employees;
-
-<span class="com">-- 3. JSONB 操作</span>
-<span class="kwd">SELECT</span> data->><span class="str">'name'</span> <span class="kwd">FROM</span> orders
-<span class="kwd">WHERE</span> data @> <span class="str">'{"status": "completed"}'</span>;
-
-<span class="com">-- 4. 数组类型</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> tags (
-    id <span class="kwd">INT</span>,
-    name <span class="type">VARCHAR</span>(<span class="num">50</span>),
-    tags <span class="type">TEXT</span>[]
-);
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> tags <span class="kwd">VALUES</span>(<span class="num">1</span>, <span class="str">'PostgreSQL'</span>, ARRAY[<span class="str">'database'</span>, <span class="str">'open source'</span>, <span class="str">'relational'</span>]);
-
-<span class="com">-- 5. PostGIS 空间查询</span>
-<span class="kwd">SELECT</span> name <span class="kwd">FROM</span> locations
-<span class="kwd">WHERE</span> ST_DWithin(location, ST_MakePoint(<span class="num">116.4</span>, <span class="num">39.9</span>)::geography, <span class="num">5000</span>);</code></pre>
-                </div>
-                
-                <h4>适用场景：</h4>
-                <ul>
-                    <li>需要复杂分析查询的企业应用</li>
-                    <li>GIS地理信息系统开发</li>
-                    <li>需要JSON和结构化数据混合存储</li>
-                    <li>数据仓库和BI分析</li>
-                    <li>需要全文搜索功能</li>
-                </ul>
-
-                <h3>2. MongoDB - 文档数据库首选</h3>
-                <p>MongoDB是最流行的文档型数据库，采用灵活的JSON风格文档模型。</p>
-                
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>优点</th>
-                                <th>缺点</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>✅ 灵活的Schema，无需预定义表结构</td>
-                                <td>❌ 事务支持有限（4.0+有所改善）</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 强大的查询语言和聚合框架</td>
-                                <td>❌ 不适合强一致性要求场景</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 高性能，高并发写入</td>
-                                <td>❌ 内存占用较高</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 易于水平扩展（分片）</td>
-                                <td>❌ 磁盘空间消耗较大</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 丰富的索引支持</td>
-                                <td>❌ 学习曲线较陡</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 完善的生态系统</td>
-                                <td>❌ 社区版功能受限</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">// MongoDB 特色操作示例
-
-<span class="com">// 1. 插入文档（无需预定义结构）</span>
-db.users.insertOne({
-    username: <span class="str">"john"</span>,
-    email: <span class="str">"john@example.com"</span>,
-    profile: {
-        age: <span class="num">30</span>,
-        city: <span class="str">"Beijing"</span>,
-        interests: [<span class="str">"coding"</span>, <span class="str">"music"</span>]
-    },
-    createdAt: <span class="kwd">new</span> Date()
-});
-
-<span class="com">// 2. 灵活查询</span>
-db.users.find({
-    <span class="str">"profile.age"</span>: { $gt: <span class="num">25</span> },
-    <span class="str">"profile.city"</span>: <span class="str">"Beijing"</span>
-});
-
-<span class="com">// 3. 聚合管道</span>
-db.orders.aggregate([
-    { $match: { status: <span class="str">"completed"</span> } },
-    { $group: {
-        _id: <span class="str">"$customer_id"</span>,
-        totalAmount: { $sum: <span class="str">"$amount"</span> },
-        orderCount: { $sum: <span class="num">1</span> }
-    }},
-    { $sort: { totalAmount: -<span class="num">1</span> } },
-    { $limit: <span class="num">10</span> }
-]);
-
-<span class="com">// 4. 更新数组元素</span>
-db.users.updateOne(
-    { username: <span class="str">"john"</span> },
-    { $push: { <span class="str">"profile.interests"</span>: <span class="str">"travel"</span> } }
-);
-
-<span class="com">// 5. 事务操作（4.0+）</span>
-<span class="kwd">const</span> session = db.getMongo().startSession();
-session.startTransaction();
-<span class="kwd">try</span> {
-    session.getDatabase(<span class="str">"shop"</span>).orders.insertOne({ ... });
-    session.getDatabase(<span class="str">"shop"</span>).inventory.updateOne({ ... });
-    session.commitTransaction();
-} <span class="kwd">catch</span> (e) {
-    session.abortTransaction();
-}</code></pre>
-                </div>
-                
-                <h4>适用场景：</h4>
-                <ul>
-                    <li>内容管理系统（文章、评论、元数据）</li>
-                    <li>用户行为日志和分析</li>
-                    <li>物联网（IoT）数据存储</li>
-                    <li>敏捷开发，快速迭代的项目</li>
-                    <li>需要存储半结构化数据的场景</li>
-                </ul>
-
-                <h3>3. Redis - 高速缓存首选</h3>
-                <p>Redis是高性能的内存键值数据库，常用作缓存、消息队列和实时分析。</p>
-                
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>优点</th>
-                                <th>缺点</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>✅ 极高的读写性能（百万级QPS）</td>
-                                <td>❌ 数据存储在内存，成本高</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 支持多种数据结构</td>
-                                <td>❌ 不适合作为主数据存储</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 丰富的特性（发布订阅、Lua脚本、事务）</td>
-                                <td>❌ 持久化可能丢失数据</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 简单易用的客户端</td>
-                                <td>❌ 单线程模型（部分场景受限）</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 集群支持</td>
-                                <td>❌ 大value性能下降</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 完善的主从复制</td>
-                                <td>❌ 需要足够的内存</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com"># Redis 特色操作示例
-
-<span class="com"># 1. 字符串操作</span>
-SET user:1001 <span class="str">'{"name":"John","age":30}'</span>
-GET user:1001
-INCR page:views:2024
-DECR product:stock:500
-
-<span class="com"># 2. 哈希操作（存储对象）</span>
-HSET user:1001 name John age 30 city Beijing
-HGET user:1001 name
-HGETALL user:1001
-
-<span class="com"># 3. 列表操作（消息队列）</span>
-RPUSH queue:tasks <span class="str">"task1"</span> <span class="str">"task2"</span> <span class="str">"task3"</span>
-LPOP queue:tasks
-LRANGE queue:tasks 0 -<span class="num">1</span>
-
-<span class="com"># 4. 集合操作（标签、共同好友）</span>
-SADD user:1001:tags mysql postgres redis
-SADD user:1002:tags mysql python
-SINTER user:1001:tags user:1002:tags  <span class="com"># 共同标签</span>
-
-<span class="com"># 5. 有序集合（排行榜）</span>
-ZADD leaderboard <span class="num">2500</span> player1 <span class="num">1800</span> player2 <span class="num">3000</span> player3
-ZREVRANGE leaderboard 0 9 WITHSCORES
-ZINCRBY leaderboard <span class="num">500</span> player1
-
-<span class="com"># 6. 发布/订阅</span>
-PSUBSCRIBE news:*
-PUBLISH news:sports <span class="str">"New match today!"</span>
-
-<span class="com"># 7. 事务</span>
-MULTI
-SET key1 value1
-SET key2 value2
-EXEC
-
-<span class="com"># 8. Lua脚本（原子操作）</span>
-EVAL <span class="str">"return redis.call('get', KEYS[1])"</span> <span class="num">1</span> mykey</code></pre>
-                </div>
-                
-                <h4>适用场景：</h4>
-                <ul>
-                    <li>缓存层（减少数据库压力）</li>
-                    <li>会话存储（Session Store）</li>
-                    <li>实时排行榜</li>
-                    <li>消息队列</li>
-                    <li>分布式锁</li>
-                    <li>实时分析和计数</li>
-                </ul>
-
-                <h3>4. MariaDB - MySQL的最佳替代</h3>
-                <p>MariaDB是MySQL的fork，由MySQL原开发者维护，保持高度兼容性。</p>
-                
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>优点</th>
-                                <th>缺点</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>✅ 完全兼容MySQL，迁移成本低</td>
-                                <td>❌ 新特性落后于MySQL企业版</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 更多的存储引擎选择</td>
-                                <td>❌ 部分MySQL工具不兼容</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 更好的性能（MyRocks、InnoDB优化）</td>
-                                <td>❌ 社区相对较小</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 开源免费，无Oracle控制</td>
-                                <td>❌ 企业支持选项较少</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 积极开发新特性</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>✅ 支持JSON、窗口函数</td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MariaDB 特色功能示例
-
-<span class="com">-- 1. 窗口函数支持</span>
-<span class="kwd">SELECT</span> 
-    name, department, salary,
-    <span class="func">SUM</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_total
-<span class="kwd">FROM</span> employees;
-
-<span class="com">-- 2. JSON支持</span>
-<span class="kwd">SELECT</span> JSON_VALUE(info, <span class="str">'$.name'</span>) <span class="kwd">FROM</span> users;
-
-<span class="com">-- 3. 动态列</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> products (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
-    attributes DYNAMIC
-);
-INSERT <span class="kwd">INTO</span> products VALUES(<span class="num">1</span>, <span class="str">'Shirt'</span>, COLUMNS(<span class="str">'color'</span>=<span class="str">'red'</span>, <span class="str">'size'</span>=<span class="str">'L'</span>));
-
-<span class="com">-- 4.  Invisible 列</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    name <span class="type">VARCHAR</span>(<span class="num">50</span>),
-    email <span class="type">VARCHAR</span>(<span class="num">100</span>) INVISIBLE
-);
-
-<span class="com">-- 5. 并行复制</span>
-SET GLOBAL slave_parallel_threads = <span class="num">4</span>;
-SET GLOBAL slave_parallel_mode = <span class="str">'optimistic'</span>;
-
-<span class="com">-- 6. 序列引擎</span>
-<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> seq_1_to_100;</code></pre>
-                </div>
-                
-                <h4>适用场景：</h4>
-                <ul>
-                    <li>需要从MySQL迁移的项目</li>
-                    <li>对MySQL许可证有顾虑的企业</li>
-                    <li>需要高性能写入（MyRocks引擎）</li>
-                    <li>需要更多存储引擎选择</li>
-                </ul>
-
-                <h3>5. TiDB - 分布式NewSQL</h3>
-                <p>TiDB是PingCAP开发的分布式NewSQL数据库，兼容MySQL协议，支持水平扩展。</p>
-                
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>优点</th>
-                                <th>缺点</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>✅ 水平扩展，自动分片</td>
-                                <td>❌ 资源消耗较大</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 强一致性（分布式事务）</td>
-                                <td>❌ 延迟高于单机数据库</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 兼容MySQL协议和语法</td>
-                                <td>❌ 运维复杂度高</td>
-                            </tr>
-                            <tr>
-                                <td>✅ HTAP能力（事务+分析）</td>
-                                <td>❌ 学习曲线较陡</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 高可用，自动故障恢复</td>
-                                <td>❌ 社区相对较小</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 云原生支持</td>
-                                <td>❌ 价格较高</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- TiDB 特色功能示例
-
-<span class="com">-- 1. 自动分片和分布式事务</span>
-<span class="kwd">BEGIN</span>;
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> users (name, age) <span class="kwd">VALUES</span>(<span class="str">'John'</span>, <span class="num">30</span>);
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> orders (user_id, amount) <span class="kwd">VALUES</span>(LAST_INSERT_ID(), <span class="num">100</span>);
-COMMIT;
-
-<span class="com">-- 2. 智能选择（TiFlash列式存储）</span>
-<span class="kwd">SELECT</span> /*+ READ_FROM_STORAGE(tiflash[orders]) */ 
-    <span class="func">SUM</span>(amount) <span class="kwd">as</span> total
-<span class="kwd">FROM</span> orders
-<span class="kwd">WHERE</span> date > <span class="str">'2024-01-01'</span>;
-
-<span class="com">-- 3. 热点小表合并</span>
-<span class="kwd">SPLIT</span> <span class="kwd">TABLE</span> users <span class="kwd">BETWEEN</span> (<span class="num">0</span>) <span class="kwd">AND</span> (<span class="num">1000000</span>) REGIONS <span class="num">10</span>;
-
-<span class="com">-- 4. 查看分布式执行计划</span>
-EXPLAIN ANALYZE <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = <span class="num">100</span>;
-
-<span class="com">-- 5. 跨区域复制 (DR 集群)</span>
-<span class="com">-- 配置主集群和灾备集群</span>
-
-<span class="com">-- 6. 在线DDL</span>
-<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">ADD</span> COLUMN phone <span class="type">VARCHAR</span>(<span class="num">20</span>);</code></pre>
-                </div>
-                
-                <h4>适用场景：</h4>
-                <ul>
-                    <li>需要处理海量数据的OLTP场景</li>
-                    <li>需要强一致性的分布式事务</li>
-                    <li>需要HTAP混合负载</li>
-                    <li>云原生架构的中大型企业</li>
-                    <li>需要全球化部署的应用</li>
-                </ul>
-
-                <h3>6. SQL Server - 企业级选择</h3>
-                <p>Microsoft SQL Server是企业级关系型数据库，与Windows生态深度集成。</p>
-                
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>优点</th>
-                                <th>缺点</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>✅ 完整的商业支持和服务</td>
-                                <td>❌ 许可证费用高</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 与.NET生态完美集成</td>
-                                <td>❌ 仅支持Windows（Linux版本功能有限）</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 强大的BI和分析功能</td>
-                                <td>❌ 开源支持有限</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 优秀的性能调优工具</td>
-                                <td>❌ 资源消耗大</td>
-                            </tr>
-                            <tr>
-                                <td>✅ 完善的备份恢复方案</td>
-                                <td>❌ 迁移到其他数据库困难</td>
-                            </tr>
-                            <tr>
-                                <td>✅ Always On高可用</td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <h4>适用场景：</h4>
-                <ul>
-                    <li>使用.NET技术栈的企业应用</li>
-                    <li>需要完整商业支持的大型企业</li>
-                    <li>需要强大BI和报表功能</li>
-                    <li>微软技术生态的现有系统</li>
-                </ul>
-
-                <h3>数据库选择决策指南</h3>
-                
-                <div class="mermaid">
-flowchart TD
-    A([选择数据库]) --> B{数据模型?}
-    B -->|结构化| C{一致性要求?}
-    B -->|半结构化| D[MongoDB]
-    B -->|键值/缓存| E[Redis]
-    
-    C -->|强一致| F{数据规模?}
-    C -->|最终一致| G[MySQL/PostgreSQL]
-    
-    F -->|小规模| H[MySQL/PostgreSQL]
-    F -->|中等规模| I[MariaDB]
-    F -->|大规模| J[TiDB/云数据库]
-    
-    K{需要分析?} -->|是| L[ClickHouse/StarRocks]
-    K -->|否| M([继续开发])
-    
-    style A fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    style D fill:#c8e6c9,stroke:#2e7d32
-    style E fill:#fff3e0,stroke:#e65100
-    style J fill:#fce4ec,stroke:#c2185b
-    style L fill:#e1f5fe,stroke:#01579b
-    style M fill:#c8e6c9,stroke:#2e7d32
-</div>
-                
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>业务场景</th>
-                                <th>推荐数据库</th>
-                                <th>原因</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>博客/CMS网站</td>
-                                <td>MySQL + Redis</td>
-                                <td>成熟稳定，生态丰富</td>
-                            </tr>
-                            <tr>
-                                <td>电商平台</td>
-                                <td>MySQL/PostgreSQL</td>
-                                <td>事务支持，ACID</td>
-                            </tr>
-                            <tr>
-                                <td>金融系统</td>
-                                <td>PostgreSQL/TiDB/Oracle</td>
-                                <td>强一致性，分布式</td>
-                            </tr>
-                            <tr>
-                                <td>社交网络</td>
-                                <td>MongoDB + Redis</td>
-                                <td>灵活Schema，高并发</td>
-                            </tr>
-                            <tr>
-                                <td>数据分析</td>
-                                <td>ClickHouse/StarRocks</td>
-                                <td>列式存储，OLAP</td>
-                            </tr>
-                            <tr>
-                                <td>实时大屏</td>
-                                <td>Redis + ClickHouse</td>
-                                <td>高速读写+分析</td>
-                            </tr>
-                            <tr>
-                                <td>物联网</td>
-                                <td>InfluxDB/TimescaleDB</td>
-                                <td>时序数据优化</td>
-                            </tr>
-                            <tr>
-                                <td>SaaS应用</td>
-                                <td>PostgreSQL</td>
-                                <td>多租户，JSON支持</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <section id="history" class="section">
-            <h2>MySQL 发展历程</h2>
-            <div class="content">
-                <p>MySQL 由瑞典 MySQL AB 公司开发，于 2008 年被 Sun Microsystems 收购，2009 年随 Sun 被 Oracle 收购。作为最流行的开源关系型数据库，MySQL 经历了多个重要版本的迭代，每个版本都带来了关键的新特性和性能提升。</p>
-                
-                <div class="mermaid">
-gantt
-    title MySQL 版本演进时间线
-    dateFormat YYYY
-    axisFormat %Y
-    section 早期
-    MySQL 1.0 诞生         :1995-01-01, 0d
-    MySQL 3.23 发布       :2000-01-01, 0d
-    section 发展
-    MySQL 4.0 发布        :2003-01-01, 0d
-    MySQL 5.0 发布        :2005-01-01, 0d
-    MySQL 5.5 发布        :2010-01-01, 0d
-    MySQL 5.6 发布        :2013-01-01, 0d
-    MySQL 5.7 发布        :2015-01-01, 0d
-    section 现代
-    MySQL 8.0 发布        :2018-01-01, 0d
-    MySQL 8.4 LTS         :2024-04-01, 0d
-    MySQL 9.0 发布        :2024-10-01, 0d
-</div>
-                
-                <h3>1. MySQL 3.23 (2000年) - 奠定基础</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MySQL 3.23 是首个广泛使用的稳定版本</span>
-
-<span class="com">-- 主要特性：</span>
-<span class="com">-- 1. 引入 MyISAM 存储引擎 (取代 ISAM)</span>
-<span class="com">-- 2. 支持 FULLTEXT 全文索引</span>
-<span class="com">-- 3. 首次支持事务 (通过 BerkeleyDB 引擎)</span>
-<span class="com">-- 4. 复制功能正式推出</span>
-<span class="com">-- 5. 支持 ANSI SQL99 语法</span>
-
-<span class="com">-- 解决的问题：</span>
-<span class="com">-- - 早期版本功能简单，无法满足复杂应用需求</span>
-<span class="com">-- - 缺乏全文搜索能力</span>
-<span class="com">-- - 没有复制功能，无法实现高可用</span>
-
-<span class="com">-- 创建 MyISAM 表并使用全文索引</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> articles (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    title <span class="type">VARCHAR</span>(<span class="num">200</span>),
-    content <span class="type">TEXT</span>,
-    <span class="kwd">FULLTEXT</span> <span class="kwd">INDEX</span> ft_title_content (title, content)
-) ENGINE=MyISAM;
-
-<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
-<span class="kwd">WHERE</span> <span class="func">MATCH</span>(title, content) <span class="func">AGAINST</span>(<span class="str">'MySQL'</span> <span class="kwd">IN</span> <span class="kwd">NATURAL</span> <span class="kwd">LANGUAGE</span> MODE);</code></pre>
-                </div>
-
-                <h3>2. MySQL 4.0 - 性能飞跃</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MySQL 4.0 (2003年) 是里程碑版本</span>
-
-<span class="com">-- 主要特性：</span>
-<span class="com">-- 1. 引入 InnoDB 存储引擎 (事务支持)</span>
-<span class="com">-- 2. 查询缓存 (Query Cache) 大幅提升性能</span>
-<span class="com">-- 3. 支持 UNION 语句</span>
-<span class="com">-- 4. 支持 RENAME TABLE</span>
-<span class="com">-- 5. 改进了 BLOB 类型的处理</span>
-
-<span class="com">-- 解决的问题：</span>
-<span class="com">-- - MyISAM 不支持事务，无法保证数据一致性</span>
-<span class="com">-- - 重复查询浪费资源，查询缓存解决此问题</span>
-<span class="com">-- - 无法进行复杂的 SQL 查询</span>
-
-<span class="com">-- 使用 InnoDB 引擎和事务</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> accounts (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    balance <span class="type">DECIMAL</span>(<span class="num">15</span>,<span class="num">2</span>)
-) ENGINE=InnoDB;
-
-START TRANSACTION;
-<span class="kwd">UPDATE</span> accounts <span class="kwd">SET</span> balance = balance - <span class="num">100</span> <span class="kwd">WHERE</span> id = <span class="num">1</span>;
-<span class="kwd">UPDATE</span> accounts <span class="kwd">SET</span> balance = balance + <span class="num">100</span> <span class="kwd">WHERE</span> id = <span class="num">2</span>;
-COMMIT;
-
-<span class="com">-- 查看查询缓存状态</span>
-SHOW VARIABLES LIKE <span class="str">'query_cache_type'</span>;</code></pre>
-                </div>
-
-                <h3>3. MySQL 5.0 - 企业级功能</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MySQL 5.0 (2005年) 正式进入企业级市场</span>
-
-<span class="com">-- 主要特性：</span>
-<span class="com">-- 1. 存储过程 (Stored Procedures)</span>
-<span class="com">-- 2. 触发器 (Triggers)</span>
-<span class="com">-- 3. 视图 (Views)</span>
-<span class="com">-- 4. 游标 (Cursors)</span>
-<span class="com">-- 5. INFORMATION_SCHEMA 系统数据库</span>
-<span class="com">-- 6. 支持XA事务</span>
-
-<span class="com">-- 解决的问题：</span>
-<span class="com">-- - 缺少存储过程，复杂业务逻辑需在应用层实现</span>
-<span class="com">-- - 缺乏触发器，无法实现自动化数据维护</span>
-<span class="com">-- - 无法创建视图，复杂查询无法封装</span>
-
-<span class="com">-- 创建存储过程</span>
-<span class="kwd">DELIMITER</span> //
-<span class="kwd">CREATE</span> <span class="kwd">PROCEDURE</span> get_user_count()
-<span class="kwd">BEGIN</span>
-    <span class="kwd">SELECT</span> <span class="func">COUNT</span>(*) <span class="kwd">as</span> total_users <span class="kwd">FROM</span> users;
-<span class="kwd">END</span> //
-<span class="kwd">DELIMITER</span> ;
-
-<span class="kwd">CALL</span> get_user_count();
-
-<span class="com">-- 创建触发器</span>
-<span class="kwd">DELIMITER</span> //
-<span class="kwd">CREATE</span> <span class="kwd">TRIGGER</span> before_insert_users
-<span class="kwd">BEFORE</span> <span class="kwd">INSERT</span> <span class="kwd">ON</span> users
-<span class="kwd">FOR EACH ROW</span>
-<span class="kwd">BEGIN</span>
-    <span class="kwd">SET</span> NEW.created_at = <span class="kwd">NOW</span>();
-<span class="kwd">END</span> //
-<span class="kwd">DELIMITER</span> ;
-
-<span class="com">-- 创建视图</span>
-<span class="kwd">CREATE</span> <span class="kwd">VIEW</span> user_stats <span class="kwd">AS</span>
-<span class="kwd">SELECT</span> 
-    <span class="kwd">COUNT</span>(*) <span class="kwd">as</span> total,
-    <span class="func">AVG</span>(age) <span class="kwd">as</span> avg_age
-<span class="kwd">FROM</span> users;</code></pre>
-                </div>
-
-                <h3>4. MySQL 5.5 - 稳定与性能</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MySQL 5.5 (2010年) 成为主流稳定版本</span>
-
-<span class="com">-- 主要特性：</span>
-<span class="com">-- 1. InnoDB 成为默认存储引擎</span>
-<span class="com">-- 2. 半同步复制 (Semi-Synchronous Replication)</span>
-<span class="com">-- 3. 改进的分区表功能</span>
-<span class="com">-- 4.  SIGNAL 和 RESIGNAL 语句 (错误处理)</span>
-<span class="com">-- 5. 改进了 UTF-8 支持 (utf8mb4)</span>
-<span class="com">-- 6. 多核 CPU 性能优化</span>
-
-<span class="com">-- 解决的问题：</span>
-<span class="com">-- - MyISAM 不支持并发写入和数据恢复</span>
-<span class="com">-- - 复制延迟高，数据一致性无法保证</span>
-<span class="com">-- - UTF-8 只支持3字节，中文emoji受限</span>
-
-<span class="com">-- 启用半同步复制 (需要安装插件)</span>
-INSTALL PLUGIN rpl_semi_sync_master SONAME <span class="str">'semisync_master.so'</span>;
-INSTALL PLUGIN rpl_semi_sync_slave SONAME <span class="str">'semisync_slave.so'</span>;
-
-SET GLOBAL rpl_semi_sync_master_enabled = <span class="num">1</span>;
-SET GLOBAL rpl_semi_sync_slave_enabled = <span class="num">1</span>;
-
-<span class="com">-- 使用 utf8mb4 字符集</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> messages (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    content <span class="type">VARCHAR</span>(<span class="num">1000</span>) <span class="kwd">CHARSET</span> utf8mb4 COLLATE utf8mb4_unicode_ci
-) ENGINE=InnoDB;
-
-<span class="com">-- 分区表示例</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> logs (
-    id <span class="kwd">INT</span>,
-    log_date <span class="type">DATETIME</span>,
-    message <span class="type">TEXT</span>
-) ENGINE=InnoDB
-<span class="kwd">PARTITION</span> <span class="kwd">BY</span> RANGE (YEAR(log_date)) (
-    <span class="kwd">PARTITION</span> p2023 <span class="kwd">VALUES</span> LESS THAN (<span class="num">2024</span>),
-    <span class="kwd">PARTITION</span> p2024 <span class="kwd">VALUES</span> LESS THAN (<span class="num">2025</span>),
-    <span class="kwd">PARTITION</span> pfuture <span class="kwd">VALUES</span> LESS THAN MAXVALUE
-);</code></pre>
-                </div>
-
-                <h3>5. MySQL 5.6 - 大数据时代</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MySQL 5.6 (2013年) 适配大数据场景</span>
-
-<span class="com">-- 主要特性：</span>
-<span class="com">-- 1. 索引下推优化 (Index Condition Pushdown)</span>
-<span class="com">-- 2. MRR (Multi-Range Read) 优化</span>
-<span class="com">-- 3. 全文索引支持 InnoDB</span>
-<span class="com">-- 4. 实时监控 InnoDB 性能</span>
-<span class="com">-- 5. 改进的优化器</span>
-<span class="com">-- 6. 延迟复制 (Delayed Replication)</span>
-
-<span class="com">-- 解决的问题：</span>
-<span class="com">-- - 大表查询性能差</span>
-<span class="com">-- - InnoDB 不支持全文索引</span>
-<span class="com">-- - 误操作无法快速恢复</span>
-
-<span class="com">-- EXPLAIN 查看执行计划</span>
-EXPLAIN <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
-
-<span class="com">-- InnoDB 全文索引</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> articles (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    title <span class="type">VARCHAR</span>(<span class="num">200</span>),
-    content <span class="type">TEXT</span>,
-    <span class="kwd">FULLTEXT</span> <span class="kwd">INDEX</span> ft_content (content)
-) ENGINE=InnoDB;
-
-<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
-<span class="kwd">WHERE</span> <span class="func">MATCH</span>(content) <span class="func">AGAINST</span>(<span class="str">'database'</span> <span class="kwd">IN</span> <span class="kwd">NATURAL</span> <span class="kwd">LANGUAGE</span> MODE);
-
-<span class="com">-- 延迟复制 (延迟10分钟)</span>
-STOP SLAVE;
-CHANGE MASTER TO MASTER_DELAY = <span class="num">600</span>;
-START SLAVE;
-
-<span class="com">-- 监控 InnoDB 状态</span>
-SHOW ENGINE InnoDB STATUS;
-
-<span class="com">-- 查看慢查询</span>
-SHOW VARIABLES LIKE <span class="str">'slow_query_log'</span>;
-SHOW VARIABLES LIKE <span class="str">'long_query_time'</span>;</code></pre>
-                </div>
-
-                <h3>6. MySQL 5.7 - JSON 时代</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MySQL 5.7 (2015年) 原生支持 JSON</span>
-
-<span class="com">-- 主要特性：</span>
-<span class="com">-- 1. 原生 JSON 数据类型和函数</span>
-<span class="com">-- 2. 虚拟列 (Generated Columns)</span>
-<span class="com">-- 3. 多源复制 (Multi-Source Replication)</span>
-<span class="com">-- 4. 改进的 GIS 地理位置支持</span>
-<span class="com">-- 5. 增强的 InnoDB 性能</span>
-<span class="com">-- 6. Sys schema 系统监控视图</span>
-<span class="com">-- 7. 支持 JSON 索引 (通过虚拟列)</span>
-
-<span class="com">-- 解决的问题：</span>
-<span class="com">-- - NoSQL 数据库冲击，需支持灵活 schema</span>
-<span class="com">-- - JSON 数据存储和查询困难</span>
-<span class="com">-- - 需要从多个数据源聚合数据</span>
-
-<span class="com">-- JSON 数据类型</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> user_configs (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    user_id <span class="kwd">INT</span>,
-    config <span class="type">JSON</span>
-);
-
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> user_configs (user_id, config)
-<span class="kwd">VALUES</span>(<span class="num">1</span>, <span class="str">'{"theme": "dark", "notifications": true, "language": "zh"}'</span>);
-
-<span class="kwd">SELECT</span> 
-    user_id,
-    config->><span class="str">'$.theme'</span> <span class="kwd">as</span> theme
-<span class="kwd">FROM</span> user_configs;
-
-<span class="kwd">SELECT</span> <span class="func">JSON_EXTRACT</span>(config, <span class="str">'$.notifications'</span>) <span class="kwd">FROM</span> user_configs;
-
-<span class="com">-- 虚拟列索引</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> products (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    specs <span class="type">JSON</span>,
-    price <span class="type">INT</span>,
-    category <span class="type">VARCHAR</span>(<span class="num">50</span>) <span class="kwd">GENERATED</span> ALWAYS <span class="kwd">AS</span> (specs->><span class="str">'$.category'</span>) STORED,
-    <span class="kwd">INDEX</span> idx_category (category)
-);
-
-<span class="com">-- GIS 地理位置</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> locations (
-    id <span class="kwd">INT</span>,
-    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
-    location POINT,
-    <span class="kwd">SPATIAL</span> <span class="kwd">INDEX</span> (location)
-) ENGINE=InnoDB;
-
-<span class="kwd">INSERT</span> <span class="kwd">INTO</span> locations <span class="kwd">VALUES</span>(<span class="num">1</span>, <span class="str">'天安门'</span>, <span class="func">ST_GeomFromText</span>(<span class="str">'POINT(116.397 39.909)'</span>));</code></pre>
-                </div>
-
-                <h3>7. MySQL 8.0 - 全面进化</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MySQL 8.0 (2018年) 里程碑版本</span>
-
-<span class="com">-- 主要特性：</span>
-<span class="com">-- 1. 窗口函数 (Window Functions)</span>
-<span class="com">-- 2. 公共表表达式 (CTE / WITH RECURSIVE)</span>
-<span class="com">-- 3. 隐藏索引 (Invisible Indexes)</span>
-<span class="com">-- 4. 降序索引 (Descending Indexes)</span>
-<span class="com">-- 5. 角色 (Roles) 权限管理</span>
-<span class="com">-- 6. 改进了 JSON 函数</span>
-<span class="com">-- 7. 支持 UTF8MB4 字符集默认</span>
-<span class="com">-- 8. 增强的 GIS 功能 (GeoJSON)</span>
-<span class="com">-- 9. 字典数据 (Data Dictionary)</span>
-
-<span class="com">-- 解决的问题：</span>
-<span class="com">-- - 复杂分析查询需要 UNION，效率低</span>
-<span class="com">-- - 递归查询需要程序模拟</span>
-<span class="com">-- - 无法在线测试索引效果</span>
-<span class="com">-- - 权限管理不够灵活</span>
-
-<span class="com">-- 窗口函数</span>
-<span class="kwd">SELECT</span> 
-    name,
-    department,
-    salary,
-    <span class="func">RANK</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary DESC) <span class="kwd">as</span> dept_rank,
-    <span class="func">SUM</span>(salary) OVER (<span class="kwd">ORDER BY</span> salary) <span class="kwd">as</span> running_total
-<span class="kwd">FROM</span> employees;
-
-<span class="com">-- 递归 CTE (查询组织架构)</span>
-<span class="kwd">WITH</span> <span class="kwd">RECURSIVE</span> org_tree <span class="kwd">AS</span> (
-    <span class="kwd">SELECT</span> id, name, manager_id, <span class="num">1</span> <span class="kwd">as</span> <span class="kwd">level</span>
-    <span class="kwd">FROM</span> employees <span class="kwd">WHERE</span> manager_id <span class="kwd">IS</span> NULL
-    <span class="kwd">UNION ALL</span>
-    <span class="kwd">SELECT</span> e.id, e.name, e.manager_id, ot.<span class="kwd">level</span> + <span class="num">1</span>
-    <span class="kwd">FROM</span> employees e
-    <span class="kwd">JOIN</span> org_tree ot <span class="kwd">ON</span> e.manager_id = ot.id
-)
-<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> org_tree;
-
-<span class="com">-- 隐藏索引测试</span>
-<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_test <span class="kwd">ON</span> users(email) INVISIBLE;
-<span class="kwd">ALTER</span> <span class="kwd">INDEX</span> idx_test VISIBLE;
-
-<span class="com">-- 角色权限管理</span>
-<span class="kwd">CREATE</span> <span class="kwd">ROLE</span> <span class="str">'app_read'</span>, <span class="str">'app_write'</span>;
-GRANT SELECT <span class="kwd">ON</span> mydb.* <span class="kwd">TO</span> <span class="str">'app_read'</span>;
-GRANT INSERT, UPDATE, DELETE <span class="kwd">ON</span> mydb.* <span class="kwd">TO</span> <span class="str">'app_write'</span>;
-GRANT <span class="str">'app_read'</span>, <span class="str">'app_write'</span> <span class="kwd">TO</span> <span class="str">'user1'</span>@<span class="str">'localhost'</span>;
-SET DEFAULT ROLE <span class="str">'app_read'</span> <span class="kwd">FOR</span> <span class="str">'user1'</span>@<span class="str">'localhost'</span>;</code></pre>
-                </div>
-
-                <h3>8. MySQL 8.4 LTS - 长期支持</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MySQL 8.4 (2024年4月) LTS 长期支持版本</span>
-
-<span class="com">-- 主要特性：</span>
-<span class="com">-- 1. 性能提升 (InnoDB 引擎优化)</span>
-<span class="com">-- 2. JSON 数组增强</span>
-<span class="com">-- 3. 改进的复制功能</span>
-<span class="com">-- 4. 增强的安全特性</span>
-<span class="com">-- 5. 更好的 UTF-8 支持 (UTF8MB4 改进)</span>
-<span class="com">-- 6. 窗口函数性能优化</span>
-<span class="com">-- 7. 改进的审计日志</span>
-
-<span class="com">-- 解决的问题：</span>
-<span class="com">-- - 企业需要稳定可靠的长期支持版本</span>
-<span class="com">-- - JSON 处理效率需要提升</span>
-<span class="com">-- - 需要更好的安全合规性</span>
-
-<span class="com">-- 查看版本信息</span>
-SELECT VERSION();
-SHOW VARIABLES LIKE <span class="str">'version_comment'</span>;
-
-<span class="com">-- JSON 数组函数增强</span>
-<span class="kwd">SELECT</span> <span class="func">JSON_ARRAYAGG</span>(column) <span class="kwd">FROM</span> table;
-<span class="kwd">SELECT</span> <span class="func">JSON_OBJECTAGG</span>(key, value) <span class="kwd">FROM</span> table;
-
-<span class="com">-- 检查字符集</span>
-SHOW VARIABLES LIKE <span class="str">'character_set%'</span>;
-SHOW VARIABLES LIKE <span class="str">'collation%'</span>;</code></pre>
-                </div>
-
-                <h3>9. MySQL 9.0 - AI 时代</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- MySQL 9.0 (2024年) 最新版本</span>
-
-<span class="com">-- 主要特性：</span>
-<span class="com">-- 1. 原生向量数据类型 (Vector Type)</span>
-<span class="com">-- 2. AI 查询优化器 (AI Query Optimizer)</span>
-<span class="com">-- 3. HNSW 索引支持向量搜索</span>
-<span class="com">-- 4. JavaScript 存储过程</span>
-<span class="com">-- 5. LATERAL JOIN 支持</span>
-<span class="com">-- 6. 物化视图 (Materialized Views)</span>
-<span class="com">-- 7. 增强的 JSON 处理</span>
-<span class="com">-- 8. 更好的云原生支持</span>
-<span class="com">-- 9. ARM64 架构优化</span>
-
-<span class="com">-- 解决的问题：</span>
-<span class="com">-- - AI/ML 应用需要向量数据库能力</span>
-<span class="com">-- - 传统 SQL 无法高效处理向量相似性搜索</span>
-<span class="com">-- - 需要更智能的查询优化</span>
-
-<span class="com">-- 向量数据类型</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> embeddings (
-    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
-    doc_text <span class="type">TEXT</span>,
-    vector VECTOR(<span class="num">768</span>),
-    <span class="kwd">INDEX</span> idx_vector (vector) <span class="kwd">INDEX_TYPE</span> = <span class="str">'HNSW'</span>
-);
-
-<span class="com">-- 向量相似性搜索</span>
-<span class="kwd">SELECT</span> id, doc_text,
-    <span class="func">VECTOR_DISTANCE</span>(vector, <span class="str">'[0.1, 0.2, ...]'</span>, <span class="str">'cosine'</span>) <span class="kwd">as</span> distance
-<span class="kwd">FROM</span> embeddings
-<span class="kwd">ORDER BY</span> distance
-<span class="kwd">LIMIT</span> <span class="num">5</span>;
-
-<span class="com">-- JavaScript 存储过程</span>
-<span class="kwd">DELIMITER</span> //
-<span class="kwd">CREATE</span> <span class="kwd">PROCEDURE</span> analyze_data()
-<span class="kwd">LANGUAGE</span> <span class="kwd">JAVASCRIPT</span> <span class="kwd">AS</span>
-$$
-    var result = session.sql(<span class="str">'SELECT COUNT(*) FROM users'</span>).execute();
-    return <span class="str">'Total users: '</span> + result.fetchOne()[<span class="num">0</span>];
-$$ //
-<span class="kwd">DELIMITER</span> ;
-
-<span class="com">-- 物化视图</span>
-<span class="kwd">CREATE</span> <span class="kwd">MATERIALIZED</span> <span class="kwd">VIEW</span> sales_summary
-REFRESH <span class="kwd">EVERY</span> <span class="num">1</span> <span class="kwd">HOUR</span> <span class="kwd">AS</span>
-<span class="kwd">SELECT</span> 
-    <span class="func">DATE</span>(order_date) <span class="kwd">as</span> date,
-    <span class="func">COUNT</span>(*) <span class="kwd">as</span> total_orders,
-    <span class="func">SUM</span>(amount) <span class="kwd">as</span> total_amount
-<span class="kwd">FROM</span> orders
-<span class="kwd">GROUP BY</span> <span class="func">DATE</span>(order_date);
-
-<span class="com">-- LATERAL JOIN</span>
-<span class="kwd">SELECT</span> u.name, latest_orders.*
-<span class="kwd">FROM</span> users u
-<span class="kwd">LEFT JOIN</span> <span class="kwd">LATERAL</span> (
-    <span class="kwd">SELECT</span> order_id, total
-    <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = u.id
-    <span class="kwd">ORDER BY</span> order_date DESC LIMIT <span class="num">3</span>
-) <span class="kwd">AS</span> latest_orders <span class="kwd">ON</span> TRUE;
-
-<span class="com">-- AI 优化提示</span>
-<span class="kwd">SELECT</span> /*+ AI_OPTIMIZE */ * <span class="kwd">FROM</span> large_table
-<span class="kwd">WHERE</span> complex_condition = <span class="num">1</span>;</code></pre>
-                </div>
-
-                <h3>版本选择建议</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 版本选择指南</span>
-
-<span class="com">-- 生产环境推荐：</span>
-<span class="com">-- - MySQL 8.4 LTS: 稳定可靠，适合长期项目</span>
-<span class="com">-- - MySQL 8.0.35+: 如果需要窗口函数/CTE</span>
-<span class="com">-- - MySQL 5.7: 遗留系统维护 (不推荐新项目)</span>
-
-<span class="com">-- 开发/测试环境：</span>
-<span class="com">-- - MySQL 9.x: 测试最新特性，为迁移做准备</span>
-
-<span class="com">-- 需要向量搜索/AI 应用：</span>
-<span class="com">-- - MySQL 9.0+</span>
-
-<span class="com">-- 查看当前版本</span>
-SELECT 
-    @@version <span class="kwd">as</span> version,
-    @@version_comment <span class="kwd">as</span> edition;
-
-<span class="com">-- 检查支持的特性</span>
-SHOW VARIABLES LIKE <span class="str">'have_%'</span>;
-SHOW ENGINES;</code></pre>
-                </div>
-            </div>
-        </section>
-
         <section id="installation" class="section">
             <h2>安装 MySQL 9.x (最新版本)</h2>
             <div class="content">
@@ -1432,7 +320,6 @@ volumes:
                 </div>
             </div>
         </section>
-
         <section id="basics" class="section">
             <h2>基础操作</h2>
             <div class="content">
@@ -2079,7 +966,6 @@ ADD <span class="kwd">INDEX</span> idx_hnsw (embedding) <span class="kwd">INDEX_
                 </div>
             </div>
         </section>
-
         <section id="advanced" class="section">
             <h2>高级特性</h2>
             <div class="content">
@@ -3797,7 +2683,6 @@ ADD COLUMN description <span class="type">VARCHAR</span>(<span class="num">500</
                 </div>
             </div>
         </section>
-
         <section id="sql-theory" class="section">
             <h2>SQL原理</h2>
             <div class="content">
@@ -4660,7 +3545,6 @@ flowchart TD
                 </div>
             </div>
         </section>
-
         <section id="index-theory" class="section">
             <h2>索引原理</h2>
             <div class="content">
@@ -5408,7 +4292,6 @@ LIMIT 10000;
                 </div>
             </div>
         </section>
-
         <section id="performance" class="section">
             <h2>性能优化</h2>
             <div class="content">
@@ -5941,86 +4824,6 @@ connection-timeout = <span class="num">30000</span></code></pre>
                 </div>
             </div>
         </section>
-
-        <section id="security" class="section">
-            <h2>安全特性</h2>
-            <div class="content">
-                <h3>1. 零信任架构</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 启用零信任架构</span>
-<span class="kwd">SET</span> GLOBAL require_secure_transport = ON;
-<span class="kwd">SET</span> GLOBAL validate_password.<span class="kwd">policy</span> = STRONG;
-
-<span class="com">-- 创建用户（支持多因素认证）</span>
-<span class="kwd">CREATE</span> USER <span class="str">'admin'</span>@<span class="str">'%'</span> IDENTIFIED <span class="kwd">BY</span> <span class="str">'password'</span>
-<span class="kwd">WITH</span> MAX_QUERIES_PER_HOUR <span class="num">1000</span>
-MAX_UPDATES_PER_HOUR <span class="num">100</span>
-MAX_CONNECTIONS_PER_HOUR <span class="num">100</span>
-MAX_USER_CONNECTIONS <span class="num">10</span>;
-
-<span class="com">-- 启用 MFA</span>
-<span class="kwd">ALTER</span> USER <span class="str">'admin'</span>@<span class="str">'%'</span> <span class="kwd">REQUIRE</span> MFA;
-
-<span class="com">-- 角色管理（改进的 RBAC）</span>
-<span class="kwd">CREATE</span> <span class="kwd">ROLE</span> <span class="str">'developer'</span>, <span class="str">'analyst'</span>;
-GRANT <span class="kwd">SELECT</span>, <span class="kwd">INSERT</span>, <span class="kwd">UPDATE</span> <span class="kwd">ON</span> app_database.* TO <span class="str">'developer'</span>;
-GRANT <span class="kwd">SELECT</span> <span class="kwd">ON</span> app_database.* TO <span class="str">'analyst'</span>;
-
-GRANT <span class="str">'developer'</span> TO <span class="str">'user1'</span>@<span class="str">'%'</span>;
-<span class="kwd">SET</span> <span class="kwd">DEFAULT</span> <span class="kwd">ROLE</span> <span class="kwd">ALL</span> TO <span class="str">'user1'</span>@<span class="str">'%'</span>;</code></pre>
-                </div>
-
-                <h3>2. 数据加密</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 透明数据加密（TDE）</span>
-<span class="kwd">ALTER</span> INSTANCE <span class="kwd">ROTATE</span> INNODB <span class="kwd">MASTER</span> KEY;
-
-<span class="com">-- 列级加密</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> sensitive_data (
-    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
-    credit_card <span class="type">VARCHAR</span>(<span class="num">100</span>) <span class="kwd">ENCRYPTED</span> <span class="kwd">WITH</span> <span class="str">'AES256-CBC'</span>
-);
-
-<span class="com">-- 查询加密数据（自动解密）</span>
-<span class="kwd">SELECT</span> id, <span class="func">AES_DECRYPT</span>(credit_card, <span class="str">'encryption_key'</span>) <span class="kwd">as</span> card_number
-<span class="kwd">FROM</span> sensitive_data;
-
-<span class="com">-- 审计日志（增强版）</span>
-<span class="kwd">SET</span> GLOBAL audit_log_policy = ALL;
-<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> performance_schema.events_statements_history_long;</code></pre>
-                </div>
-
-                <h3>3. 访问控制</h3>
-                <div class="code-block">
-                    <pre><code class="sql"><span class="com">-- 基于时间的访问控制</span>
-<span class="kwd">CREATE</span> USER <span class="str">'temp_user'</span>@<span class="str">'%'</span> IDENTIFIED <span class="kwd">BY</span> <span class="str">'password'</span>
-<span class="kwd">WITH</span> VALID_UNTIL <span class="str">'<span class="num">2027</span>-<span class="num">12</span>-<span class="num">31</span> <span class="num">23</span>:<span class="num">59</span>:<span class="num">59</span>'</span>;
-
-<span class="com">-- 行级安全策略（Row-<span class="kwd">Level</span> Security）</span>
-<span class="kwd">CREATE</span> <span class="kwd">POLICY</span> user_isolation <span class="kwd">ON</span> users
-FOR <span class="kwd">SELECT</span>
-USING (user_id = <span class="func">CURRENT_USER_ID</span>());
-
-<span class="com">-- 查看权限</span>
-<span class="kwd">SHOW</span> GRANTS FOR <span class="str">'user1'</span>@<span class="str">'%'</span>;</code></pre>
-                </div>
-            </div>
-        </section>
-
-        <section id="alternatives" class="section">
-            <h2>MySQL 替代品</h2>
-            <div class="content">
-                <p>在选择数据库时，需要根据业务需求、技术栈和团队技能来权衡。MySQL 是最流行的关系型数据库之一，但市场上还有许多优秀的替代方案。</p>
-            </div>
-        </section>
-
-        <section id="history" class="section">
-            <h2>MySQL 发展历程</h2>
-            <div class="content">
-                <p>MySQL 由瑞典 MySQL AB 公司开发，历经二十多年发展，已成为全球最流行的开源数据库。</p>
-            </div>
-        </section>
-
         <section id="backup" class="section">
             <h2>备份与恢复</h2>
             <div class="content">
@@ -6520,7 +5323,1179 @@ fi
                 </div>
             </div>
         </section>
+        <section id="security" class="section">
+            <h2>安全特性</h2>
+            <div class="content">
+                <h3>1. 零信任架构</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 启用零信任架构</span>
+<span class="kwd">SET</span> GLOBAL require_secure_transport = ON;
+<span class="kwd">SET</span> GLOBAL validate_password.<span class="kwd">policy</span> = STRONG;
 
+<span class="com">-- 创建用户（支持多因素认证）</span>
+<span class="kwd">CREATE</span> USER <span class="str">'admin'</span>@<span class="str">'%'</span> IDENTIFIED <span class="kwd">BY</span> <span class="str">'password'</span>
+<span class="kwd">WITH</span> MAX_QUERIES_PER_HOUR <span class="num">1000</span>
+MAX_UPDATES_PER_HOUR <span class="num">100</span>
+MAX_CONNECTIONS_PER_HOUR <span class="num">100</span>
+MAX_USER_CONNECTIONS <span class="num">10</span>;
+
+<span class="com">-- 启用 MFA</span>
+<span class="kwd">ALTER</span> USER <span class="str">'admin'</span>@<span class="str">'%'</span> <span class="kwd">REQUIRE</span> MFA;
+
+<span class="com">-- 角色管理（改进的 RBAC）</span>
+<span class="kwd">CREATE</span> <span class="kwd">ROLE</span> <span class="str">'developer'</span>, <span class="str">'analyst'</span>;
+GRANT <span class="kwd">SELECT</span>, <span class="kwd">INSERT</span>, <span class="kwd">UPDATE</span> <span class="kwd">ON</span> app_database.* TO <span class="str">'developer'</span>;
+GRANT <span class="kwd">SELECT</span> <span class="kwd">ON</span> app_database.* TO <span class="str">'analyst'</span>;
+
+GRANT <span class="str">'developer'</span> TO <span class="str">'user1'</span>@<span class="str">'%'</span>;
+<span class="kwd">SET</span> <span class="kwd">DEFAULT</span> <span class="kwd">ROLE</span> <span class="kwd">ALL</span> TO <span class="str">'user1'</span>@<span class="str">'%'</span>;</code></pre>
+                </div>
+
+                <h3>2. 数据加密</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 透明数据加密（TDE）</span>
+<span class="kwd">ALTER</span> INSTANCE <span class="kwd">ROTATE</span> INNODB <span class="kwd">MASTER</span> KEY;
+
+<span class="com">-- 列级加密</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> sensitive_data (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    credit_card <span class="type">VARCHAR</span>(<span class="num">100</span>) <span class="kwd">ENCRYPTED</span> <span class="kwd">WITH</span> <span class="str">'AES256-CBC'</span>
+);
+
+<span class="com">-- 查询加密数据（自动解密）</span>
+<span class="kwd">SELECT</span> id, <span class="func">AES_DECRYPT</span>(credit_card, <span class="str">'encryption_key'</span>) <span class="kwd">as</span> card_number
+<span class="kwd">FROM</span> sensitive_data;
+
+<span class="com">-- 审计日志（增强版）</span>
+<span class="kwd">SET</span> GLOBAL audit_log_policy = ALL;
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> performance_schema.events_statements_history_long;</code></pre>
+                </div>
+
+                <h3>3. 访问控制</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 基于时间的访问控制</span>
+<span class="kwd">CREATE</span> USER <span class="str">'temp_user'</span>@<span class="str">'%'</span> IDENTIFIED <span class="kwd">BY</span> <span class="str">'password'</span>
+<span class="kwd">WITH</span> VALID_UNTIL <span class="str">'<span class="num">2027</span>-<span class="num">12</span>-<span class="num">31</span> <span class="num">23</span>:<span class="num">59</span>:<span class="num">59</span>'</span>;
+
+<span class="com">-- 行级安全策略（Row-<span class="kwd">Level</span> Security）</span>
+<span class="kwd">CREATE</span> <span class="kwd">POLICY</span> user_isolation <span class="kwd">ON</span> users
+FOR <span class="kwd">SELECT</span>
+USING (user_id = <span class="func">CURRENT_USER_ID</span>());
+
+<span class="com">-- 查看权限</span>
+<span class="kwd">SHOW</span> GRANTS FOR <span class="str">'user1'</span>@<span class="str">'%'</span>;</code></pre>
+                </div>
+            </div>
+        </section>
+        <section id="alternatives" class="section">
+            <h2>MySQL 替代品</h2>
+            <div class="content">
+                <p>在选择数据库时，需要根据业务需求、技术栈和团队技能来权衡。MySQL 是最流行的关系型数据库之一，但市场上还有许多优秀的替代方案。以下是主流数据库的对比分析：</p>
+                
+                <h3>主流关系型数据库对比</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>数据库</th>
+                                <th>类型</th>
+                                <th>开源</th>
+                                <th>许可证</th>
+                                <th>最擅长</th>
+                                <th>不适合</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>MySQL</strong></td>
+                                <td>关系型</td>
+                                <td>✅</td>
+                                <td>GPL v2</td>
+                                <td>Web应用、电商、内容管理</td>
+                                <td>复杂分析、GIS</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PostgreSQL</strong></td>
+                                <td>关系型</td>
+                                <td>✅</td>
+                                <td>PostgreSQL License</td>
+                                <td>企业级应用、数据分析、GIS</td>
+                                <td>超高性能场景</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MongoDB</strong></td>
+                                <td>文档型</td>
+                                <td>✅</td>
+                                <td>SSPL</td>
+                                <td>灵活Schema、日志、内容管理</td>
+                                <td>强事务需求</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Redis</strong></td>
+                                <td>键值型</td>
+                                <td>✅</td>
+                                <td>BSD</td>
+                                <td>缓存、会话、实时分析</td>
+                                <td>主数据存储</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SQL Server</strong></td>
+                                <td>关系型</td>
+                                <td>❌</td>
+                                <td>商业</td>
+                                <td>企业应用、BI、Windows生态</td>
+                                <td>开源项目、跨平台</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Oracle</strong></td>
+                                <td>关系型</td>
+                                <td>❌</td>
+                                <td>商业</td>
+                                <td>大型企业、金融、电信</td>
+                                <td>中小型项目</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MariaDB</strong></td>
+                                <td>关系型</td>
+                                <td>✅</td>
+                                <td>GPL v2</td>
+                                <td>MySQL兼容、高性能</td>
+                                <td>特定企业功能</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TiDB</strong></td>
+                                <td>NewSQL</td>
+                                <td>✅</td>
+                                <td>Apache 2.0</td>
+                                <td>分布式、强一致、弹性扩展</td>
+                                <td>简单小应用</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>1. PostgreSQL - 最强大的开源数据库</h3>
+                <p>PostgreSQL 是功能最强大的开源关系型数据库，以其 extensibility 和标准兼容性著称。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 支持复杂的SQL特性（CTE、窗口函数、物化视图）</td>
+                                <td>❌ 写入性能略低于MySQL</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 丰富的索引类型（GIN、GiST、BRIN、表达式索引）</td>
+                                <td>❌ 社区相对较小</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 强大的GIS支持（PostGIS）</td>
+                                <td>❌ 文档相对分散</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 完整的ACID支持</td>
+                                <td>❌ 配置复杂度较高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 支持JSON/JSONB、数组、全文搜索</td>
+                                <td>❌ 不支持多源复制</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 活跃的社区和丰富的插件生态</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- PostgreSQL 特色功能示例</span>
+
+<span class="com">-- 1. 递归CTE（查询组织架构）</span>
+<span class="kwd">WITH</span> <span class="kwd">RECURSIVE</span> org_tree <span class="kwd">AS</span> (
+    <span class="kwd">SELECT</span> id, name, manager_id, <span class="num">1</span> <span class="kwd">as</span> <span class="kwd">level</span>
+    <span class="kwd">FROM</span> employees <span class="kwd">WHERE</span> manager_id <span class="kwd">IS</span> NULL
+    <span class="kwd">UNION ALL</span>
+    <span class="kwd">SELECT</span> e.id, e.name, e.manager_id, ot.<span class="kwd">level</span> + <span class="num">1</span>
+    <span class="kwd">FROM</span> employees e
+    <span class="kwd">JOIN</span> org_tree ot <span class="kwd">ON</span> e.manager_id = ot.id
+)
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> org_tree;
+
+<span class="com">-- 2. 窗口函数（排名统计）</span>
+<span class="kwd">SELECT</span> 
+    name,
+    department,
+    salary,
+    <span class="func">RANK</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary DESC) <span class="kwd">as</span> dept_rank,
+    <span class="func">SUM</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_total
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 3. JSONB 操作</span>
+<span class="kwd">SELECT</span> data->><span class="str">'name'</span> <span class="kwd">FROM</span> orders
+<span class="kwd">WHERE</span> data @> <span class="str">'{"status": "completed"}'</span>;
+
+<span class="com">-- 4. 数组类型</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> tags (
+    id <span class="kwd">INT</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">50</span>),
+    tags <span class="type">TEXT</span>[]
+);
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> tags <span class="kwd">VALUES</span>(<span class="num">1</span>, <span class="str">'PostgreSQL'</span>, ARRAY[<span class="str">'database'</span>, <span class="str">'open source'</span>, <span class="str">'relational'</span>]);
+
+<span class="com">-- 5. PostGIS 空间查询</span>
+<span class="kwd">SELECT</span> name <span class="kwd">FROM</span> locations
+<span class="kwd">WHERE</span> ST_DWithin(location, ST_MakePoint(<span class="num">116.4</span>, <span class="num">39.9</span>)::geography, <span class="num">5000</span>);</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>需要复杂分析查询的企业应用</li>
+                    <li>GIS地理信息系统开发</li>
+                    <li>需要JSON和结构化数据混合存储</li>
+                    <li>数据仓库和BI分析</li>
+                    <li>需要全文搜索功能</li>
+                </ul>
+
+                <h3>2. MongoDB - 文档数据库首选</h3>
+                <p>MongoDB是最流行的文档型数据库，采用灵活的JSON风格文档模型。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 灵活的Schema，无需预定义表结构</td>
+                                <td>❌ 事务支持有限（4.0+有所改善）</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 强大的查询语言和聚合框架</td>
+                                <td>❌ 不适合强一致性要求场景</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 高性能，高并发写入</td>
+                                <td>❌ 内存占用较高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 易于水平扩展（分片）</td>
+                                <td>❌ 磁盘空间消耗较大</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 丰富的索引支持</td>
+                                <td>❌ 学习曲线较陡</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 完善的生态系统</td>
+                                <td>❌ 社区版功能受限</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">// MongoDB 特色操作示例
+
+<span class="com">// 1. 插入文档（无需预定义结构）</span>
+db.users.insertOne({
+    username: <span class="str">"john"</span>,
+    email: <span class="str">"john@example.com"</span>,
+    profile: {
+        age: <span class="num">30</span>,
+        city: <span class="str">"Beijing"</span>,
+        interests: [<span class="str">"coding"</span>, <span class="str">"music"</span>]
+    },
+    createdAt: <span class="kwd">new</span> Date()
+});
+
+<span class="com">// 2. 灵活查询</span>
+db.users.find({
+    <span class="str">"profile.age"</span>: { $gt: <span class="num">25</span> },
+    <span class="str">"profile.city"</span>: <span class="str">"Beijing"</span>
+});
+
+<span class="com">// 3. 聚合管道</span>
+db.orders.aggregate([
+    { $match: { status: <span class="str">"completed"</span> } },
+    { $group: {
+        _id: <span class="str">"$customer_id"</span>,
+        totalAmount: { $sum: <span class="str">"$amount"</span> },
+        orderCount: { $sum: <span class="num">1</span> }
+    }},
+    { $sort: { totalAmount: -<span class="num">1</span> } },
+    { $limit: <span class="num">10</span> }
+]);
+
+<span class="com">// 4. 更新数组元素</span>
+db.users.updateOne(
+    { username: <span class="str">"john"</span> },
+    { $push: { <span class="str">"profile.interests"</span>: <span class="str">"travel"</span> } }
+);
+
+<span class="com">// 5. 事务操作（4.0+）</span>
+<span class="kwd">const</span> session = db.getMongo().startSession();
+session.startTransaction();
+<span class="kwd">try</span> {
+    session.getDatabase(<span class="str">"shop"</span>).orders.insertOne({ ... });
+    session.getDatabase(<span class="str">"shop"</span>).inventory.updateOne({ ... });
+    session.commitTransaction();
+} <span class="kwd">catch</span> (e) {
+    session.abortTransaction();
+}</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>内容管理系统（文章、评论、元数据）</li>
+                    <li>用户行为日志和分析</li>
+                    <li>物联网（IoT）数据存储</li>
+                    <li>敏捷开发，快速迭代的项目</li>
+                    <li>需要存储半结构化数据的场景</li>
+                </ul>
+
+                <h3>3. Redis - 高速缓存首选</h3>
+                <p>Redis是高性能的内存键值数据库，常用作缓存、消息队列和实时分析。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 极高的读写性能（百万级QPS）</td>
+                                <td>❌ 数据存储在内存，成本高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 支持多种数据结构</td>
+                                <td>❌ 不适合作为主数据存储</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 丰富的特性（发布订阅、Lua脚本、事务）</td>
+                                <td>❌ 持久化可能丢失数据</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 简单易用的客户端</td>
+                                <td>❌ 单线程模型（部分场景受限）</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 集群支持</td>
+                                <td>❌ 大value性能下降</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 完善的主从复制</td>
+                                <td>❌ 需要足够的内存</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com"># Redis 特色操作示例
+
+<span class="com"># 1. 字符串操作</span>
+SET user:1001 <span class="str">'{"name":"John","age":30}'</span>
+GET user:1001
+INCR page:views:2024
+DECR product:stock:500
+
+<span class="com"># 2. 哈希操作（存储对象）</span>
+HSET user:1001 name John age 30 city Beijing
+HGET user:1001 name
+HGETALL user:1001
+
+<span class="com"># 3. 列表操作（消息队列）</span>
+RPUSH queue:tasks <span class="str">"task1"</span> <span class="str">"task2"</span> <span class="str">"task3"</span>
+LPOP queue:tasks
+LRANGE queue:tasks 0 -<span class="num">1</span>
+
+<span class="com"># 4. 集合操作（标签、共同好友）</span>
+SADD user:1001:tags mysql postgres redis
+SADD user:1002:tags mysql python
+SINTER user:1001:tags user:1002:tags  <span class="com"># 共同标签</span>
+
+<span class="com"># 5. 有序集合（排行榜）</span>
+ZADD leaderboard <span class="num">2500</span> player1 <span class="num">1800</span> player2 <span class="num">3000</span> player3
+ZREVRANGE leaderboard 0 9 WITHSCORES
+ZINCRBY leaderboard <span class="num">500</span> player1
+
+<span class="com"># 6. 发布/订阅</span>
+PSUBSCRIBE news:*
+PUBLISH news:sports <span class="str">"New match today!"</span>
+
+<span class="com"># 7. 事务</span>
+MULTI
+SET key1 value1
+SET key2 value2
+EXEC
+
+<span class="com"># 8. Lua脚本（原子操作）</span>
+EVAL <span class="str">"return redis.call('get', KEYS[1])"</span> <span class="num">1</span> mykey</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>缓存层（减少数据库压力）</li>
+                    <li>会话存储（Session Store）</li>
+                    <li>实时排行榜</li>
+                    <li>消息队列</li>
+                    <li>分布式锁</li>
+                    <li>实时分析和计数</li>
+                </ul>
+
+                <h3>4. MariaDB - MySQL的最佳替代</h3>
+                <p>MariaDB是MySQL的fork，由MySQL原开发者维护，保持高度兼容性。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 完全兼容MySQL，迁移成本低</td>
+                                <td>❌ 新特性落后于MySQL企业版</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 更多的存储引擎选择</td>
+                                <td>❌ 部分MySQL工具不兼容</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 更好的性能（MyRocks、InnoDB优化）</td>
+                                <td>❌ 社区相对较小</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 开源免费，无Oracle控制</td>
+                                <td>❌ 企业支持选项较少</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 积极开发新特性</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>✅ 支持JSON、窗口函数</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MariaDB 特色功能示例
+
+<span class="com">-- 1. 窗口函数支持</span>
+<span class="kwd">SELECT</span> 
+    name, department, salary,
+    <span class="func">SUM</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_total
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 2. JSON支持</span>
+<span class="kwd">SELECT</span> JSON_VALUE(info, <span class="str">'$.name'</span>) <span class="kwd">FROM</span> users;
+
+<span class="com">-- 3. 动态列</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> products (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    attributes DYNAMIC
+);
+INSERT <span class="kwd">INTO</span> products VALUES(<span class="num">1</span>, <span class="str">'Shirt'</span>, COLUMNS(<span class="str">'color'</span>=<span class="str">'red'</span>, <span class="str">'size'</span>=<span class="str">'L'</span>));
+
+<span class="com">-- 4.  Invisible 列</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">50</span>),
+    email <span class="type">VARCHAR</span>(<span class="num">100</span>) INVISIBLE
+);
+
+<span class="com">-- 5. 并行复制</span>
+SET GLOBAL slave_parallel_threads = <span class="num">4</span>;
+SET GLOBAL slave_parallel_mode = <span class="str">'optimistic'</span>;
+
+<span class="com">-- 6. 序列引擎</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> seq_1_to_100;</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>需要从MySQL迁移的项目</li>
+                    <li>对MySQL许可证有顾虑的企业</li>
+                    <li>需要高性能写入（MyRocks引擎）</li>
+                    <li>需要更多存储引擎选择</li>
+                </ul>
+
+                <h3>5. TiDB - 分布式NewSQL</h3>
+                <p>TiDB是PingCAP开发的分布式NewSQL数据库，兼容MySQL协议，支持水平扩展。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 水平扩展，自动分片</td>
+                                <td>❌ 资源消耗较大</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 强一致性（分布式事务）</td>
+                                <td>❌ 延迟高于单机数据库</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 兼容MySQL协议和语法</td>
+                                <td>❌ 运维复杂度高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ HTAP能力（事务+分析）</td>
+                                <td>❌ 学习曲线较陡</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 高可用，自动故障恢复</td>
+                                <td>❌ 社区相对较小</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 云原生支持</td>
+                                <td>❌ 价格较高</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- TiDB 特色功能示例
+
+<span class="com">-- 1. 自动分片和分布式事务</span>
+<span class="kwd">BEGIN</span>;
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> users (name, age) <span class="kwd">VALUES</span>(<span class="str">'John'</span>, <span class="num">30</span>);
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> orders (user_id, amount) <span class="kwd">VALUES</span>(LAST_INSERT_ID(), <span class="num">100</span>);
+COMMIT;
+
+<span class="com">-- 2. 智能选择（TiFlash列式存储）</span>
+<span class="kwd">SELECT</span> /*+ READ_FROM_STORAGE(tiflash[orders]) */ 
+    <span class="func">SUM</span>(amount) <span class="kwd">as</span> total
+<span class="kwd">FROM</span> orders
+<span class="kwd">WHERE</span> date > <span class="str">'2024-01-01'</span>;
+
+<span class="com">-- 3. 热点小表合并</span>
+<span class="kwd">SPLIT</span> <span class="kwd">TABLE</span> users <span class="kwd">BETWEEN</span> (<span class="num">0</span>) <span class="kwd">AND</span> (<span class="num">1000000</span>) REGIONS <span class="num">10</span>;
+
+<span class="com">-- 4. 查看分布式执行计划</span>
+EXPLAIN ANALYZE <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = <span class="num">100</span>;
+
+<span class="com">-- 5. 跨区域复制 (DR 集群)</span>
+<span class="com">-- 配置主集群和灾备集群</span>
+
+<span class="com">-- 6. 在线DDL</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">ADD</span> COLUMN phone <span class="type">VARCHAR</span>(<span class="num">20</span>);</code></pre>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>需要处理海量数据的OLTP场景</li>
+                    <li>需要强一致性的分布式事务</li>
+                    <li>需要HTAP混合负载</li>
+                    <li>云原生架构的中大型企业</li>
+                    <li>需要全球化部署的应用</li>
+                </ul>
+
+                <h3>6. SQL Server - 企业级选择</h3>
+                <p>Microsoft SQL Server是企业级关系型数据库，与Windows生态深度集成。</p>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>优点</th>
+                                <th>缺点</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✅ 完整的商业支持和服务</td>
+                                <td>❌ 许可证费用高</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 与.NET生态完美集成</td>
+                                <td>❌ 仅支持Windows（Linux版本功能有限）</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 强大的BI和分析功能</td>
+                                <td>❌ 开源支持有限</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 优秀的性能调优工具</td>
+                                <td>❌ 资源消耗大</td>
+                            </tr>
+                            <tr>
+                                <td>✅ 完善的备份恢复方案</td>
+                                <td>❌ 迁移到其他数据库困难</td>
+                            </tr>
+                            <tr>
+                                <td>✅ Always On高可用</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h4>适用场景：</h4>
+                <ul>
+                    <li>使用.NET技术栈的企业应用</li>
+                    <li>需要完整商业支持的大型企业</li>
+                    <li>需要强大BI和报表功能</li>
+                    <li>微软技术生态的现有系统</li>
+                </ul>
+
+                <h3>数据库选择决策指南</h3>
+                
+                <div class="mermaid">
+flowchart TD
+    A([选择数据库]) --> B{数据模型?}
+    B -->|结构化| C{一致性要求?}
+    B -->|半结构化| D[MongoDB]
+    B -->|键值/缓存| E[Redis]
+    
+    C -->|强一致| F{数据规模?}
+    C -->|最终一致| G[MySQL/PostgreSQL]
+    
+    F -->|小规模| H[MySQL/PostgreSQL]
+    F -->|中等规模| I[MariaDB]
+    F -->|大规模| J[TiDB/云数据库]
+    
+    K{需要分析?} -->|是| L[ClickHouse/StarRocks]
+    K -->|否| M([继续开发])
+    
+    style A fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#2e7d32
+    style E fill:#fff3e0,stroke:#e65100
+    style J fill:#fce4ec,stroke:#c2185b
+    style L fill:#e1f5fe,stroke:#01579b
+    style M fill:#c8e6c9,stroke:#2e7d32
+</div>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>业务场景</th>
+                                <th>推荐数据库</th>
+                                <th>原因</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>博客/CMS网站</td>
+                                <td>MySQL + Redis</td>
+                                <td>成熟稳定，生态丰富</td>
+                            </tr>
+                            <tr>
+                                <td>电商平台</td>
+                                <td>MySQL/PostgreSQL</td>
+                                <td>事务支持，ACID</td>
+                            </tr>
+                            <tr>
+                                <td>金融系统</td>
+                                <td>PostgreSQL/TiDB/Oracle</td>
+                                <td>强一致性，分布式</td>
+                            </tr>
+                            <tr>
+                                <td>社交网络</td>
+                                <td>MongoDB + Redis</td>
+                                <td>灵活Schema，高并发</td>
+                            </tr>
+                            <tr>
+                                <td>数据分析</td>
+                                <td>ClickHouse/StarRocks</td>
+                                <td>列式存储，OLAP</td>
+                            </tr>
+                            <tr>
+                                <td>实时大屏</td>
+                                <td>Redis + ClickHouse</td>
+                                <td>高速读写+分析</td>
+                            </tr>
+                            <tr>
+                                <td>物联网</td>
+                                <td>InfluxDB/TimescaleDB</td>
+                                <td>时序数据优化</td>
+                            </tr>
+                            <tr>
+                                <td>SaaS应用</td>
+                                <td>PostgreSQL</td>
+                                <td>多租户，JSON支持</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <section id="history" class="section">
+            <h2>MySQL 发展历程</h2>
+            <div class="content">
+                <p>MySQL 由瑞典 MySQL AB 公司开发，于 2008 年被 Sun Microsystems 收购，2009 年随 Sun 被 Oracle 收购。作为最流行的开源关系型数据库，MySQL 经历了多个重要版本的迭代，每个版本都带来了关键的新特性和性能提升。</p>
+                
+                <div class="mermaid">
+gantt
+    title MySQL 版本演进时间线
+    dateFormat YYYY
+    axisFormat %Y
+    section 早期
+    MySQL 1.0 诞生         :1995-01-01, 0d
+    MySQL 3.23 发布       :2000-01-01, 0d
+    section 发展
+    MySQL 4.0 发布        :2003-01-01, 0d
+    MySQL 5.0 发布        :2005-01-01, 0d
+    MySQL 5.5 发布        :2010-01-01, 0d
+    MySQL 5.6 发布        :2013-01-01, 0d
+    MySQL 5.7 发布        :2015-01-01, 0d
+    section 现代
+    MySQL 8.0 发布        :2018-01-01, 0d
+    MySQL 8.4 LTS         :2024-04-01, 0d
+    MySQL 9.0 发布        :2024-10-01, 0d
+</div>
+                
+                <h3>1. MySQL 3.23 (2000年) - 奠定基础</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 3.23 是首个广泛使用的稳定版本</span>
+
+<span class="com">-- 主要特性：</span>
+<span class="com">-- 1. 引入 MyISAM 存储引擎 (取代 ISAM)</span>
+<span class="com">-- 2. 支持 FULLTEXT 全文索引</span>
+<span class="com">-- 3. 首次支持事务 (通过 BerkeleyDB 引擎)</span>
+<span class="com">-- 4. 复制功能正式推出</span>
+<span class="com">-- 5. 支持 ANSI SQL99 语法</span>
+
+<span class="com">-- 解决的问题：</span>
+<span class="com">-- - 早期版本功能简单，无法满足复杂应用需求</span>
+<span class="com">-- - 缺乏全文搜索能力</span>
+<span class="com">-- - 没有复制功能，无法实现高可用</span>
+
+<span class="com">-- 创建 MyISAM 表并使用全文索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> articles (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    title <span class="type">VARCHAR</span>(<span class="num">200</span>),
+    content <span class="type">TEXT</span>,
+    <span class="kwd">FULLTEXT</span> <span class="kwd">INDEX</span> ft_title_content (title, content)
+) ENGINE=MyISAM;
+
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
+<span class="kwd">WHERE</span> <span class="func">MATCH</span>(title, content) <span class="func">AGAINST</span>(<span class="str">'MySQL'</span> <span class="kwd">IN</span> <span class="kwd">NATURAL</span> <span class="kwd">LANGUAGE</span> MODE);</code></pre>
+                </div>
+
+                <h3>2. MySQL 4.0 - 性能飞跃</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 4.0 (2003年) 是里程碑版本</span>
+
+<span class="com">-- 主要特性：</span>
+<span class="com">-- 1. 引入 InnoDB 存储引擎 (事务支持)</span>
+<span class="com">-- 2. 查询缓存 (Query Cache) 大幅提升性能</span>
+<span class="com">-- 3. 支持 UNION 语句</span>
+<span class="com">-- 4. 支持 RENAME TABLE</span>
+<span class="com">-- 5. 改进了 BLOB 类型的处理</span>
+
+<span class="com">-- 解决的问题：</span>
+<span class="com">-- - MyISAM 不支持事务，无法保证数据一致性</span>
+<span class="com">-- - 重复查询浪费资源，查询缓存解决此问题</span>
+<span class="com">-- - 无法进行复杂的 SQL 查询</span>
+
+<span class="com">-- 使用 InnoDB 引擎和事务</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> accounts (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    balance <span class="type">DECIMAL</span>(<span class="num">15</span>,<span class="num">2</span>)
+) ENGINE=InnoDB;
+
+START TRANSACTION;
+<span class="kwd">UPDATE</span> accounts <span class="kwd">SET</span> balance = balance - <span class="num">100</span> <span class="kwd">WHERE</span> id = <span class="num">1</span>;
+<span class="kwd">UPDATE</span> accounts <span class="kwd">SET</span> balance = balance + <span class="num">100</span> <span class="kwd">WHERE</span> id = <span class="num">2</span>;
+COMMIT;
+
+<span class="com">-- 查看查询缓存状态</span>
+SHOW VARIABLES LIKE <span class="str">'query_cache_type'</span>;</code></pre>
+                </div>
+
+                <h3>3. MySQL 5.0 - 企业级功能</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 5.0 (2005年) 正式进入企业级市场</span>
+
+<span class="com">-- 主要特性：</span>
+<span class="com">-- 1. 存储过程 (Stored Procedures)</span>
+<span class="com">-- 2. 触发器 (Triggers)</span>
+<span class="com">-- 3. 视图 (Views)</span>
+<span class="com">-- 4. 游标 (Cursors)</span>
+<span class="com">-- 5. INFORMATION_SCHEMA 系统数据库</span>
+<span class="com">-- 6. 支持XA事务</span>
+
+<span class="com">-- 解决的问题：</span>
+<span class="com">-- - 缺少存储过程，复杂业务逻辑需在应用层实现</span>
+<span class="com">-- - 缺乏触发器，无法实现自动化数据维护</span>
+<span class="com">-- - 无法创建视图，复杂查询无法封装</span>
+
+<span class="com">-- 创建存储过程</span>
+<span class="kwd">DELIMITER</span> //
+<span class="kwd">CREATE</span> <span class="kwd">PROCEDURE</span> get_user_count()
+<span class="kwd">BEGIN</span>
+    <span class="kwd">SELECT</span> <span class="func">COUNT</span>(*) <span class="kwd">as</span> total_users <span class="kwd">FROM</span> users;
+<span class="kwd">END</span> //
+<span class="kwd">DELIMITER</span> ;
+
+<span class="kwd">CALL</span> get_user_count();
+
+<span class="com">-- 创建触发器</span>
+<span class="kwd">DELIMITER</span> //
+<span class="kwd">CREATE</span> <span class="kwd">TRIGGER</span> before_insert_users
+<span class="kwd">BEFORE</span> <span class="kwd">INSERT</span> <span class="kwd">ON</span> users
+<span class="kwd">FOR EACH ROW</span>
+<span class="kwd">BEGIN</span>
+    <span class="kwd">SET</span> NEW.created_at = <span class="kwd">NOW</span>();
+<span class="kwd">END</span> //
+<span class="kwd">DELIMITER</span> ;
+
+<span class="com">-- 创建视图</span>
+<span class="kwd">CREATE</span> <span class="kwd">VIEW</span> user_stats <span class="kwd">AS</span>
+<span class="kwd">SELECT</span> 
+    <span class="kwd">COUNT</span>(*) <span class="kwd">as</span> total,
+    <span class="func">AVG</span>(age) <span class="kwd">as</span> avg_age
+<span class="kwd">FROM</span> users;</code></pre>
+                </div>
+
+                <h3>4. MySQL 5.5 - 稳定与性能</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 5.5 (2010年) 成为主流稳定版本</span>
+
+<span class="com">-- 主要特性：</span>
+<span class="com">-- 1. InnoDB 成为默认存储引擎</span>
+<span class="com">-- 2. 半同步复制 (Semi-Synchronous Replication)</span>
+<span class="com">-- 3. 改进的分区表功能</span>
+<span class="com">-- 4.  SIGNAL 和 RESIGNAL 语句 (错误处理)</span>
+<span class="com">-- 5. 改进了 UTF-8 支持 (utf8mb4)</span>
+<span class="com">-- 6. 多核 CPU 性能优化</span>
+
+<span class="com">-- 解决的问题：</span>
+<span class="com">-- - MyISAM 不支持并发写入和数据恢复</span>
+<span class="com">-- - 复制延迟高，数据一致性无法保证</span>
+<span class="com">-- - UTF-8 只支持3字节，中文emoji受限</span>
+
+<span class="com">-- 启用半同步复制 (需要安装插件)</span>
+INSTALL PLUGIN rpl_semi_sync_master SONAME <span class="str">'semisync_master.so'</span>;
+INSTALL PLUGIN rpl_semi_sync_slave SONAME <span class="str">'semisync_slave.so'</span>;
+
+SET GLOBAL rpl_semi_sync_master_enabled = <span class="num">1</span>;
+SET GLOBAL rpl_semi_sync_slave_enabled = <span class="num">1</span>;
+
+<span class="com">-- 使用 utf8mb4 字符集</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> messages (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    content <span class="type">VARCHAR</span>(<span class="num">1000</span>) <span class="kwd">CHARSET</span> utf8mb4 COLLATE utf8mb4_unicode_ci
+) ENGINE=InnoDB;
+
+<span class="com">-- 分区表示例</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> logs (
+    id <span class="kwd">INT</span>,
+    log_date <span class="type">DATETIME</span>,
+    message <span class="type">TEXT</span>
+) ENGINE=InnoDB
+<span class="kwd">PARTITION</span> <span class="kwd">BY</span> RANGE (YEAR(log_date)) (
+    <span class="kwd">PARTITION</span> p2023 <span class="kwd">VALUES</span> LESS THAN (<span class="num">2024</span>),
+    <span class="kwd">PARTITION</span> p2024 <span class="kwd">VALUES</span> LESS THAN (<span class="num">2025</span>),
+    <span class="kwd">PARTITION</span> pfuture <span class="kwd">VALUES</span> LESS THAN MAXVALUE
+);</code></pre>
+                </div>
+
+                <h3>5. MySQL 5.6 - 大数据时代</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 5.6 (2013年) 适配大数据场景</span>
+
+<span class="com">-- 主要特性：</span>
+<span class="com">-- 1. 索引下推优化 (Index Condition Pushdown)</span>
+<span class="com">-- 2. MRR (Multi-Range Read) 优化</span>
+<span class="com">-- 3. 全文索引支持 InnoDB</span>
+<span class="com">-- 4. 实时监控 InnoDB 性能</span>
+<span class="com">-- 5. 改进的优化器</span>
+<span class="com">-- 6. 延迟复制 (Delayed Replication)</span>
+
+<span class="com">-- 解决的问题：</span>
+<span class="com">-- - 大表查询性能差</span>
+<span class="com">-- - InnoDB 不支持全文索引</span>
+<span class="com">-- - 误操作无法快速恢复</span>
+
+<span class="com">-- EXPLAIN 查看执行计划</span>
+EXPLAIN <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+
+<span class="com">-- InnoDB 全文索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> articles (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    title <span class="type">VARCHAR</span>(<span class="num">200</span>),
+    content <span class="type">TEXT</span>,
+    <span class="kwd">FULLTEXT</span> <span class="kwd">INDEX</span> ft_content (content)
+) ENGINE=InnoDB;
+
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
+<span class="kwd">WHERE</span> <span class="func">MATCH</span>(content) <span class="func">AGAINST</span>(<span class="str">'database'</span> <span class="kwd">IN</span> <span class="kwd">NATURAL</span> <span class="kwd">LANGUAGE</span> MODE);
+
+<span class="com">-- 延迟复制 (延迟10分钟)</span>
+STOP SLAVE;
+CHANGE MASTER TO MASTER_DELAY = <span class="num">600</span>;
+START SLAVE;
+
+<span class="com">-- 监控 InnoDB 状态</span>
+SHOW ENGINE InnoDB STATUS;
+
+<span class="com">-- 查看慢查询</span>
+SHOW VARIABLES LIKE <span class="str">'slow_query_log'</span>;
+SHOW VARIABLES LIKE <span class="str">'long_query_time'</span>;</code></pre>
+                </div>
+
+                <h3>6. MySQL 5.7 - JSON 时代</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 5.7 (2015年) 原生支持 JSON</span>
+
+<span class="com">-- 主要特性：</span>
+<span class="com">-- 1. 原生 JSON 数据类型和函数</span>
+<span class="com">-- 2. 虚拟列 (Generated Columns)</span>
+<span class="com">-- 3. 多源复制 (Multi-Source Replication)</span>
+<span class="com">-- 4. 改进的 GIS 地理位置支持</span>
+<span class="com">-- 5. 增强的 InnoDB 性能</span>
+<span class="com">-- 6. Sys schema 系统监控视图</span>
+<span class="com">-- 7. 支持 JSON 索引 (通过虚拟列)</span>
+
+<span class="com">-- 解决的问题：</span>
+<span class="com">-- - NoSQL 数据库冲击，需支持灵活 schema</span>
+<span class="com">-- - JSON 数据存储和查询困难</span>
+<span class="com">-- - 需要从多个数据源聚合数据</span>
+
+<span class="com">-- JSON 数据类型</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> user_configs (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    user_id <span class="kwd">INT</span>,
+    config <span class="type">JSON</span>
+);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> user_configs (user_id, config)
+<span class="kwd">VALUES</span>(<span class="num">1</span>, <span class="str">'{"theme": "dark", "notifications": true, "language": "zh"}'</span>);
+
+<span class="kwd">SELECT</span> 
+    user_id,
+    config->><span class="str">'$.theme'</span> <span class="kwd">as</span> theme
+<span class="kwd">FROM</span> user_configs;
+
+<span class="kwd">SELECT</span> <span class="func">JSON_EXTRACT</span>(config, <span class="str">'$.notifications'</span>) <span class="kwd">FROM</span> user_configs;
+
+<span class="com">-- 虚拟列索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> products (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    specs <span class="type">JSON</span>,
+    price <span class="type">INT</span>,
+    category <span class="type">VARCHAR</span>(<span class="num">50</span>) <span class="kwd">GENERATED</span> ALWAYS <span class="kwd">AS</span> (specs->><span class="str">'$.category'</span>) STORED,
+    <span class="kwd">INDEX</span> idx_category (category)
+);
+
+<span class="com">-- GIS 地理位置</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> locations (
+    id <span class="kwd">INT</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    location POINT,
+    <span class="kwd">SPATIAL</span> <span class="kwd">INDEX</span> (location)
+) ENGINE=InnoDB;
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> locations <span class="kwd">VALUES</span>(<span class="num">1</span>, <span class="str">'天安门'</span>, <span class="func">ST_GeomFromText</span>(<span class="str">'POINT(116.397 39.909)'</span>));</code></pre>
+                </div>
+
+                <h3>7. MySQL 8.0 - 全面进化</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 8.0 (2018年) 里程碑版本</span>
+
+<span class="com">-- 主要特性：</span>
+<span class="com">-- 1. 窗口函数 (Window Functions)</span>
+<span class="com">-- 2. 公共表表达式 (CTE / WITH RECURSIVE)</span>
+<span class="com">-- 3. 隐藏索引 (Invisible Indexes)</span>
+<span class="com">-- 4. 降序索引 (Descending Indexes)</span>
+<span class="com">-- 5. 角色 (Roles) 权限管理</span>
+<span class="com">-- 6. 改进了 JSON 函数</span>
+<span class="com">-- 7. 支持 UTF8MB4 字符集默认</span>
+<span class="com">-- 8. 增强的 GIS 功能 (GeoJSON)</span>
+<span class="com">-- 9. 字典数据 (Data Dictionary)</span>
+
+<span class="com">-- 解决的问题：</span>
+<span class="com">-- - 复杂分析查询需要 UNION，效率低</span>
+<span class="com">-- - 递归查询需要程序模拟</span>
+<span class="com">-- - 无法在线测试索引效果</span>
+<span class="com">-- - 权限管理不够灵活</span>
+
+<span class="com">-- 窗口函数</span>
+<span class="kwd">SELECT</span> 
+    name,
+    department,
+    salary,
+    <span class="func">RANK</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary DESC) <span class="kwd">as</span> dept_rank,
+    <span class="func">SUM</span>(salary) OVER (<span class="kwd">ORDER BY</span> salary) <span class="kwd">as</span> running_total
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 递归 CTE (查询组织架构)</span>
+<span class="kwd">WITH</span> <span class="kwd">RECURSIVE</span> org_tree <span class="kwd">AS</span> (
+    <span class="kwd">SELECT</span> id, name, manager_id, <span class="num">1</span> <span class="kwd">as</span> <span class="kwd">level</span>
+    <span class="kwd">FROM</span> employees <span class="kwd">WHERE</span> manager_id <span class="kwd">IS</span> NULL
+    <span class="kwd">UNION ALL</span>
+    <span class="kwd">SELECT</span> e.id, e.name, e.manager_id, ot.<span class="kwd">level</span> + <span class="num">1</span>
+    <span class="kwd">FROM</span> employees e
+    <span class="kwd">JOIN</span> org_tree ot <span class="kwd">ON</span> e.manager_id = ot.id
+)
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> org_tree;
+
+<span class="com">-- 隐藏索引测试</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_test <span class="kwd">ON</span> users(email) INVISIBLE;
+<span class="kwd">ALTER</span> <span class="kwd">INDEX</span> idx_test VISIBLE;
+
+<span class="com">-- 角色权限管理</span>
+<span class="kwd">CREATE</span> <span class="kwd">ROLE</span> <span class="str">'app_read'</span>, <span class="str">'app_write'</span>;
+GRANT SELECT <span class="kwd">ON</span> mydb.* <span class="kwd">TO</span> <span class="str">'app_read'</span>;
+GRANT INSERT, UPDATE, DELETE <span class="kwd">ON</span> mydb.* <span class="kwd">TO</span> <span class="str">'app_write'</span>;
+GRANT <span class="str">'app_read'</span>, <span class="str">'app_write'</span> <span class="kwd">TO</span> <span class="str">'user1'</span>@<span class="str">'localhost'</span>;
+SET DEFAULT ROLE <span class="str">'app_read'</span> <span class="kwd">FOR</span> <span class="str">'user1'</span>@<span class="str">'localhost'</span>;</code></pre>
+                </div>
+
+                <h3>8. MySQL 8.4 LTS - 长期支持</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 8.4 (2024年4月) LTS 长期支持版本</span>
+
+<span class="com">-- 主要特性：</span>
+<span class="com">-- 1. 性能提升 (InnoDB 引擎优化)</span>
+<span class="com">-- 2. JSON 数组增强</span>
+<span class="com">-- 3. 改进的复制功能</span>
+<span class="com">-- 4. 增强的安全特性</span>
+<span class="com">-- 5. 更好的 UTF-8 支持 (UTF8MB4 改进)</span>
+<span class="com">-- 6. 窗口函数性能优化</span>
+<span class="com">-- 7. 改进的审计日志</span>
+
+<span class="com">-- 解决的问题：</span>
+<span class="com">-- - 企业需要稳定可靠的长期支持版本</span>
+<span class="com">-- - JSON 处理效率需要提升</span>
+<span class="com">-- - 需要更好的安全合规性</span>
+
+<span class="com">-- 查看版本信息</span>
+SELECT VERSION();
+SHOW VARIABLES LIKE <span class="str">'version_comment'</span>;
+
+<span class="com">-- JSON 数组函数增强</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_ARRAYAGG</span>(column) <span class="kwd">FROM</span> table;
+<span class="kwd">SELECT</span> <span class="func">JSON_OBJECTAGG</span>(key, value) <span class="kwd">FROM</span> table;
+
+<span class="com">-- 检查字符集</span>
+SHOW VARIABLES LIKE <span class="str">'character_set%'</span>;
+SHOW VARIABLES LIKE <span class="str">'collation%'</span>;</code></pre>
+                </div>
+
+                <h3>9. MySQL 9.0 - AI 时代</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL 9.0 (2024年) 最新版本</span>
+
+<span class="com">-- 主要特性：</span>
+<span class="com">-- 1. 原生向量数据类型 (Vector Type)</span>
+<span class="com">-- 2. AI 查询优化器 (AI Query Optimizer)</span>
+<span class="com">-- 3. HNSW 索引支持向量搜索</span>
+<span class="com">-- 4. JavaScript 存储过程</span>
+<span class="com">-- 5. LATERAL JOIN 支持</span>
+<span class="com">-- 6. 物化视图 (Materialized Views)</span>
+<span class="com">-- 7. 增强的 JSON 处理</span>
+<span class="com">-- 8. 更好的云原生支持</span>
+<span class="com">-- 9. ARM64 架构优化</span>
+
+<span class="com">-- 解决的问题：</span>
+<span class="com">-- - AI/ML 应用需要向量数据库能力</span>
+<span class="com">-- - 传统 SQL 无法高效处理向量相似性搜索</span>
+<span class="com">-- - 需要更智能的查询优化</span>
+
+<span class="com">-- 向量数据类型</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> embeddings (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    doc_text <span class="type">TEXT</span>,
+    vector VECTOR(<span class="num">768</span>),
+    <span class="kwd">INDEX</span> idx_vector (vector) <span class="kwd">INDEX_TYPE</span> = <span class="str">'HNSW'</span>
+);
+
+<span class="com">-- 向量相似性搜索</span>
+<span class="kwd">SELECT</span> id, doc_text,
+    <span class="func">VECTOR_DISTANCE</span>(vector, <span class="str">'[0.1, 0.2, ...]'</span>, <span class="str">'cosine'</span>) <span class="kwd">as</span> distance
+<span class="kwd">FROM</span> embeddings
+<span class="kwd">ORDER BY</span> distance
+<span class="kwd">LIMIT</span> <span class="num">5</span>;
+
+<span class="com">-- JavaScript 存储过程</span>
+<span class="kwd">DELIMITER</span> //
+<span class="kwd">CREATE</span> <span class="kwd">PROCEDURE</span> analyze_data()
+<span class="kwd">LANGUAGE</span> <span class="kwd">JAVASCRIPT</span> <span class="kwd">AS</span>
+$$
+    var result = session.sql(<span class="str">'SELECT COUNT(*) FROM users'</span>).execute();
+    return <span class="str">'Total users: '</span> + result.fetchOne()[<span class="num">0</span>];
+$$ //
+<span class="kwd">DELIMITER</span> ;
+
+<span class="com">-- 物化视图</span>
+<span class="kwd">CREATE</span> <span class="kwd">MATERIALIZED</span> <span class="kwd">VIEW</span> sales_summary
+REFRESH <span class="kwd">EVERY</span> <span class="num">1</span> <span class="kwd">HOUR</span> <span class="kwd">AS</span>
+<span class="kwd">SELECT</span> 
+    <span class="func">DATE</span>(order_date) <span class="kwd">as</span> date,
+    <span class="func">COUNT</span>(*) <span class="kwd">as</span> total_orders,
+    <span class="func">SUM</span>(amount) <span class="kwd">as</span> total_amount
+<span class="kwd">FROM</span> orders
+<span class="kwd">GROUP BY</span> <span class="func">DATE</span>(order_date);
+
+<span class="com">-- LATERAL JOIN</span>
+<span class="kwd">SELECT</span> u.name, latest_orders.*
+<span class="kwd">FROM</span> users u
+<span class="kwd">LEFT JOIN</span> <span class="kwd">LATERAL</span> (
+    <span class="kwd">SELECT</span> order_id, total
+    <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = u.id
+    <span class="kwd">ORDER BY</span> order_date DESC LIMIT <span class="num">3</span>
+) <span class="kwd">AS</span> latest_orders <span class="kwd">ON</span> TRUE;
+
+<span class="com">-- AI 优化提示</span>
+<span class="kwd">SELECT</span> /*+ AI_OPTIMIZE */ * <span class="kwd">FROM</span> large_table
+<span class="kwd">WHERE</span> complex_condition = <span class="num">1</span>;</code></pre>
+                </div>
+
+                <h3>版本选择建议</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 版本选择指南</span>
+
+<span class="com">-- 生产环境推荐：</span>
+<span class="com">-- - MySQL 8.4 LTS: 稳定可靠，适合长期项目</span>
+<span class="com">-- - MySQL 8.0.35+: 如果需要窗口函数/CTE</span>
+<span class="com">-- - MySQL 5.7: 遗留系统维护 (不推荐新项目)</span>
+
+<span class="com">-- 开发/测试环境：</span>
+<span class="com">-- - MySQL 9.x: 测试最新特性，为迁移做准备</span>
+
+<span class="com">-- 需要向量搜索/AI 应用：</span>
+<span class="com">-- - MySQL 9.0+</span>
+
+<span class="com">-- 查看当前版本</span>
+SELECT 
+    @@version <span class="kwd">as</span> version,
+    @@version_comment <span class="kwd">as</span> edition;
+
+<span class="com">-- 检查支持的特性</span>
+SHOW VARIABLES LIKE <span class="str">'have_%'</span>;
+SHOW ENGINES;</code></pre>
+                </div>
+            </div>
+        </section>
         <section id="ai" class="section">
             <h2>AI 增强功能</h2>
             <div class="content">
@@ -7547,7 +7522,6 @@ DO
                 </div>
             </div>
         </section>
-
         <section id="practice" class="section">
             <h2>实战练习</h2>
             <div class="content">
