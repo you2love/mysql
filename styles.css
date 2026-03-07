@@ -360,6 +360,11 @@ body {
     overflow: hidden;
     box-shadow: var(--shadow-lg);
     border: 1px solid #334155;
+    transition: all var(--transition-base);
+}
+
+.code-block:hover {
+    box-shadow: var(--shadow-xl);
 }
 
 .code-block pre {
@@ -367,11 +372,100 @@ body {
     overflow-x: auto;
     font-size: 0.9rem;
     line-height: 1.6;
+    max-height: 500px;
+    transition: all 0.3s ease;
+}
+
+.code-block pre::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.code-block pre::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.code-block pre::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.code-block pre::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .code-block code {
     font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
     color: var(--code-text);
+    display: block;
+}
+
+/* 代码块工具栏 */
+.code-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    padding: 0.5rem 1rem !important;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-toolbar button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.code-toolbar button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.code-toolbar button:active {
+    transform: translateY(0);
+}
+
+.code-toolbar .toggle-btn {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.code-toolbar .toggle-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.code-toolbar .copy-btn {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.code-toolbar .copy-btn:hover {
+    background: rgba(16, 185, 129, 0.3);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.code-toolbar .copy-btn.copied {
+    background: rgba(16, 185, 129, 0.4);
+}
+
+/* 折叠状态 */
+.code-block.collapsed pre {
+    max-height: 0 !important;
+    padding: 0;
+    opacity: 0;
+}
+
+.code-block.collapsed .code-toolbar {
+    border-bottom: none;
 }
 
 /* SQL 语法高亮 */
