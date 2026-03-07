@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>性能优化 - MySQL 教程</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default'
+        });
+    </script>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><a href="../index.html">MySQL 教程</a></h1>
+            </div>
+            <nav class="tree-nav">
+                <ul class="tree">
+                    <li><a href="introduction.html">什么是 MySQL？</a></li>
+<li><a href="installation.html">安装与配置</a></li>
+<li><a href="basics.html">基础操作</a></li>
+<li><a href="advanced.html">高级特性</a></li>
+<li><a href="sql-theory.html">SQL原理</a></li>
+<li><a href="index-theory.html">索引原理</a></li>
+<li class="current"><a href="#">性能优化</a></li>
+<li><a href="backup.html">备份与恢复</a></li>
+<li><a href="security.html">安全特性</a></li>
+<li><a href="alternatives.html">MySQL 替代品</a></li>
+<li><a href="history.html">发展历程</a></li>
+<li><a href="ai.html">AI 增强</a></li>
+<li><a href="practice.html">实战练习</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <section id="performance" class="section">
+                <h2>性能优化</h2>
+                <div class="content">
+<h2>性能优化</h2>
+            <div class="content">
+                <h3>1. SQL 执行流程</h3>
+                <p>了解SQL语句的执行流程有助于进行性能优化。以下是MySQL处理SQL查询的完整流程：</p>
+                
+                <div class="mermaid">
+flowchart TD
+    A[SQL语句] --> B[语法解析器]
+    B --> C[语义检查]
+    C --> D{查询缓存?}
+    
+    D -->|命中| E[直接返回缓存结果]
+    D -->|未命中| F[查询优化器]
+    
+    F --> G[生成执行计划]
+    G --> H[成本评估]
+    H --> I[选择最优计划]
+    
+    I --> J[执行器]
+    J --> K[存储引擎]
+    K --> L[读取数据]
+    L --> M[返回结果]
+    
+    M --> N[写入查询缓存]
+    
+    E --> O[返回客户端]
+    N --> O
+    
+    style A fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style F fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style I fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style O fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+</div>
+                
+                <h4>各组件说明：</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>组件</th>
+                                <th>功能</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>语法解析器</td>
+                                <td>将SQL解析为语法树，检查语法错误</td>
+                            </tr>
+                            <tr>
+                                <td>语义检查</td>
+                                <td>检查表、列是否存在，权限是否足够</td>
+                            </tr>
+                            <tr>
+                                <td>查询缓存</td>
+                                <td>缓存查询结果，避免重复执行</td>
+                            </tr>
+                            <tr>
+                                <td>查询优化器</td>
+                                <td>生成多种执行计划，选择最优方案</td>
+                            </tr>
+                            <tr>
+                                <td>执行器</td>
+                                <td>调用存储引擎执行计划</td>
+                            </tr>
+                            <tr>
+                                <td>存储引擎</td>
+                                <td>实际读取/写入数据 (InnoDB/MyISAM)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>2. AI 查询优化器</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 启用 <span class="kwd">AI</span> 查询优化器</span>
+<span class="kwd">SET</span> GLOBAL optimizer_switch = <span class="str">'ai_optimization=on'</span>;
+
+<span class="com">-- 使用 <span class="kwd">AI</span> 优化提示</span>
+<span class="kwd">SELECT</span> /*+ AI_OPTIMIZE */ * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+
+<span class="com">-- 分析查询计划（<span class="kwd">AI</span> 增强版）</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">ANALYZE</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+
+<span class="com">-- 查看 <span class="kwd">AI</span> 优化建议</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ai_query_recommendations
+<span class="kwd">WHERE</span> query_hash = <span class="func">MD5</span>(<span class="str">'YOUR_QUERY'</span>);
+
+<span class="com">-- 自动应用优化建议</span>
+<span class="kwd">CALL</span> sys.apply_ai_optimizations(<span class="str">'YOUR_QUERY_HASH'</span>);</code></pre>
+                </div>
+
+                <h3>2. 查询缓存优化</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 启用查询缓存（MySQL <span class="num">9</span>.x 智能缓存）</span>
+<span class="kwd">SET</span> GLOBAL query_cache_type = ON;
+<span class="kwd">SET</span> GLOBAL query_cache_size = <span class="num">67108864</span>; <span class="com">-- 64MB</span>
+
+<span class="com">-- 监控缓存命中率</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> performance_schema.events_statements_summary_by_digest
+<span class="kwd">ORDER BY</span> SUM_TIMER_WAIT <span class="kwd">DESC</span> <span class="kwd">LIMIT</span> <span class="num">10</span>;
+
+<span class="com">-- 查看缓存统计</span>
+<span class="kwd">SHOW</span> <span class="kwd">STATUS</span> <span class="kwd">LIKE</span> <span class="str">'Qcache%'</span>;</code></pre>
+                </div>
+
+                <details>
+                    <summary>3. SQL 语句优化技巧（点击展开）</summary>
+
+                <h4>3.1 避免全表扫描</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- ❌ 全表扫描（效率低）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age != <span class="num">25</span>;
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age <span class="kwd">NOT</span> <span class="kwd">IN</span> (<span class="num">20</span>, <span class="num">30</span>);
+
+<span class="com">-- ✅ 使用索引（效率高）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span>;
+
+<span class="com">-- ❌ 前导通配符（无法使用索引）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> name <span class="kwd">LIKE</span> <span class="str">'%zhang%'</span>;
+
+<span class="com">-- ✅ 后置通配符（可以使用索引）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> name <span class="kwd">LIKE</span> <span class="str">'zhang%'</span>;
+
+<span class="com">-- ✅ 使用覆盖索引</span>
+<span class="kwd">SELECT</span> name, age <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> name <span class="kwd">LIKE</span> <span class="str">'zhang%'</span>;</code></pre>
+                </div>
+
+                <h4>3.2 优化 LIMIT 分页</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- ❌ 低效的分页（深度分页问题）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">ORDER BY</span> id <span class="kwd">LIMIT</span> <span class="num">100000</span>, <span class="num">10</span>;
+<span class="com">-- MySQL 会先扫描前 100010 条记录，然后丢弃前 100000 条</span>
+
+<span class="com">-- ✅ 优化方案1：基于主键的范围查询</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders 
+<span class="kwd">WHERE</span> id > <span class="num">100000</span> 
+<span class="kwd">ORDER BY</span> id 
+<span class="kwd">LIMIT</span> <span class="num">10</span>;
+
+<span class="com">-- ✅ 优化方案2：延迟关联</span>
+<span class="kwd">SELECT</span> o.*
+<span class="kwd">FROM</span> orders o
+<span class="kwd">INNER JOIN</span> (
+    <span class="kwd">SELECT</span> id <span class="kwd">FROM</span> orders
+    <span class="kwd">ORDER BY</span> id
+    <span class="kwd">LIMIT</span> <span class="num">100000</span>, <span class="num">10</span>
+) t <span class="kwd">ON</span> o.id = t.id;
+
+<span class="com">-- ✅ 优化方案3：记录上一页最后一条 ID</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders 
+<span class="kwd">WHERE</span> id > <span class="num">100000</span> 
+<span class="kwd">ORDER BY</span> id 
+<span class="kwd">LIMIT</span> <span class="num">10</span>;
+<span class="com">-- 假设上一页最后一条是 id=100000</span></code></pre>
+                </div>
+
+                <h4>3.3 避免 SELECT *</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- ❌ SELECT * 会读取所有列，增加 IO</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id = <span class="num">100</span>;
+
+<span class="com">-- ✅ 只查询需要的列</span>
+<span class="kwd">SELECT</span> order_no, amount, created_at 
+<span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id = <span class="num">100</span>;
+
+<span class="com">-- ✅ 使用覆盖索引时，效果更明显</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_cover <span class="kwd">ON</span> orders(customer_id, order_no, amount);
+<span class="kwd">SELECT</span> order_no, amount <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> customer_id = <span class="num">100</span>;
+<span class="com">-- 完全在索引中完成，不需要回表</span></code></pre>
+                </div>
+
+                <h4>3.4 合理使用 JOIN</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- ❌ 大表 JOIN 小表（效率低）</span>
+<span class="kwd">SELECT</span> o.*, c.name
+<span class="kwd">FROM</span> orders o  <span class="com">-- 大表</span>
+<span class="kwd">LEFT</span> <span class="kwd">JOIN</span> customers c <span class="kwd">ON</span> o.customer_id = c.id;
+
+<span class="com">-- ✅ 使用小表驱动大表（EXPLAIN 中 type 最好）</span>
+<span class="kwd">SELECT</span> o.*, c.name
+<span class="kwd">FROM</span> customers c  <span class="com">-- 小表</span>
+<span class="kwd">LEFT</span> <span class="kwd">JOIN</span> orders o <span class="kwd">ON</span> o.customer_id = c.id;
+
+<span class="com">-- 确保 JOIN 条件有索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_order_customer <span class="kwd">ON</span> orders(customer_id);
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_customer_id <span class="kwd">ON</span> customers(id);
+
+<span class="com">-- 避免多表 JOIN，适当拆分为多个查询</span></code></pre>
+                </div>
+
+                <h4>3.5 批量操作优化</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- ❌ 逐条插入（效率低）</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> users (name) <span class="kwd">VALUES</span> (<span class="str">'a'</span>);
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> users (name) <span class="kwd">VALUES</span> (<span class="str">'b'</span>);
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> users (name) <span class="kwd">VALUES</span> (<span class="str">'c'</span>);
+
+<span class="com">-- ✅ 批量插入（效率高）</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> users (name) <span class="kwd">VALUES</span>
+    (<span class="str">'a'</span>), (<span class="str">'b'</span>), (<span class="str">'c'</span>), (<span class="str">'d'</span>), (<span class="str">'e'</span>);
+
+<span class="com">-- 批量插入建议每次 1000-5000 条</span>
+
+<span class="com">-- 禁用索引加速批量插入</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">DISABLE</span> KEYS;
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> users (name) <span class="kwd">VALUES</span> ...;  <span class="com">-- 批量插入</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">ENABLE</span> KEYS;
+
+<span class="com">-- 使用 LOAD DATA INFILE（最快）</span>
+<span class="kwd">LOAD</span> DATA INFILE <span class="str">'/path/to/file.csv'</span>
+<span class="kwd">INTO</span> TABLE users
+FIELDS TERMINATED BY <span class="str">','</span>
+LINES TERMINATED BY <span class="str">'\n'</span>
+(name);</code></pre>
+                </div>
+                </details>
+
+                <h3>4. 常用配置优化</h3>
+
+                <h4>4.1 缓冲区配置</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- InnoDB 缓冲池大小（建议设置为可用内存的 60-80%）</span>
+<span class="kwd">SET</span> GLOBAL innodb_buffer_pool_size = <span class="num">4294967296</span>;  <span class="com">-- 4GB</span>
+
+<span class="com">-- 缓冲池实例数量（多核CPU建议设置多个实例）</span>
+<span class="kwd">SET</span> GLOBAL innodb_buffer_pool_instances = <span class="num">4</span>;
+
+<span class="com">-- 日志文件大小</span>
+<span class="kwd">SET</span> GLOBAL innodb_log_file_size = <span class="num">1073741824</span>;  <span class="com">-- 1GB</span>
+
+<span class="com">-- 刷新日志频率（平衡性能和数据安全）</span>
+<span class="kwd">SET</span> GLOBAL innodb_flush_log_at_trx_commit = <span class="num">2</span>;
+<span class="com">-- 1: 每次事务刷新（最安全，默认）</span>
+<span class="com">-- 2: 每秒刷新（性能好，崩溃可能丢失1秒数据）</span>
+<span class="com">-- 0: 不立即刷新（最快，崩溃可能丢失大量数据）</span></code></pre>
+                </div>
+
+                <h4>4.2 连接配置</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 最大连接数</span>
+<span class="kwd">SET</span> GLOBAL max_connections = <span class="num">500</span>;
+
+<span class="com">-- 连接超时时间</span>
+<span class="kwd">SET</span> GLOBAL wait_timeout = <span class="num">600</span>;  <span class="com">-- 10分钟</span>
+<span class="kwd">SET</span> GLOBAL interactive_timeout = <span class="num">600</span>;
+
+<span class="com">-- 线程缓存大小</span>
+<span class="kwd">SET</span> GLOBAL thread_cache_size = <span class="num">50</span>;
+
+<span class="com">-- 查询缓存大小</span>
+<span class="kwd">SET</span> GLOBAL query_cache_size = <span class="num08864</span">671>;  <span class="com">-- 64MB</span>
+<span class="kwd">SET</span> GLOBAL query_cache_limit = <span class="num">1048576</span>;  <span class="com">-- 单个查询最大1MB</span></code></pre>
+                </div>
+
+                <h4>4.3 临时表和排序缓冲</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 临时表大小</span>
+<span class="kwd">SET</span> GLOBAL tmp_table_size = <span class="num">134217728</span>;  <span class="com">-- 128MB</span>
+<span class="kwd">SET</span> GLOBAL max_heap_table_size = <span class="num">134217728</span>;
+
+<span class="com">-- 排序缓冲大小</span>
+<span class="kwd">SET</span> GLOBAL sort_buffer_size = <span class="num">4194304</span>;  <span class="com">-- 4MB</span>
+
+<span class="com">-- 读取缓冲大小</span>
+<span class="kwd">SET</span> GLOBAL read_buffer_size = <span class="num">2097152</span>;  <span class="com">-- 2MB</span>
+<span class="kwd">SET</span> GLOBAL read_rnd_buffer_size = <span class="num">4194304</span>;  <span class="com">-- 4MB</span>
+
+<span class="com">-- 查看配置</span>
+<span class="kwd">SHOW</span> VARIABLES LIKE <span class="str">'%buffer%'</span>;
+<span class="kwd">SHOW</span> VARIABLES LIKE <span class="str">'%size%'</span>;</code></pre>
+                </div>
+
+                <h3>5. 慢查询分析</h3>
+
+                <h4>5.1 开启慢查询日志</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 开启慢查询日志</span>
+<span class="kwd">SET</span> GLOBAL slow_query_log = <span class="str">'ON'</span>;
+<span class="kwd">SET</span> GLOBAL slow_query_log_file = <span class="str">'/var/log/mysql/slow.log'</span>;
+<span class="kwd">SET</span> GLOBAL long_query_time = <span class="num">1</span>;  <span class="com">-- 超过1秒记录</span>
+<span class="kwd">SET</span> GLOBAL log_queries_not_using_indexes = <span class="str">'ON'</span>;
+
+<span class="com">-- 查看慢查询</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> mysql.slow_log
+<span class="kwd">ORDER BY</span> start_time DESC
+<span class="kwd">LIMIT</span> <span class="num">10</span>;
+
+<span class="com">-- 使用 mysqldumpslow 工具分析</span>
+<span class="com">-- mysqldumpslow -s t -t 10 /var/log/mysql/slow.log</span>
+<span class="com">-- -s: 排序方式 (t=时间, c=次数)</span>
+<span class="com">-- -t: 显示前N条</span></code></pre>
+                </div>
+
+                <h4>5.2 使用 EXPLAIN 分析</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- EXPLAIN 分析查询计划</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+
+<span class="com">-- 关键字段解读：</span>
+<span class="com">-- type: 连接类型</span>
+<span class="com">--   system > const > eq_ref > ref > range > index > ALL</span>
+<span class="com">--   const/eq_ref/ref/range 都是可接受的</span>
+<span class="com">--   ALL 表示全表扫描，需要优化</span>
+
+<span class="com">-- key: 实际使用的索引</span>
+<span class="com">-- rows: 预计扫描的行数（越小越好）</span>
+<span class="com">-- Extra: 额外信息</span>
+<span class="com">--   Using index: 使用覆盖索引</span>
+<span class="com">--   Using filesort: 需要额外排序</span>
+<span class="com">--   Using temporary: 使用临时表</span>
+
+<span class="com">-- EXPLAIN ANALYZE（实际执行并分析）</span>
+<span class="kwd">EXPLAIN</span> ANALYZE <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;</code></pre>
+                </div>
+
+                <h3>6. 表结构优化</h3>
+
+                <h4>6.1 选择合适的数据类型</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- ❌ 使用过大的数据类型</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> t1 (
+    id <span class="type">INT</span>,           <span class="com">-- 4字节</span>
+    phone <span class="type">VARCHAR</span>(<span class="num">20</span>)
+);
+
+<span class="com">-- ✅ 使用合适的数据类型</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> t2 (
+    id <span class="kwd">INT</span> <span class="kwd">UNSIGNED</span>,     <span class="com">-- 无符号，支持更大范围</span>
+    status <span class="kwd">TINYINT</span>,        <span class="com">-- 1字节，范围 -128~127</span>
+    age <span class="kwd">TINYINT</span> <span class="kwd">UNSIGNED</span>, <span class="com">-- 0-255</span>
+    views <span class="kwd">BIGINT</span> <span class="kwd">UNSIGNED</span>,  <span class="com">-- 大访问量</span>
+    price <span class="type">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>)  <span class="com">-- 精确价格</span>
+);
+
+<span class="com">-- 使用 ENUM 代替字符串</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> orders (
+    status <span class="kwd">ENUM</span>(<span class="str">'pending'</span>, <span class="str">'processing'</span>, <span class="str">'completed'</span>, <span class="str">'cancelled'</span>)
+);
+
+<span class="com">-- 使用 NOT NULL</span>
+<span class="com">-- NULL 需要额外空间存储，且影响索引效率</span></code></pre>
+                </div>
+
+                <h4>6.2 垂直拆分和水平拆分</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 垂直拆分：将大表拆分为多个小表</span>
+<span class="com">-- 原始表：users (id, name, email, avatar, bio, ...) 字段很多</span>
+
+<span class="com">-- 拆分后：</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">50</span>),
+    email <span class="type">VARCHAR</span>(<span class="num">100</span>)
+);
+
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> user_profiles (
+    user_id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    avatar <span class="type">VARCHAR</span>(<span class="num">255</span>),
+    bio <span class="type">TEXT</span>,
+    <span class="kwd">FOREIGN</span> <span class="kwd">KEY</span> (user_id) <span class="kwd">REFERENCES</span> users(id)
+);
+
+<span class="com">-- 水平拆分：按数据范围或哈希分表</span>
+<span class="com">-- 按月份分表（适用于日志、订单等）</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> orders_202401 (
+    <span class="kwd">LIKE</span> orders
+);
+
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> orders_202402 (
+    <span class="kwd">LIKE</span> orders
+);
+
+<span class="com">-- 使用分区表（MySQL 原生支持）</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> orders_partitioned (
+    id <span class="kwd">INT</span>,
+    created_at <span class="type">DATE</span>,
+    amount <span class="type">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>)
+) PARTITION BY <span class="kwd">RANGE</span> (YEAR(created_at)) (
+    PARTITION p2023 <span class="kwd">VALUES</span> LESS THAN (<span class="num">2024</span>),
+    PARTITION p2024 <span class="kwd">VALUES</span> LESS THAN (<span class="num">2025</span>),
+    PARTITION pmax <span class="kwd">VALUES</span> LESS THAN <span class="kwd">MAXVALUE</span>
+);</code></pre>
+                </div>
+
+                <h3>7. 读写分离与负载均衡</h3>
+                
+                <div class="mermaid">
+sequenceDiagram
+    participant App as 应用服务器
+    participant Master as 主库 (Master)
+    participant Slave1 as 从库 (Slave1)
+    participant Slave2 as 从库 (Slave2)
+    
+    App->>Master: 1. INSERT/UPDATE/DELETE
+    Master->>Master: 写入binlog
+    Master-->>App: 返回成功
+    
+    par 异步复制
+        Master->>Slave1: 2. 传输binlog
+        Master->>Slave2: 2. 传输binlog
+    end
+    
+    Slave1->>Slave1: 3. 重放binlog
+    Slave2->>Slave2: 3. 重放binlog
+    
+    Note over App,Master: 读写分离: 写操作→主库, 读操作→从库
+    
+    App->>Slave1: 4. SELECT查询
+    Slave1-->>App: 返回查询结果
+    
+    App->>Slave2: 5. SELECT查询
+    Slave2-->>App: 返回查询结果
+</div>
+                
+                <h4>主从复制原理：</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>步骤</th>
+                                <th>主库操作</th>
+                                <th>从库操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1. 日志记录</td>
+                                <td>将写操作记录到 binlog</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>2. 日志传输</td>
+                                <td>将 binlog 发送到从库</td>
+                                <td>接收 binlog</td>
+                            </tr>
+                            <tr>
+                                <td>3. 日志重放</td>
+                                <td>-</td>
+                                <td>执行 binlog 中的操作</td>
+                            </tr>
+                            <tr>
+                                <td>4. 同步完成</td>
+                                <td>-</td>
+                                <td>更新 relay log 位置</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h4>7.1 主从复制配置</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 主库配置</span>
+<span class="kwd">[mysqld]
+server-id = <span class="num">1</span>
+log-bin = mysql-bin
+binlog-do-db = myapp
+
+<span class="com">-- 从库配置</span>
+<span class="kwd">[mysqld]
+server-id = <span class="num">2</span>
+relay-log = relay-bin
+read-only = <span class="num">1</span>
+
+<span class="com">-- 从库设置</span>
+<span class="kwd">CHANGE</span> MASTER <span class="kwd">TO</span>
+    MASTER_HOST=<span class="str">'master_host'</span>,
+    MASTER_USER=<span class="str">'repl_user'</span>,
+    MASTER_PASSWORD=<span class="str">'password'</span>,
+    MASTER_LOG_FILE=<span class="str">'mysql-bin.000001'</span>,
+    MASTER_LOG_POS=<span class="num">154</span>;
+
+<span class="kwd">START</span> SLAVE;
+<span class="kwd">SHOW</span> SLAVE STATUS\G</code></pre>
+                </div>
+
+                <h4>7.2 连接池配置</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 推荐使用连接池（推荐 HikariCP、Druid）</span>
+<span class="com">-- 连接池配置建议：</span>
+
+<span class="com">-- 最小空闲连接数</span>
+minimum-idle = <span class="num">5</span>
+
+<span class="com">-- 最大连接数</span>
+maximum-pool-size = <span class="num">20</span>
+
+<span class="com">-- 空闲连接超时（毫秒）</span>
+idle-timeout = <span class="num">300000</span>
+
+<span class="com">-- 连接最大生命周期（毫秒）</span>
+max-lifetime = <span class="num">1800000</span>
+
+<span class="com">-- 连接超时（毫秒）</span>
+connection-timeout = <span class="num">30000</span></code></pre>
+                </div>
+
+                <h3>3. 并发控制</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 查看当前锁情况</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> performance_schema.data_locks;
+
+<span class="com">-- 设置事务隔离级别（支持新的隔离级别）</span>
+<span class="kwd">SET</span> TRANSACTION <span class="kwd">ISOLATION</span> <span class="kwd">LEVEL</span> READ COMMITTED;
+
+<span class="com">-- 乐观锁（改进的版本控制）</span>
+<span class="kwd">UPDATE</span> products
+<span class="kwd">SET</span> stock = stock - <span class="num">1</span>, <span class="kwd">version</span> = <span class="kwd">version</span> + <span class="num">1</span>
+<span class="kwd">WHERE</span> id = <span class="num">1</span> <span class="kwd">AND</span> <span class="kwd">version</span> = <span class="num">5</span>;
+
+<span class="com">-- 查看行锁等待</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> performance_schema.events_waits_current
+<span class="kwd">WHERE</span> EVENT_NAME <span class="kwd">LIKE</span> <span class="str">'%lock%'</span>;</code></pre>
+                </div>
+
+                <h3>4. 性能监控</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 实时性能监控</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.statements_with_runtimes_in_95th_percentile;
+
+<span class="com">-- 查看慢查询（<span class="kwd">AI</span> 分析）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.statements_with_temp_tables
+<span class="kwd">ORDER BY</span> tmp_tables DESC;
+
+<span class="com">-- 表空间使用情况</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> information_schema.innodb_tablespaces;
+
+<span class="com">-- <span class="kwd">AI</span> 性能诊断报告</span>
+<span class="kwd">CALL</span> sys.generate_performance_report(<span class="str">'your_database'</span>);</code></pre>
+                </div>
+            </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

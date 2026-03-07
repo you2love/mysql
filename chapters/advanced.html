@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级特性 - MySQL 教程</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default'
+        });
+    </script>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><a href="../index.html">MySQL 教程</a></h1>
+            </div>
+            <nav class="tree-nav">
+                <ul class="tree">
+                    <li><a href="introduction.html">什么是 MySQL？</a></li>
+<li><a href="installation.html">安装与配置</a></li>
+<li><a href="basics.html">基础操作</a></li>
+<li class="current"><a href="#">高级特性</a></li>
+<li><a href="sql-theory.html">SQL原理</a></li>
+<li><a href="index-theory.html">索引原理</a></li>
+<li><a href="performance.html">性能优化</a></li>
+<li><a href="backup.html">备份与恢复</a></li>
+<li><a href="security.html">安全特性</a></li>
+<li><a href="alternatives.html">MySQL 替代品</a></li>
+<li><a href="history.html">发展历程</a></li>
+<li><a href="ai.html">AI 增强</a></li>
+<li><a href="practice.html">实战练习</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <section id="advanced" class="section">
+                <h2>高级特性</h2>
+                <div class="content">
+<h2>高级特性</h2>
+            <div class="content">
+                <h3>存储引擎对比</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>InnoDB</th>
+                                <th>MyISAM</th>
+                                <th>Memory</th>
+                                <th>CSV</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>事务支持</strong></td>
+                                <td>✅ ACID</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>行锁</strong></td>
+                                <td>✅</td>
+                                <td>表锁</td>
+                                <td>✅</td>
+                                <td>表锁</td>
+                            </tr>
+                            <tr>
+                                <td><strong>外键</strong></td>
+                                <td>✅</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>全文索引</strong></td>
+                                <td>✅ 5.6+</td>
+                                <td>✅</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>集群索引</strong></td>
+                                <td>✅</td>
+                                <td>❌</td>
+                                <td>N/A</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>崩溃恢复</strong></td>
+                                <td>✅ 自动</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                                <td>❌</td>
+                            </tr>
+                            <tr>
+                                <td><strong>存储限制</strong></td>
+                                <td>64TB</td>
+                                <td>256TB</td>
+                                <td>RAM</td>
+                                <td>无</td>
+                            </tr>
+                            <tr>
+                                <td><strong>适用场景</strong></td>
+                                <td>生产环境<br>事务需求</td>
+                                <td>只读/日志<br>全文搜索</td>
+                                <td>缓存/临时<br>高速访问</td>
+                                <td>数据交换<br>日志分析</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>1. 索引详解（AI 驱动）</h3>
+
+                <h4>1.1 什么是索引？</h4>
+                <p>索引是数据库中用于加速数据检索的数据结构。就像书籍的目录一样，索引可以帮助快速定位数据，而不需要扫描整个表。合理的索引设计可以显著提升查询性能，但也会占用存储空间并影响写入性能。</p>
+
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 查看表的当前索引状态</span>
+<span class="kwd">SHOW</span> <span class="kwd">INDEX</span> <span class="kwd">FROM</span> users;
+
+<span class="com">-- 分析表获取索引使用统计</span>
+<span class="kwd">ANALYZE</span> <span class="kwd">TABLE</span> users;
+
+<span class="com">-- 查看索引统计信息</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> mysql.innodb_index_stats
+<span class="kwd">WHERE</span> database_name = <span class="kwd">DATABASE</span>() <span class="kwd">AND</span> table_name = <span class="str">'users'</span>;</code></pre>
+                </div>
+
+                <details>
+                    <summary>1.2 索引类型（点击展开）</summary>
+
+                <h5>索引类型概览</h5>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>关键字</th>
+                                <th>特点</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>主键索引</strong></td>
+                                <td>PRIMARY KEY</td>
+                                <td>唯一、非空、自动创建聚簇索引</td>
+                                <td>唯一标识记录</td>
+                            </tr>
+                            <tr>
+                                <td><strong>唯一索引</strong></td>
+                                <td>UNIQUE</td>
+                                <td>值唯一，可为NULL</td>
+                                <td>邮箱、手机号等唯一字段</td>
+                            </tr>
+                            <tr>
+                                <td><strong>普通索引</strong></td>
+                                <td>INDEX/KEY</td>
+                                <td>最基本的索引，无限制</td>
+                                <td>加速WHERE查询</td>
+                            </tr>
+                            <tr>
+                                <td><strong>复合索引</strong></td>
+                                <td>INDEX(a,b,c)</td>
+                                <td>多列组合，遵循最左前缀</td>
+                                <td>多条件查询</td>
+                            </tr>
+                            <tr>
+                                <td><strong>全文索引</strong></td>
+                                <td>FULLTEXT</td>
+                                <td>文本搜索，支持中文分词</td>
+                                <td>文章、内容搜索</td>
+                            </tr>
+                            <tr>
+                                <td><strong>空间索引</strong></td>
+                                <td>SPATIAL</td>
+                                <td>地理空间数据</td>
+                                <td>LBS、地图应用</td>
+                            </tr>
+                            <tr>
+                                <td><strong>前缀索引</strong></td>
+                                <td>INDEX(col(10))</td>
+                                <td>只索引前缀部分</td>
+                                <td>长字符串列</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h5>1.2.1 主键索引（PRIMARY KEY）</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 主键索引（自动创建，唯一且非空）</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    username <span class="type">VARCHAR</span>(<span class="num">100</span>)
+);
+
+<span class="com">-- 或者单独定义</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span>,
+    username <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    <span class="kwd">PRIMARY KEY</span> (id)
+);
+
+<span class="com">-- 复合主键</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> user_scores (
+    user_id <span class="type">INT</span>,
+    game_id <span class="type">INT</span>,
+    score <span class="type">INT</span>,
+    <span class="kwd">PRIMARY KEY</span> (user_id, game_id)
+);</code></pre>
+                </div>
+
+                <h5>1.2.2 唯一索引（UNIQUE）</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 创建唯一索引（确保列值唯一）</span>
+<span class="kwd">CREATE</span> <span class="kwd">UNIQUE</span> <span class="kwd">INDEX</span> idx_email <span class="kwd">ON</span> users(email);
+
+<span class="com">-- 在表定义中创建</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    username <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    email <span class="type">VARCHAR</span>(<span class="num">255</span>) <span class="kwd">UNIQUE</span>
+);
+
+<span class="com">-- 复合唯一索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">UNIQUE</span> <span class="kwd">INDEX</span> idx_username_email <span class="kwd">ON</span> users(username, email);</code></pre>
+                </div>
+
+                <h5>1.2.3 普通索引（INDEX）</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 创建普通索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_username <span class="kwd">ON</span> users(username);
+
+<span class="com">-- 复合索引（最左前缀原则）</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_age_email <span class="kwd">ON</span> users(age, email);
+
+<span class="com">-- 使用复合索引的查询会命中索引</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span>; <span class="com">-- 命中</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age = <span class="num">25</span> <span class="kwd">AND</span> email = <span class="str">'test@example.com'</span>; <span class="com">-- 命中</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> email = <span class="str">'test@example.com'</span>; <span class="com">-- 不命中</span>
+
+<span class="com">-- 添加索引</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users ADD <span class="kwd">INDEX</span> idx_created_at (created_at);</code></pre>
+                </div>
+
+                <h5>1.2.4 全文索引（FULLTEXT）</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 全文索引（用于文本搜索）</span>
+<span class="kwd">CREATE</span> <span class="kwd">FULLTEXT</span> <span class="kwd">INDEX</span> idx_content <span class="kwd">ON</span> articles(content);
+
+<span class="com">-- 全文搜索</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
+<span class="kwd">WHERE</span> <span class="func">MATCH</span>(content) <span class="func">AGAINST</span>(<span class="str">'MySQL 教程'</span> <span class="kwd">IN</span> <span class="kwd">NATURAL</span> <span class="kwd">LANGUAGE</span> MODE);
+
+<span class="com">-- 布尔模式搜索</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
+<span class="kwd">WHERE</span> <span class="func">MATCH</span>(content, title) <span class="func">AGAINST</span>(<span class="str">'MySQL +教程 -基础'</span> <span class="kwd">IN</span> BOOLEAN MODE);
+
+<span class="com">-- 查询扩展模式</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> articles
+<span class="kwd">WHERE</span> <span class="func">MATCH</span>(content) <span class="func">AGAINST</span>(<span class="str">'MySQL'</span> <span class="kwd">WITH</span> <span class="kwd">QUERY</span> EXPANSION);
+
+<span class="com">-- 中文分词支持</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> articles (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    content <span class="type">TEXT</span>,
+    <span class="kwd">FULLTEXT</span> <span class="kwd">INDEX</span> ft_content (content) <span class="kwd">WITH</span> PARSER ngram
+);</code></pre>
+                </div>
+
+                <h5>1.2.5 空间索引（SPATIAL）</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 空间索引（用于地理数据）</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> locations (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    location GEOMETRY <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    <span class="kwd">SPATIAL</span> <span class="kwd">INDEX</span> idx_location (location)
+);
+
+<span class="com">-- 插入空间数据</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> locations (name, location) <span class="kwd">VALUES</span>
+(<span class="str">'Beijing'</span>, <span class="func">ST_GeomFromText</span>(<span class="str">'<span class="type">POINT</span>(<span class="num">116</span>.<span class="num">4074</span> <span class="num">39</span>.<span class="num">9042</span>)'</span>)),
+(<span class="str">'Shanghai'</span>, <span class="func">ST_GeomFromText</span>(<span class="str">'<span class="type">POINT</span>(<span class="num">121</span>.<span class="num">4737</span> <span class="num">31</span>.<span class="num">2304</span>)'</span>));
+
+<span class="com">-- 空间查询</span>
+<span class="kwd">SELECT</span> name, <span class="func">ST_AsText</span>(location) <span class="kwd">as</span> coordinates
+<span class="kwd">FROM</span> locations
+<span class="kwd">WHERE</span> <span class="func">ST_Distance_Sphere</span>(
+    location,
+    <span class="func">ST_GeomFromText</span>(<span class="str">'<span class="type">POINT</span>(<span class="num">116</span>.<span class="num">4074</span> <span class="num">39</span>.<span class="num">9042</span>)'</span>)
+) < <span class="num">50000</span>; <span class="com">-- 50公里范围内</span></code></pre>
+                </div>
+
+                <h5>1.2.6 前缀索引</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 前缀索引（节省空间，适用于长字符串）</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_email_prefix <span class="kwd">ON</span> users(email(<span class="num">20</span>));
+
+<span class="com">-- 查看前缀长度建议</span>
+<span class="kwd">SELECT</span>
+    <span class="func">COUNT</span>(<span class="kwd">DISTINCT</span> LEFT(email, <span class="num">10</span>)) <span class="kwd">as</span> distinct_10,
+    <span class="func">COUNT</span>(<span class="kwd">DISTINCT</span> LEFT(email, <span class="num">20</span>)) <span class="kwd">as</span> distinct_20,
+    <span class="func">COUNT</span>(<span class="kwd">DISTINCT</span> LEFT(email, <span class="num">30</span>)) <span class="kwd">as</span> distinct_30
+<span class="kwd">FROM</span> users;
+
+<span class="com">-- 创建合适长度的前缀索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_title_prefix <span class="kwd">ON</span> articles(title(<span class="num">50</span>));</code></pre>
+                </div>
+
+                <h5>1.2.7 函数索引</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 函数索引（对表达式建立索引）</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_email_lower <span class="kwd">ON</span> users((<span class="func">LOWER</span>(email)));
+
+<span class="com">-- 使用函数索引的查询</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> <span class="func">LOWER</span>(email) = <span class="str">'test@example.com'</span>;
+
+<span class="com">-- 计算列索引</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> products ADD COLUMN discounted_price <span class="type">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>);
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_discounted_price <span class="kwd">ON</span> products((price * discount_rate));
+
+<span class="com">-- <span class="kwd">JSON</span> 列索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_prefs <span class="kwd">ON</span> users((<span class="func">JSON_EXTRACT</span>(preferences, <span class="str">'$.language'</span>)));
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users
+<span class="kwd">WHERE</span> <span class="func">JSON_EXTRACT</span>(preferences, <span class="str">'$.language'</span>) = <span class="str">'zh-CN'</span>;
+                </div>
+                </details>
+
+                <h4>1.3 索引设计原则</h4>
+
+                <h5>1.3.1 选择合适的列建立索引</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 建议索引的列类型：</span>
+<span class="com">-- <span class="num">1</span>. 经常在 <span class="kwd">WHERE</span> 条件中使用的列</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_status <span class="kwd">ON</span> orders(<span class="kwd">status</span>);
+
+<span class="com">-- <span class="num">2</span>. 经常在 JOIN 条件中使用的列</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_id <span class="kwd">ON</span> orders(user_id);
+
+<span class="com">-- <span class="num">3</span>. 经常在 <span class="kwd">ORDER BY</span> 中使用的列</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_created_at <span class="kwd">ON</span> posts(created_at);
+
+<span class="com">-- <span class="num">4</span>. 经常在 <span class="kwd">GROUP BY</span> 中使用的列</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_category <span class="kwd">ON</span> posts(category_id);
+
+<span class="com">-- <span class="num">5</span>. 唯一性高的列</span>
+<span class="kwd">CREATE</span> <span class="kwd">UNIQUE</span> <span class="kwd">INDEX</span> idx_username <span class="kwd">ON</span> users(username);</code></pre>
+                </div>
+
+                <h5>1.3.2 复合索引的列顺序</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 复合索引设计原则：</span>
+<span class="com">-- <span class="num">1</span>. 将选择性高的列放在前面</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_status_created <span class="kwd">ON</span> orders(<span class="kwd">status</span>, created_at);
+
+<span class="com">-- <span class="num">2</span>. 考虑查询的列顺序</span>
+<span class="com">-- 常见查询：<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = ? <span class="kwd">AND</span> <span class="kwd">status</span> = ?</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_status <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>);
+
+<span class="com">-- <span class="num">3</span>. 最左前缀原则</span>
+<span class="com">-- 索引 (user_id, <span class="kwd">status</span>, created_at)</span>
+<span class="com">-- 可以使用索引的查询：</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = <span class="num">1</span>;
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = <span class="num">1</span> <span class="kwd">AND</span> <span class="kwd">status</span> = <span class="str">'pending'</span>;
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = <span class="num">1</span> <span class="kwd">AND</span> <span class="kwd">status</span> = <span class="str">'pending'</span> <span class="kwd">AND</span> created_at > <span class="str">'<span class="num">2024</span>-<span class="num">01</span>-<span class="num">01</span>'</span>;
+
+<span class="com">-- 不可以使用索引的查询：</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> <span class="kwd">status</span> = <span class="str">'pending'</span>; <span class="com">-- 跳过最左列</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> created_at > <span class="str">'<span class="num">2024</span>-<span class="num">01</span>-<span class="num">01</span>'</span>; <span class="com">-- 跳过前两列</span></code></pre>
+                </div>
+
+                <h5>1.3.3 覆盖索引</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 覆盖索引（索引包含查询所需的所有列）</span>
+<span class="com">-- 索引包含：user_id, <span class="kwd">status</span>, total_amount</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_status_amount <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>, total_amount);
+
+<span class="com">-- 查询只使用索引，不需要回表</span>
+<span class="kwd">SELECT</span> user_id, <span class="kwd">status</span>, total_amount
+<span class="kwd">FROM</span> orders
+<span class="kwd">WHERE</span> user_id = <span class="num">1</span> <span class="kwd">AND</span> <span class="kwd">status</span> = <span class="str">'completed'</span>;
+
+<span class="com">-- 使用 <span class="kwd">EXPLAIN</span> 验证是否使用覆盖索引</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> user_id, <span class="kwd">status</span>, total_amount
+<span class="kwd">FROM</span> orders <span class="kwd">WHERE</span> user_id = <span class="num">1</span> <span class="kwd">AND</span> <span class="kwd">status</span> = <span class="str">'completed'</span>;
+
+<span class="com">-- Extra 字段显示 "Using index" 表示使用了覆盖索引</span></code></pre>
+                </div>
+
+                <h4>1.4 索引管理</h4>
+
+                <h5>1.4.1 查看索引信息</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 查看表的所有索引</span>
+<span class="kwd">SHOW</span> <span class="kwd">INDEX</span> <span class="kwd">FROM</span> users;
+
+<span class="com">-- 查看索引的统计信息</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> mysql.innodb_index_stats
+<span class="kwd">WHERE</span> database_name = <span class="kwd">DATABASE</span>() <span class="kwd">AND</span> table_name = <span class="str">'users'</span>;
+
+<span class="com">-- 查看索引使用情况</span>
+<span class="kwd">SELECT</span>
+    table_name,
+    index_name,
+    cardinality,
+    nullable,
+    index_type
+<span class="kwd">FROM</span> information_schema.statistics
+<span class="kwd">WHERE</span> table_schema = <span class="kwd">DATABASE</span>()
+<span class="kwd">ORDER BY</span> table_name, index_name;
+
+<span class="com">-- 查看未使用的索引</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.schema_unused_indexes
+<span class="kwd">WHERE</span> object_schema = <span class="kwd">DATABASE</span>();</code></pre>
+                </div>
+
+                <h5>1.4.2 索引维护</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 分析表（更新索引统计信息）</span>
+<span class="kwd">ANALYZE</span> <span class="kwd">TABLE</span> users;
+
+<span class="com">-- 优化表（重建表和索引）</span>
+<span class="kwd">OPTIMIZE</span> <span class="kwd">TABLE</span> users;
+
+<span class="com">-- 重建索引</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users ENGINE=InnoDB;
+
+<span class="com">-- 清理碎片</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users ENGINE=InnoDB;
+
+<span class="com">-- 禁用索引（批量导入时提升性能）</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">DISABLE</span> KEYS;
+<span class="com">-- 批量插入数据</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">ENABLE</span> KEYS;</code></pre>
+                </div>
+
+                <h5>1.4.3 索引删除</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 删除索引</span>
+<span class="kwd">DROP</span> <span class="kwd">INDEX</span> idx_username <span class="kwd">ON</span> users;
+
+<span class="com">-- 删除主键（如果有自增列需要先删除）</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">DROP</span> PRIMARY KEY;
+
+<span class="com">-- 删除多个索引</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users
+    <span class="kwd">DROP</span> <span class="kwd">INDEX</span> idx_email,
+    <span class="kwd">DROP</span> <span class="kwd">INDEX</span> idx_age;</code></pre>
+                </div>
+
+                <h4>1.5 AI 智能索引优化</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- <span class="kwd">AI</span> 自动索引推荐</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ai_index_recommendations
+<span class="kwd">WHERE</span> table_name = <span class="str">'users'</span>
+<span class="kwd">ORDER BY</span> potential_improvement DESC;
+
+<span class="com">-- 应用 <span class="kwd">AI</span> 推荐的索引</span>
+<span class="kwd">CALL</span> sys.apply_ai_index_recommendations(<span class="str">'users'</span>);
+
+<span class="com">-- 查看 <span class="kwd">AI</span> 优化建议详情</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.ai_query_analysis
+<span class="kwd">WHERE</span> query_time > <span class="func">NOW</span>() - INTERVAL <span class="num">1</span> DAY;
+
+<span class="com">-- <span class="kwd">AI</span> 实时监控索引效果</span>
+<span class="kwd">SELECT</span>
+    index_name,
+    used_count,
+    avg_access_time,
+    improvement_percentage
+<span class="kwd">FROM</span> sys.ai_index_performance_monitor
+<span class="kwd">WHERE</span> table_name = <span class="str">'users'</span>;</code></pre>
+                </div>
+
+                <h4>1.6 索引性能优化技巧</h4>
+
+                <h5>1.6.1 隐藏索引（测试性能）</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 创建隐藏索引（不实际使用，用于测试）</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_test <span class="kwd">ON</span> users(username) INVISIBLE;
+
+<span class="com">-- 将已有索引设为隐藏</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">ALTER</span> <span class="kwd">INDEX</span> idx_username INVISIBLE;
+
+<span class="com">-- 显示隐藏索引</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users <span class="kwd">ALTER</span> <span class="kwd">INDEX</span> idx_username VISIBLE;
+
+<span class="com">-- 查看隐藏索引</span>
+<span class="kwd">SELECT</span> index_name, is_visible
+<span class="kwd">FROM</span> information_schema.statistics
+<span class="kwd">WHERE</span> table_schema = <span class="kwd">DATABASE</span>() <span class="kwd">AND</span> table_name = <span class="str">'users'</span> <span class="kwd">AND</span> is_visible = <span class="str">'NO'</span>;</code></pre>
+                </div>
+
+                <h5>1.6.2 索引提示</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 强制使用指定索引</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">USE</span> <span class="kwd">INDEX</span> (idx_username) <span class="kwd">WHERE</span> username = <span class="str">'test'</span>;
+
+<span class="com">-- 强制不使用索引（全表扫描）</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users IGNORE <span class="kwd">INDEX</span> (idx_username) <span class="kwd">WHERE</span> username = <span class="str">'test'</span>;
+
+<span class="com">-- 指定多个索引</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">USE</span> <span class="kwd">INDEX</span> (idx_username, idx_email)
+<span class="kwd">WHERE</span> username = <span class="str">'test'</span> <span class="kwd">OR</span> email = <span class="str">'test@example.com'</span>;</code></pre>
+                </div>
+
+                <h5>1.6.3 索引下推优化</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- MySQL <span class="num">8</span>.<span class="num">0</span>+ 支持索引下推</span>
+<span class="com">-- 对于复合索引，条件过滤在存储引擎层完成</span>
+<span class="com">-- 示例：索引 (name, age)</span>
+<span class="com">-- 查询：<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> name = <span class="str">'test'</span> <span class="kwd">AND</span> age > <span class="num">25</span></span>
+<span class="com">-- MySQL 会先在索引中过滤 age > <span class="num">25</span>，减少回表次数</span>
+
+<span class="com">-- 查看是否使用了索引下推</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users
+<span class="kwd">WHERE</span> name = <span class="str">'test'</span> <span class="kwd">AND</span> age > <span class="num">25</span>;
+<span class="com">-- Extra 字段显示 "Using <span class="kwd">index</span> condition" 表示使用了索引下推</span></code></pre>
+                </div>
+
+                <h4>1.7 索引最佳实践</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 最佳实践总结：</span>
+
+<span class="com">-- <span class="num">1</span>. 为 WHERE、JOIN、ORDER BY、<span class="kwd">GROUP BY</span> 中的列创建索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_status <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>);
+
+<span class="com">-- <span class="num">2</span>. 避免在区分度低的列上创建索引（如性别、布尔值）</span>
+<span class="com">-- 不推荐：<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_gender <span class="kwd">ON</span> users(gender);</span>
+
+<span class="com">-- <span class="num">3</span>. 不要过度索引（索引会占用空间并降低写入性能）</span>
+<span class="com">-- 定期检查未使用的索引并删除</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.schema_unused_indexes;
+
+<span class="com">-- <span class="num">4</span>. 使用 <span class="kwd">EXPLAIN</span> 分析查询计划</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age > <span class="num">25</span>;
+
+<span class="com">-- <span class="num">5</span>. 定期维护索引</span>
+<span class="kwd">ANALYZE</span> <span class="kwd">TABLE</span> users; <span class="com">-- 更新统计信息</span>
+<span class="kwd">OPTIMIZE</span> <span class="kwd">TABLE</span> users; <span class="com">-- 重建表和索引</span>
+
+<span class="com">-- <span class="num">6</span>. 使用覆盖索引减少回表</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_covering <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>, total_amount);
+
+<span class="com">-- <span class="num">7</span>. 合理使用复合索引，遵循最左前缀原则</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_created <span class="kwd">ON</span> orders(user_id, created_at);
+
+<span class="com">-- <span class="num">8</span>. 大表删除和更新时考虑索引影响</span>
+<span class="com">-- 可以先禁用索引，操作完成后再启用</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> large_table <span class="kwd">DISABLE</span> KEYS;
+<span class="com">-- 执行批量操作</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> large_table <span class="kwd">ENABLE</span> KEYS;
+
+<span class="com">-- <span class="num">9</span>. 利用 <span class="kwd">AI</span> 智能推荐</span>
+<span class="kwd">CALL</span> sys.recommend_indexes(<span class="str">'your_database'</span>);
+
+<span class="com">-- <span class="num">10</span>. 监控索引性能，及时调整</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> sys.schema_index_statistics
+<span class="kwd">WHERE</span> table_schema = <span class="kwd">DATABASE</span>();</code></pre>
+                </div>
+
+                <h4>1.8 索引常见问题</h4>
+
+                <h5>1.8.1 索引失效的场景</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 索引失效的常见场景：</span>
+
+<span class="com">-- <span class="num">1</span>. 使用函数或表达式</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> <span class="func">LOWER</span>(username) = <span class="str">'test'</span>; <span class="com">-- username 索引失效</span>
+<span class="com">-- 解决：创建函数索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_username_lower <span class="kwd">ON</span> users((<span class="func">LOWER</span>(username)));
+
+<span class="com">-- <span class="num">2</span>. 类型不匹配</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> id = <span class="str">'<span class="num">1</span>'</span>; <span class="com">-- id 是数字类型，字符串导致索引失效</span>
+<span class="com">-- 解决：保持类型一致</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> id = <span class="num">1</span>;
+
+<span class="com">-- <span class="num">3</span>. <span class="kwd">LIKE</span> 查询以通配符开头</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> username <span class="kwd">LIKE</span> <span class="str">'%test%'</span>; <span class="com">-- 索引失效</span>
+<span class="com">-- 解决：使用全文索引或避免前导通配符</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> username <span class="kwd">LIKE</span> <span class="str">'test%'</span>; <span class="com">-- 索引有效</span>
+
+<span class="com">-- <span class="num">4</span>. <span class="kwd">OR</span> 条件</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> username = <span class="str">'test'</span> <span class="kwd">OR</span> email = <span class="str">'test@example.com'</span>;
+<span class="com">-- 如果两个字段都有索引，会分别使用，但效率可能不如 UNION</span>
+<span class="com">-- 解决：使用 <span class="kwd">UNION</span> ALL</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> username = <span class="str">'test'</span>
+<span class="kwd">UNION</span> <span class="kwd">ALL</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> email = <span class="str">'test@example.com'</span>;
+
+<span class="com">-- <span class="num">5</span>. <span class="kwd">NOT</span> <span class="kwd">IN</span>, <span class="kwd">NOT</span> <span class="kwd">EXISTS</span>, <></span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> username <> <span class="str">'test'</span>; <span class="com">-- 索引可能失效</span>
+
+<span class="com">-- <span class="num">6</span>. 查询条件中包含 NULL</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> username <span class="kwd">IS</span> NULL; <span class="com">-- 如果 username 有索引，可以命中</span></code></pre>
+                </div>
+
+                <h5>1.8.2 索引碎片问题</h5>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 检测索引碎片</span>
+<span class="kwd">SELECT</span>
+    table_name,
+    <span class="kwd">engine</span>,
+    ROUND(data_length / <span class="num">1024</span> / <span class="num">1024</span>, <span class="num">2</span>) <span class="kwd">as</span> data_mb,
+    ROUND(index_length / <span class="num">1024</span> / <span class="num">1024</span>, <span class="num">2</span>) <span class="kwd">as</span> index_mb,
+    ROUND(data_free / <span class="num">1024</span> / <span class="num">1024</span>, <span class="num">2</span>) <span class="kwd">as</span> free_mb
+<span class="kwd">FROM</span> information_schema.<span class="kwd">tables</span>
+<span class="kwd">WHERE</span> table_schema = <span class="kwd">DATABASE</span>()
+<span class="kwd">ORDER BY</span> data_free DESC;
+
+<span class="com">-- 重建索引和表（消除碎片）</span>
+<span class="kwd">OPTIMIZE</span> <span class="kwd">TABLE</span> users;
+
+<span class="com">-- 或者重建表</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> users ENGINE=InnoDB;
+
+<span class="com">-- 对于大表，可以使用 pt-online-schema-change 在线重建</span>
+<span class="com">-- pt-online-schema-change --<span class="kwd">alter</span> "ENGINE=InnoDB" D=your_database,t=users --execute</span></code></pre>
+                </div>
+
+                <h3>2. 事务处理（支持分布式事务）</h3>
+                <p>事务是数据库管理系统执行过程中的一个逻辑单位，由一系列SQL语句组成。事务具有ACID特性：原子性(Atomicity)、一致性(Consistency)、隔离性(Isolation)、持久性(Durability)。</p>
+                
+                <div class="mermaid">
+flowchart TD
+    A[开始事务] --> B{执行SQL语句}
+    
+    B --> C[写UNDO日志]
+    C --> D[修改数据缓存]
+    D --> E{操作成功?}
+    
+    E -->|是| F{提交还是回滚?}
+    E -->|否| G[回滚事务]
+    
+    G --> H[读取UNDO日志]
+    H --> I[恢复数据]
+    I --> J[结束事务]
+    
+    F -->|COMMIT| K[写入COMMIT标记]
+    K --> L[刷新REDO日志到磁盘]
+    L --> M[释放锁]
+    M --> J
+    
+    F -->|ROLLBACK| G
+    
+    style A fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style J fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style G fill:#ffcdd2,stroke:#c62828,stroke-width:2px
+    style L fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+</div>
+                
+                <h4>ACID 特性说明：</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>描述</th>
+                                <th>实现原理</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>原子性 (A)</strong></td>
+                                <td>事务中的所有操作要么全部成功，要么全部失败</td>
+                                <td>UNDO日志</td>
+                            </tr>
+                            <tr>
+                                <td><strong>一致性 (C)</strong></td>
+                                <td>事务执行前后，数据库状态保持一致</td>
+                                <td>约束、触发器</td>
+                            </tr>
+                            <tr>
+                                <td><strong>隔离性 (I)</strong></td>
+                                <td>并发事务之间互不干扰</td>
+                                <td>锁机制、MVCC</td>
+                            </tr>
+                            <tr>
+                                <td><strong>持久性 (D)</strong></td>
+                                <td>事务提交后，修改永久保存</td>
+                                <td>REDO日志</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 开始事务</span>
+START TRANSACTION;
+
+<span class="com">-- 执行 SQL 语句</span>
+<span class="kwd">UPDATE</span> accounts <span class="kwd">SET</span> balance = balance - <span class="num">100</span> <span class="kwd">WHERE</span> id = <span class="num">1</span>;
+<span class="kwd">UPDATE</span> accounts <span class="kwd">SET</span> balance = balance + <span class="num">100</span> <span class="kwd">WHERE</span> id = <span class="num">2</span>;
+
+<span class="com">-- 提交事务（自动使用 2PC）</span>
+COMMIT;
+
+<span class="com">-- 或回滚事务</span>
+ROLLBACK;
+
+<span class="com">-- 保存点</span>
+SAVEPOINT sp1;
+<span class="kwd">UPDATE</span> accounts <span class="kwd">SET</span> balance = balance - <span class="num">50</span> <span class="kwd">WHERE</span> id = <span class="num">1</span>;
+<span class="com">-- 回滚到保存点</span>
+<span class="kwd">ROLLBACK</span> TO sp1;
+
+<span class="com">-- 分布式事务（XA 事务改进）</span>
+XA START <span class="str">'xid1'</span>;
+<span class="kwd">UPDATE</span> accounts <span class="kwd">SET</span> balance = balance - <span class="num">100</span> <span class="kwd">WHERE</span> id = <span class="num">1</span>;
+XA <span class="kwd">END</span> <span class="str">'xid1'</span>;
+XA PREPARE <span class="str">'xid1'</span>;
+XA <span class="kwd">COMMIT</span> <span class="str">'xid1'</span>;</code></pre>
+                </div>
+
+                <h3>3. 视图（物化视图）</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 创建普通视图</span>
+<span class="kwd">CREATE</span> <span class="kwd">VIEW</span> user_summary <span class="kwd">AS</span>
+<span class="kwd">SELECT</span>
+    username,
+    email,
+    <span class="func">TIMESTAMPDIFF</span>(<span class="type">YEAR</span>, created_at, <span class="func">NOW</span>()) <span class="kwd">as</span> years_active
+<span class="kwd">FROM</span> users;
+
+<span class="com">-- 创建物化视图（MySQL <span class="num">9</span>.x 新增）</span>
+<span class="kwd">CREATE</span> <span class="kwd">MATERIALIZED</span> <span class="kwd">VIEW</span> mv_user_stats
+<span class="kwd">REFRESH</span> <span class="kwd">EVERY</span> <span class="num">1</span> <span class="kwd">HOUR</span>
+<span class="kwd">AS</span>
+<span class="kwd">SELECT</span>
+    <span class="func">COUNT</span>(*) <span class="kwd">as</span> total_users,
+    <span class="func">AVG</span>(age) <span class="kwd">as</span> avg_age,
+    <span class="func">MAX</span>(created_at) <span class="kwd">as</span> last_signup
+<span class="kwd">FROM</span> users;
+
+<span class="com">-- 手动刷新物化视图</span>
+<span class="kwd">REFRESH</span> <span class="kwd">MATERIALIZED</span> <span class="kwd">VIEW</span> mv_user_stats;
+
+<span class="com">-- 使用视图</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> user_summary;
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> mv_user_stats;
+
+<span class="com">-- 删除视图</span>
+<span class="kwd">DROP</span> <span class="kwd">VIEW</span> user_summary;
+<span class="kwd">DROP</span> <span class="kwd">MATERIALIZED</span> <span class="kwd">VIEW</span> mv_user_stats;</code></pre>
+                </div>
+
+                <h3>4. 存储过程（支持 JavaScript）</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 传统存储过程</span>
+<span class="kwd">DELIMITER</span> //
+<span class="kwd">CREATE</span> <span class="kwd">PROCEDURE</span> get_users_by_age(<span class="kwd">IN</span> min_age <span class="kwd">INT</span>)
+<span class="kwd">BEGIN</span>
+    <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users <span class="kwd">WHERE</span> age >= min_age;
+<span class="kwd">END</span> //
+<span class="kwd">DELIMITER</span> ;
+
+<span class="com">-- <span class="kwd">JavaScript</span> 存储过程（MySQL <span class="num">9</span>.x 新增）</span>
+<span class="kwd">DELIMITER</span> //
+<span class="kwd">CREATE</span> <span class="kwd">PROCEDURE</span> analyze_user_data()
+<span class="kwd">LANGUAGE</span> <span class="kwd">JAVASCRIPT</span> <span class="kwd">AS</span>
+$$
+    const result = session.sql(<span class="str">'<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> users'</span>).execute();
+    const analysis = {
+        total: result.length,
+        avg_age: result.reduce((sum, row) => sum + row.age, <span class="num">0</span>) / result.length
+    };
+    <span class="kwd">return</span> JSON.stringify(analysis);
+$$ //
+<span class="kwd">DELIMITER</span> ;
+
+<span class="com">-- 调用存储过程</span>
+<span class="kwd">CALL</span> get_users_by_age(<span class="num">25</span>);
+<span class="kwd">CALL</span> analyze_user_data();
+
+<span class="com">-- 删除存储过程</span>
+<span class="kwd">DROP</span> <span class="kwd">PROCEDURE</span> get_users_by_age;
+<span class="kwd">DROP</span> <span class="kwd">PROCEDURE</span> analyze_user_data;</code></pre>
+                </div>
+
+                <h3>5. 触发器（支持批量操作）</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 创建触发器</span>
+<span class="kwd">DELIMITER</span> //
+<span class="kwd">CREATE</span> <span class="kwd">TRIGGER</span> before_user_insert
+<span class="kwd">BEFORE</span> <span class="kwd">INSERT</span> <span class="kwd">ON</span> users
+<span class="kwd">FOR EACH ROW</span>
+<span class="kwd">BEGIN</span>
+    <span class="kwd">IF</span> NEW.age < <span class="num">0</span> <span class="kwd">THEN</span>
+        <span class="kwd">SET</span> NEW.age = <span class="num">0</span>;
+    <span class="kwd">END</span> IF;
+    <span class="kwd">IF</span> NEW.email <span class="kwd">IS</span> <span class="kwd">NULL</span> <span class="kwd">THEN</span>
+        SIGNAL SQLSTATE <span class="str">'<span class="num">45000</span>'</span> <span class="kwd">SET</span> MESSAGE_TEXT = <span class="str">'Email 不能为空'</span>;
+    <span class="kwd">END</span> IF;
+<span class="kwd">END</span> //
+<span class="kwd">DELIMITER</span> ;
+
+<span class="com">-- 批量操作触发器（FOR EACH STATEMENT）</span>
+<span class="kwd">DELIMITER</span> //
+<span class="kwd">CREATE</span> <span class="kwd">TRIGGER</span> log_bulk_operation
+<span class="kwd">AFTER</span> <span class="kwd">INSERT</span> <span class="kwd">ON</span> users
+FOR EACH STATEMENT
+<span class="kwd">BEGIN</span>
+    <span class="kwd">INSERT</span> <span class="kwd">INTO</span> audit_log (operation, row_count, <span class="kwd">timestamp</span>)
+    <span class="kwd">VALUES</span> (<span class="str">'BULK_INSERT'</span>, <span class="func">ROW_COUNT</span>(), <span class="func">NOW</span>());
+<span class="kwd">END</span> //
+<span class="kwd">DELIMITER</span> ;
+
+<span class="com">-- 删除触发器</span>
+<span class="kwd">DROP</span> <span class="kwd">TRIGGER</span> before_user_insert;</code></pre>
+                </div>
+
+                <h3>6. 连接查询（LATERAL JOIN）</h3>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 内连接</span>
+<span class="kwd">SELECT</span> u.username, o.order_id
+<span class="kwd">FROM</span> users u
+<span class="kwd">INNER JOIN</span> orders o <span class="kwd">ON</span> u.id = o.user_id;
+
+<span class="com">-- <span class="kwd">LATERAL</span> JOIN（MySQL <span class="num">9</span>.x 新增）</span>
+<span class="kwd">SELECT</span> u.username, latest_orders.*
+<span class="kwd">FROM</span> users u
+<span class="kwd">LEFT JOIN</span> <span class="kwd">LATERAL</span> (
+    <span class="kwd">SELECT</span> o.order_id, o.total_amount
+    <span class="kwd">FROM</span> orders o
+    <span class="kwd">WHERE</span> o.user_id = u.id
+    <span class="kwd">ORDER BY</span> o.order_date <span class="kwd">DESC</span>
+    <span class="kwd">LIMIT</span> <span class="num">3</span>
+) <span class="kwd">AS</span> latest_orders <span class="kwd">ON</span> TRUE;
+
+<span class="com">-- 递归 CTE（查询层级数据）</span>
+<span class="kwd">WITH</span> <span class="kwd">RECURSIVE</span> category_tree <span class="kwd">AS</span> (
+    <span class="kwd">SELECT</span> id, name, parent_id, <span class="num">1</span> <span class="kwd">as</span> <span class="kwd">level</span>
+    <span class="kwd">FROM</span> categories
+    <span class="kwd">WHERE</span> parent_id <span class="kwd">IS</span> <span class="kwd">NULL</span>
+    <span class="kwd">UNION</span> <span class="kwd">ALL</span>
+    <span class="kwd">SELECT</span> c.id, c.name, c.parent_id, ct.<span class="kwd">level</span> + <span class="num">1</span>
+    <span class="kwd">FROM</span> categories c
+    <span class="kwd">INNER JOIN</span> category_tree ct <span class="kwd">ON</span> c.parent_id = ct.id
+)
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> category_tree <span class="kwd">ORDER BY</span> <span class="kwd">level</span>, name;</code></pre>
+                </div>
+
+                <h3>7. 窗口函数（Window Functions）</h3>
+                <p>窗口函数是 MySQL 8.0+ 引入的强大功能，用于对一组相关的行执行计算，同时保留原始行的结构。窗口函数在数据分析、排名统计、移动平均等场景中非常有用。</p>
+
+                <div class="mermaid">
+flowchart LR
+    subgraph 传统聚合
+    A1[GROUP BY] --> A2[分组聚合]
+    A2 --> A3[返回单行结果]
+    end
+
+    subgraph 窗口函数
+    B1[OVER 子句] --> B2[定义窗口范围]
+    B2 --> B3[返回多行结果]
+    end
+
+    style A1 fill:#e3f2fd,stroke:#1565c0
+    style A3 fill:#ffcdd2,stroke:#c62828
+    style B1 fill:#c8e6c9,stroke:#2e7d32
+    style B3 fill:#c8e6c9,stroke:#2e7d32
+</div>
+
+                <h4>7.1 窗口函数基础语法</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 窗口函数基本语法</span>
+<span class="kwd">SELECT</span>
+    column1,
+    column2,
+    window_function() OVER (
+        <span class="kwd">PARTITION BY</span> partition_column
+        <span class="kwd">ORDER BY</span> order_column
+        <span class="kwd">ROWS</span> <span class="kwd">BETWEEN</span> start <span class="kwd">AND</span> end
+    ) <span class="kwd">as</span> result_column
+<span class="kwd">FROM</span> table_name;
+
+<span class="com">-- OVER 子句说明：</span>
+<span class="com">-- PARTITION BY: 将数据分组（类似 GROUP BY，但不减少行数）</span>
+<span class="com">-- ORDER BY: 窗口内排序</span>
+<span class="com">-- ROWS/RANGE: 定义窗口的物理范围</span>
+
+<span class="com">-- 示例数据准备</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> employees (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">50</span>),
+    department <span class="type">VARCHAR</span>(<span class="num">50</span>),
+    salary <span class="type">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>),
+    hire_date DATE
+);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> employees <span class="kwd">VALUES</span>
+(<span class="num">1</span>, <span class="str">'张三'</span>, <span class="str">'技术部'</span>, <span class="num">15000</span>, <span class="str">'2020-01-15'</span>),
+(<span class="num">2</span>, <span class="str">'李四'</span>, <span class="str">'技术部'</span>, <span class="num">18000</span>, <span class="str">'2019-03-20'</span>),
+(<span class="num">3</span>, <span class="str">'王五'</span>, <span class="str">'技术部'</span>, <span class="num">12000</span>, <span class="str">'2021-06-10'</span>),
+(<span class="num">4</span>, <span class="str">'赵六'</span>, <span class="str">'销售部'</span>, <span class="num">10000</span>, <span class="str">'2020-08-05'</span>),
+(<span class="num">5</span>, <span class="str">'钱七'</span>, <span class="str">'销售部'</span>, <span class="num">13000</span>, <span class="str">'2018-11-12'</span>),
+(<span class="num">6</span>, <span class="str">'孙八'</span>, <span class="str">'销售部'</span>, <span class="num">11000</span>, <span class="str">'2022-02-28'</span>);</code></pre>
+                </div>
+
+                <h4>7.2 排名函数</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 1. ROW_NUMBER(): 连续排名，无并列</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">ROW_NUMBER</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> row_num
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 结果示例：</span>
+<span class="com">-- 张三  技术部  15000  2</span>
+<span class="com">-- 李四  技术部  18000  1</span>
+<span class="com">-- 王五  技术部  12000  3</span>
+
+<span class="com">-- 2. RANK(): 跳跃排名，有并列</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">RANK</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> dept_rank
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 如果有并列：1, 2, 2, 4（跳过 3）</span>
+
+<span class="com">-- 3. DENSE_RANK(): 连续排名，有并列</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">DENSE_RANK</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> dense_rank
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 如果有并列：1, 2, 2, 3（不跳过）</span>
+
+<span class="com">-- 4. NTILE(n): 将数据分成 n 个桶</span>
+<span class="kwd">SELECT</span>
+    name,
+    salary,
+    <span class="func">NTILE</span>(<span class="num">3</span>) OVER (<span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> salary_quartile
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 将员工按薪资分为 3 组（高、中、低）</span></code></pre>
+                </div>
+
+                <h4>7.3 聚合窗口函数</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 1. SUM() 窗口聚合</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">SUM</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_total,
+    <span class="func">SUM</span>(salary) OVER (<span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> running_total
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- dept_total: 部门总薪资（每行相同）</span>
+<span class="com">-- running_total: 累计薪资（从高到低累加）</span>
+
+<span class="com">-- 2. AVG() 窗口聚合</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">AVG</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_avg,
+    <span class="func">AVG</span>(salary) OVER (<span class="kwd">ORDER BY</span> hire_date) <span class="kwd">as</span> running_avg
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- dept_avg: 部门平均薪资</span>
+<span class="com">-- running_avg: 按入职时间累计平均</span>
+
+<span class="com">-- 3. COUNT() 窗口聚合</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">COUNT</span>(*) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_count,
+    <span class="func">COUNT</span>(*) OVER (<span class="kwd">ORDER BY</span> hire_date) <span class="kwd">as</span> employee_sequence
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 4. MIN/MAX() 窗口聚合</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">MIN</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_min,
+    <span class="func">MAX</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_max,
+    <span class="func">MAX</span>(salary) OVER () <span class="kwd">as</span> company_max
+<span class="kwd">FROM</span> employees;</code></pre>
+                </div>
+
+                <h4>7.4 值函数</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 1. LAG(): 访问前一行数据</span>
+<span class="kwd">SELECT</span>
+    name,
+    hire_date,
+    salary,
+    <span class="func">LAG</span>(salary, <span class="num">1</span>) OVER (<span class="kwd">ORDER BY</span> hire_date) <span class="kwd">as</span> prev_salary,
+    salary - <span class="func">LAG</span>(salary, <span class="num">1</span>) OVER (<span class="kwd">ORDER BY</span> hire_date) <span class="kwd">as</span> salary_diff
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 计算与前一位入职员工的薪资差</span>
+
+<span class="com">-- 2. LEAD(): 访问后一行数据</span>
+<span class="kwd">SELECT</span>
+    name,
+    hire_date,
+    salary,
+    <span class="func">LEAD</span>(salary, <span class="num">1</span>) OVER (<span class="kwd">ORDER BY</span> hire_date) <span class="kwd">as</span> next_salary
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 3. FIRST_VALUE(): 获取窗口第一行</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">FIRST_VALUE</span>(name) OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> highest_paid
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 4. LAST_VALUE(): 获取窗口最后一行</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">LAST_VALUE</span>(name) OVER (
+        <span class="kwd">PARTITION BY</span> department
+        <span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>
+        <span class="kwd">ROWS BETWEEN</span> <span class="kwd">UNBOUNDED</span> <span class="kwd">PRECEDING</span> <span class="kwd">AND</span> <span class="kwd">UNBOUNDED</span> <span class="kwd">FOLLOWING</span>
+    ) <span class="kwd">as</span> lowest_paid
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 注意：LAST_VALUE 需要指定完整的窗口范围</span>
+
+<span class="com">-- 5. NTH_VALUE(): 获取第 N 行</span>
+<span class="kwd">SELECT</span>
+    name,
+    salary,
+    <span class="func">NTH_VALUE</span>(name, <span class="num">2</span>) OVER (<span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> second_highest
+<span class="kwd">FROM</span> employees;</code></pre>
+                </div>
+
+                <h4>7.5 窗口帧定义</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 窗口帧（Window Frame）定义窗口的具体范围</span>
+
+<span class="com">-- 1. ROWS vs RANGE</span>
+<span class="com">-- ROWS: 基于物理行位置</span>
+<span class="com">-- RANGE: 基于逻辑值范围</span>
+
+<span class="com">-- 2. 常用边界</span>
+<span class="kwd">ROWS</span> <span class="kwd">BETWEEN</span> <span class="kwd">UNBOUNDED</span> <span class="kwd">PRECEDING</span> <span class="kwd">AND</span> <span class="kwd">CURRENT</span> <span class="kwd">ROW</span>  <span class="com">-- 从开始到当前行</span>
+<span class="kwd">ROWS</span> <span class="kwd">BETWEEN</span> <span class="num">3</span> <span class="kwd">PRECEDING</span> <span class="kwd">AND</span> <span class="kwd">CURRENT</span> <span class="kwd">ROW</span>          <span class="com">-- 前 3 行到当前行</span>
+<span class="kwd">ROWS</span> <span class="kwd">BETWEEN</span> <span class="kwd">CURRENT</span> <span class="kwd">ROW</span> <span class="kwd">AND</span> <span class="num">3</span> <span class="kwd">FOLLOWING</span>            <span class="com">-- 当前行到后 3 行</span>
+<span class="kwd">ROWS</span> <span class="kwd">BETWEEN</span> <span class="num">1</span> <span class="kwd">PRECEDING</span> <span class="kwd">AND</span> <span class="num">1</span> <span class="kwd">FOLLOWING</span>            <span class="com">-- 前后各 1 行（共 3 行）</span>
+<span class="kwd">ROWS</span> <span class="kwd">BETWEEN</span> <span class="kwd">UNBOUNDED</span> <span class="kwd">PRECEDING</span> <span class="kwd">AND</span> <span class="kwd">UNBOUNDED</span> <span class="kwd">FOLLOWING</span>  <span class="com">-- 整个分区</span>
+
+<span class="com">-- 3. 移动平均示例</span>
+<span class="kwd">SELECT</span>
+    hire_date,
+    name,
+    salary,
+    <span class="func">AVG</span>(salary) OVER (
+        <span class="kwd">ORDER BY</span> hire_date
+        <span class="kwd">ROWS BETWEEN</span> <span class="num">2</span> <span class="kwd">PRECEDING</span> <span class="kwd">AND</span> <span class="kwd">CURRENT</span> <span class="kwd">ROW</span>
+    ) <span class="kwd">as</span> moving_avg_3
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 计算 3 行移动平均值</span>
+
+<span class="com">-- 4. 累计求和示例</span>
+<span class="kwd">SELECT</span>
+    hire_date,
+    name,
+    salary,
+    <span class="func">SUM</span>(salary) OVER (
+        <span class="kwd">ORDER BY</span> hire_date
+        <span class="kwd">ROWS BETWEEN</span> <span class="kwd">UNBOUNDED</span> <span class="kwd">PRECEDING</span> <span class="kwd">AND</span> <span class="kwd">CURRENT</span> <span class="kwd">ROW</span>
+    ) <span class="kwd">as</span> running_total
+<span class="kwd">FROM</span> employees;</code></pre>
+                </div>
+
+                <h4>7.6 实战应用场景</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 场景 1: 计算员工薪资排名和部门占比</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">RANK</span>() OVER (<span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> company_rank,
+    <span class="func">RANK</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> dept_rank,
+    <span class="func">ROUND</span>(salary * <span class="num">100.0</span> / <span class="func">SUM</span>(salary) OVER (), <span class="num">2</span>) <span class="kwd">as</span> salary_percentage
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 场景 2: 识别薪资高于部门平均的员工</span>
+<span class="kwd">WITH</span> dept_avg <span class="kwd">AS</span> (
+    <span class="kwd">SELECT</span>
+        name,
+        department,
+        salary,
+        <span class="func">AVG</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> dept_avg_salary
+    <span class="kwd">FROM</span> employees
+)
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    dept_avg_salary,
+    <span class="kwd">CASE</span>
+        <span class="kwd">WHEN</span> salary > dept_avg_salary <span class="kwd">THEN</span> <span class="str">'高于平均'</span>
+        <span class="kwd">WHEN</span> salary = dept_avg_salary <span class="kwd">THEN</span> <span class="str">'等于平均'</span>
+        <span class="kwd">ELSE</span> <span class="str">'低于平均'</span>
+    <span class="kwd">END</span> <span class="kwd">as</span> salary_level
+<span class="kwd">FROM</span> dept_avg;
+
+<span class="com">-- 场景 3: 计算连续 N 天登录的用户</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> user_logins (
+    user_id <span class="kwd">INT</span>,
+    login_date DATE
+);
+
+<span class="kwd">WITH</span> login_groups <span class="kwd">AS</span> (
+    <span class="kwd">SELECT</span>
+        user_id,
+        login_date,
+        <span class="func">DATE_SUB</span>(login_date, INTERVAL <span class="func">ROW_NUMBER</span>() OVER (<span class="kwd">PARTITION BY</span> user_id <span class="kwd">ORDER BY</span> login_date) DAY) <span class="kwd">as</span> grp
+    <span class="kwd">FROM</span> user_logins
+)
+<span class="kwd">SELECT</span>
+    user_id,
+    <span class="func">COUNT</span>(*) <span class="kwd">as</span> consecutive_days
+<span class="kwd">FROM</span> login_groups
+<span class="kwd">GROUP BY</span> user_id, grp
+<span class="kwd">HAVING</span> <span class="func">COUNT</span>(*) >= <span class="num">3</span>;
+
+<span class="com">-- 场景 4: Top-N 查询（每个部门薪资前 3 名）</span>
+<span class="kwd">WITH</span> ranked_employees <span class="kwd">AS</span> (
+    <span class="kwd">SELECT</span>
+        name,
+        department,
+        salary,
+        <span class="func">DENSE_RANK</span>() OVER (<span class="kwd">PARTITION BY</span> department <span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>) <span class="kwd">as</span> dept_rank
+    <span class="kwd">FROM</span> employees
+)
+<span class="kwd">SELECT</span> name, department, salary, dept_rank
+<span class="kwd">FROM</span> ranked_employees
+<span class="kwd">WHERE</span> dept_rank <= <span class="num">3</span>;
+
+<span class="com">-- 场景 5: 计算同比/环比增长率</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> monthly_sales (
+    month DATE,
+    sales <span class="type">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>)
+);
+
+<span class="kwd">SELECT</span>
+    month,
+    sales,
+    <span class="func">LAG</span>(sales, <span class="num">1</span>) OVER (<span class="kwd">ORDER BY</span> month) <span class="kwd">as</span> prev_month_sales,
+    <span class="func">ROUND</span>(
+        (sales - <span class="func">LAG</span>(sales, <span class="num">1</span>) OVER (<span class="kwd">ORDER BY</span> month)) * <span class="num">100.0</span> /
+        <span class="func">LAG</span>(sales, <span class="num">1</span>) OVER (<span class="kwd">ORDER BY</span> month), <span class="num">2</span>
+    ) <span class="kwd">as</span> growth_rate
+<span class="kwd">FROM</span> monthly_sales;</code></pre>
+                </div>
+
+                <h4>7.7 窗口函数性能优化</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 1. 使用合适的索引</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_dept_salary <span class="kwd">ON</span> employees(department, salary);
+
+<span class="com">-- 2. 避免不必要的窗口计算</span>
+<span class="com">-- 不推荐：在子查询中重复计算</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> (
+    <span class="kwd">SELECT</span> name, <span class="func">ROW_NUMBER</span>() OVER () <span class="kwd">as</span> rn <span class="kwd">FROM</span> employees
+) t <span class="kwd">WHERE</span> rn <= <span class="num">10</span>;
+
+<span class="com">-- 推荐：使用 LIMIT</span>
+<span class="kwd">SELECT</span> name <span class="kwd">FROM</span> employees <span class="kwd">LIMIT</span> <span class="num">10</span>;
+
+<span class="com">-- 3. 使用 CTE 提高可读性</span>
+<span class="kwd">WITH</span> ranked <span class="kwd">AS</span> (...)
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> ranked <span class="kwd">WHERE</span> rank <= <span class="num">5</span>;
+
+<span class="com">-- 4. 使用 EXPLAIN 分析执行计划</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span>
+    name,
+    <span class="func">RANK</span>() OVER (<span class="kwd">ORDER BY</span> salary <span class="kwd">DESC</span>)
+<span class="kwd">FROM</span> employees;
+
+<span class="com">-- 5. 避免在大表上使用无分区的窗口函数</span>
+<span class="com">-- 尽量使用 PARTITION BY 限制窗口范围</span></code></pre>
+                </div>
+
+                <h4>7.8 窗口函数 vs 聚合函数</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>窗口函数</th>
+                                <th>聚合函数 + GROUP BY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>返回行数</td>
+                                <td>保留原始行数</td>
+                                <td>分组后行数减少</td>
+                            </tr>
+                            <tr>
+                                <td>使用场景</td>
+                                <td>分析、排名、累计</td>
+                                <td>统计汇总</td>
+                            </tr>
+                            <tr>
+                                <td>OVER 子句</td>
+                                <td>必需</td>
+                                <td>不支持</td>
+                            </tr>
+                            <tr>
+                                <td>SELECT 列</td>
+                                <td>可以是任意列</td>
+                                <td>必须是 GROUP BY 列或聚合列</td>
+                            </tr>
+                            <tr>
+                                <td>排序支持</td>
+                                <td>支持 ORDER BY</td>
+                                <td>不支持</td>
+                            </tr>
+                            <tr>
+                                <td>窗口帧</td>
+                                <td>支持 ROWS/RANGE</td>
+                                <td>不支持</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 对比示例</span>
+
+<span class="com">-- 聚合函数（行数减少）</span>
+<span class="kwd">SELECT</span>
+    department,
+    <span class="func">AVG</span>(salary) <span class="kwd">as</span> avg_salary
+<span class="kwd">FROM</span> employees
+<span class="kwd">GROUP BY</span> department;
+<span class="com">-- 返回：2 行（每个部门一行）</span>
+
+<span class="com">-- 窗口函数（保留原始行）</span>
+<span class="kwd">SELECT</span>
+    name,
+    department,
+    salary,
+    <span class="func">AVG</span>(salary) OVER (<span class="kwd">PARTITION BY</span> department) <span class="kwd">as</span> avg_salary
+<span class="kwd">FROM</span> employees;
+<span class="com">-- 返回：6 行（保留每个员工）</span></code></pre>
+                </div>
+
+                <h3>8. JSON 增强操作（MySQL 5.7+/8.0+）</h3>
+                <p>MySQL 提供了强大的 JSON 支持，包括存储、查询、修改和索引等功能。JSON 类型允许你存储半结构化数据，同时保持高效的查询性能。</p>
+
+                <div class="mermaid">
+flowchart LR
+    subgraph JSON 操作
+    A[存储 JSON] --> B[查询提取]
+    B --> C[修改更新]
+    C --> D[验证检查]
+    D --> E[索引加速]
+    end
+
+    subgraph 应用场景
+    F[用户配置] --> A
+    G[日志数据] --> A
+    H[动态表单] --> A
+    I[API 响应] --> A
+    end
+
+    style A fill:#e3f2fd,stroke:#1565c0
+    style E fill:#c8e6c9,stroke:#2e7d32
+</div>
+
+                <h4>8.1 JSON 基础操作</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 创建包含 JSON 列的表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> products (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span> <span class="kwd">AUTO_INCREMENT</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">100</span>) <span class="kwd">NOT NULL</span>,
+    price <span class="type">DECIMAL</span>(<span class="num">10</span>, <span class="num">2</span>),
+    attributes <span class="type">JSON</span>,
+    created_at <span class="type">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>
+);
+
+<span class="com">-- 插入 JSON 数据（自动验证格式）</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> products (name, price, attributes) <span class="kwd">VALUES</span>
+(<span class="str">'MacBook Pro'</span>, <span class="num">12999.00</span>, <span class="str">'{
+    "brand": "Apple",
+    "color": "silver",
+    "specs": {
+        "cpu": "M2 Pro",
+        "memory": "16GB",
+        "storage": "512GB SSD"
+    },
+    "tags": ["laptop", "premium", "business"]
+}'</span>),
+(<span class="str">'ThinkPad X1'</span>, <span class="num">9999.00</span>, <span class="str">'{
+    "brand": "Lenovo",
+    "color": "black",
+    "specs": {
+        "cpu": "i7-1260P",
+        "memory": "32GB",
+        "storage": "1TB SSD"
+    },
+    "tags": ["laptop", "business", "lightweight"]
+}'</span>);
+
+<span class="com">-- 使用 JSON_OBJECT 构建 JSON</span>
+<span class="kwd">SELECT</span>
+    id,
+    name,
+    <span class="func">JSON_OBJECT</span>(
+        <span class="str">'brand'</span>, <span class="str">'Dell'</span>,
+        <span class="str">'price'</span>, price,
+        <span class="str">'in_stock'</span>, <span class="kwd">TRUE</span>
+    ) <span class="kwd">as</span> json_info
+<span class="kwd">FROM</span> products;
+
+<span class="com">-- 使用 JSON_ARRAY 构建数组</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_ARRAY</span>(<span class="str">'red'</span>, <span class="str">'green'</span>, <span class="str">'blue'</span>) <span class="kwd">as</span> colors;
+
+<span class="com">-- 验证 JSON 格式</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_VALID</span>(<span class="str">'{"name": "test"}'</span>) <span class="kwd">as</span> valid;  <span class="com">-- 返回 1</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_VALID</span>(<span class="str">'{name: test}'</span>) <span class="kwd">as</span> valid;      <span class="com">-- 返回 0</span></code></pre>
+                </div>
+
+                <h4>8.2 JSON 查询操作</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 1. JSON_EXTRACT - 提取值（支持路径表达式）</span>
+<span class="kwd">SELECT</span>
+    name,
+    <span class="func">JSON_EXTRACT</span>(attributes, <span class="str">'$.brand'</span>) <span class="kwd">as</span> brand,
+    <span class="func">JSON_EXTRACT</span>(attributes, <span class="str">'$.specs.cpu'</span>) <span class="kwd">as</span> cpu,
+    <span class="func">JSON_EXTRACT</span>(attributes, <span class="str">'$.tags[0]'</span>) <span class="kwd">as</span> first_tag
+<span class="kwd">FROM</span> products;
+
+<span class="com">-- 使用 -> 操作符（简写形式）</span>
+<span class="kwd">SELECT</span>
+    name,
+    attributes->><span class="str">'$.brand'</span> <span class="kwd">as</span> brand,        <span class="com">-- ->> 返回纯文本</span>
+    attributes-><span class="str">'$.specs.memory'</span> <span class="kwd">as</span> memory   <span class="com">-- -> 返回 JSON 字符串</span>
+<span class="kwd">FROM</span> products;
+
+<span class="com">-- 2. JSON_CONTAINS - 检查是否包含某值</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> products
+<span class="kwd">WHERE</span> <span class="func">JSON_CONTAINS</span>(attributes-><span class="str">'$.tags'</span>, <span class="str">'"laptop"'</span>);
+
+<span class="com">-- 3. JSON_CONTAINS_PATH - 检查路径是否存在</span>
+<span class="kwd">SELECT</span>
+    name,
+    <span class="func">JSON_CONTAINS_PATH</span>(attributes, <span class="str">'one'</span>, <span class="str">'$.specs.cpu'</span>) <span class="kwd">as</span> has_cpu,
+    <span class="func">JSON_CONTAINS_PATH</span>(attributes, <span class="str">'all'</span>, <span class="str">'$.specs.cpu'</span>, <span class="str">'$.specs.gpu'</span>) <span class="kwd">as</span> has_all
+<span class="kwd">FROM</span> products;
+
+<span class="com">-- 4. JSON_SEARCH - 搜索值</span>
+<span class="kwd">SELECT</span>
+    name,
+    <span class="func">JSON_SEARCH</span>(attributes, <span class="str">'one'</span>, <span class="str">'business'</span>) <span class="kwd">as</span> path
+<span class="kwd">FROM</span> products;
+<span class="com">-- 返回：$.tags[1] 或 $.tags[2]</span>
+
+<span class="com">-- 5. JSON_KEYS - 获取所有键</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_KEYS</span>(attributes) <span class="kwd">as</span> all_keys <span class="kwd">FROM</span> products;
+<span class="kwd">SELECT</span> <span class="func">JSON_KEYS</span>(attributes, <span class="str">'$.specs'</span>) <span class="kwd">as</span> spec_keys <span class="kwd">FROM</span> products;
+
+<span class="com">-- 6. JSON_LENGTH - 获取长度</span>
+<span class="kwd">SELECT</span>
+    name,
+    <span class="func">JSON_LENGTH</span>(attributes) <span class="kwd">as</span> total_keys,
+    <span class="func">JSON_LENGTH</span>(attributes-><span class="str">'$.tags'</span>) <span class="kwd">as</span> tag_count
+<span class="kwd">FROM</span> products;
+
+<span class="com">-- 7. JSON_TYPE - 获取 JSON 值类型</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_TYPE</span>(attributes-><span class="str">'$.brand'</span>) <span class="kwd">as</span> type;  <span class="com">-- 返回 STRING</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_TYPE</span>(attributes-><span class="str">'$.tags'</span>) <span class="kwd">as</span> type;   <span class="com">-- 返回 ARRAY</span></code></pre>
+                </div>
+
+                <h4>8.3 JSON 修改操作</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 1. JSON_SET - 设置值（存在则更新，不存在则添加）</span>
+<span class="kwd">UPDATE</span> products
+<span class="kwd">SET</span> attributes = <span class="func">JSON_SET</span>(
+    attributes,
+    <span class="str">'$.price_updated'</span>, <span class="kwd">TRUE</span>,
+    <span class="str">'$.discount'</span>, <span class="num">0.15</span>
+)
+<span class="kwd">WHERE</span> id = <span class="num">1</span>;
+
+<span class="com">-- 2. JSON_INSERT - 插入值（只添加不更新）</span>
+<span class="kwd">UPDATE</span> products
+<span class="kwd">SET</span> attributes = <span class="func">JSON_INSERT</span>(
+    attributes,
+    <span class="str">'$.warehouse'</span>, <span class="str">'Beijing'</span>,
+    <span class="str">'$.stock_count'</span>, <span class="num">50</span>
+)
+<span class="kwd">WHERE</span> id = <span class="num">1</span>;
+
+<span class="com">-- 3. JSON_REPLACE - 替换值（只更新不添加）</span>
+<span class="kwd">UPDATE</span> products
+<span class="kwd">SET</span> attributes = <span class="func">JSON_REPLACE</span>(
+    attributes,
+    <span class="str">'$.price'</span>, <span class="num">11999.00</span>
+)
+<span class="kwd">WHERE</span> id = <span class="num">1</span>;
+
+<span class="com">-- 4. JSON_REMOVE - 删除值</span>
+<span class="kwd">UPDATE</span> products
+<span class="kwd">SET</span> attributes = <span class="func">JSON_REMOVE</span>(
+    attributes,
+    <span class="str">'$.discount'</span>,
+    <span class="str">'$.price_updated'</span>
+)
+<span class="kwd">WHERE</span> id = <span class="num">1</span>;
+
+<span class="com">-- 5. JSON_ARRAY_APPEND - 追加到数组</span>
+<span class="kwd">UPDATE</span> products
+<span class="kwd">SET</span> attributes = <span class="func">JSON_ARRAY_APPEND</span>(
+    attributes,
+    <span class="str">'$.tags'</span>, <span class="str">'new_arrival'</span>
+)
+<span class="kwd">WHERE</span> id = <span class="num">1</span>;
+
+<span class="com">-- 6. JSON_ARRAY_INSERT - 插入到数组指定位置</span>
+<span class="kwd">UPDATE</span> products
+<span class="kwd">SET</span> attributes = <span class="func">JSON_ARRAY_INSERT</span>(
+    attributes,
+    <span class="str">'$.tags[1]'</span>, <span class="str">'featured'</span>
+)
+<span class="kwd">WHERE</span> id = <span class="num">1</span>;
+
+<span class="com">-- 7. JSON_MERGE_PATCH - 合并 JSON（覆盖模式）</span>
+<span class="kwd">UPDATE</span> products
+<span class="kwd">SET</span> attributes = <span class="func">JSON_MERGE_PATCH</span>(
+    attributes,
+    <span class="str">'{"warranty": "2 years", "return_policy": "30 days"}'</span>
+)
+<span class="kwd">WHERE</span> id = <span class="num">1</span>;
+
+<span class="com">-- 8. JSON_MERGE_PRESERVE - 合并 JSON（保留模式）</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_MERGE_PRESERVE</span>(
+    <span class="str">'{"tags": ["laptop"]}'</span>,
+    <span class="str">'{"tags": ["business"]}'</span>
+) <span class="kwd">as</span> merged;
+<span class="com">-- 返回：{"tags": ["laptop", "business"]}</span></code></pre>
+                </div>
+
+                <h4>8.4 JSON 聚合函数</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 1. JSON_ARRAYAGG - 聚合为数组</span>
+<span class="kwd">SELECT</span>
+    <span class="func">JSON_ARRAYAGG</span>(name) <span class="kwd">as</span> all_products
+<span class="kwd">FROM</span> products;
+
+<span class="com">-- 按品牌聚合价格数组</span>
+<span class="kwd">SELECT</span>
+    attributes->><span class="str">'$.brand'</span> <span class="kwd">as</span> brand,
+    <span class="func">JSON_ARRAYAGG</span>(price) <span class="kwd">as</span> prices
+<span class="kwd">FROM</span> products
+<span class="kwd">GROUP BY</span> attributes->><span class="str">'$.brand'</span>;
+
+<span class="com">-- 2. JSON_OBJECTAGG - 聚合为对象</span>
+<span class="kwd">SELECT</span> <span class="func">JSON_OBJECTAGG</span>(id, name) <span class="kwd">as</span> product_map
+<span class="kwd">FROM</span> products;
+
+<span class="com">-- 构建嵌套 JSON 结构</span>
+<span class="kwd">SELECT</span>
+    <span class="func">JSON_OBJECT</span>(
+        <span class="str">'brand'</span>, attributes->><span class="str">'$.brand'</span>,
+        <span class="str">'products'</span>, <span class="func">JSON_ARRAYAGG</span>(
+            <span class="func">JSON_OBJECT</span>(
+                <span class="str">'id'</span>, id,
+                <span class="str">'name'</span>, name,
+                <span class="str">'price'</span>, price
+            )
+        )
+    ) <span class="kwd">as</span> brand_products
+<span class="kwd">FROM</span> products
+<span class="kwd">GROUP BY</span> attributes->><span class="str">'$.brand'</span>;
+
+<span class="com">-- 3. 组合使用示例</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> orders (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    customer_id <span class="kwd">INT</span>,
+    product_id <span class="kwd">INT</span>,
+    quantity <span class="kwd">INT</span>,
+    order_date DATE
+);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> orders <span class="kwd">VALUES</span>
+(<span class="num">1</span>, <span class="num">100</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="str">'2024-01-15'</span>),
+(<span class="num">2</span>, <span class="num">100</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="str">'2024-01-16'</span>),
+(<span class="num">3</span>, <span class="num">101</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="str">'2024-01-17'</span>);
+
+<span class="com">-- 为每个客户生成订单 JSON 报告</span>
+<span class="kwd">SELECT</span>
+    customer_id,
+    <span class="func">JSON_OBJECT</span>(
+        <span class="str">'total_orders'</span>, <span class="func">COUNT</span>(*),
+        <span class="str">'total_quantity'</span>, <span class="func">SUM</span>(quantity),
+        <span class="str">'orders'</span>, <span class="func">JSON_ARRAYAGG</span>(
+            <span class="func">JSON_OBJECT</span>(
+                <span class="str">'order_id'</span>, id,
+                <span class="str">'product_id'</span>, product_id,
+                <span class="str">'quantity'</span>, quantity,
+                <span class="str">'date'</span>, order_date
+            )
+        )
+    ) <span class="kwd">as</span> customer_report
+<span class="kwd">FROM</span> orders
+<span class="kwd">GROUP BY</span> customer_id;</code></pre>
+                </div>
+
+                <h4>8.5 JSON 索引优化</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 1. 虚拟列 + 索引（推荐方式）</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> products
+ADD COLUMN brand <span class="type">VARCHAR</span>(<span class="num">50</span>)
+<span class="kwd">GENERATED ALWAYS</span> <span class="kwd">AS</span> (attributes->><span class="str">'$.brand'</span>) <span class="kwd">VIRTUAL</span>;
+
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_brand <span class="kwd">ON</span> products(brand);
+
+<span class="com">-- 查询自动使用索引</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> products <span class="kwd">WHERE</span> brand = <span class="str">'Apple'</span>;
+
+<span class="com">-- 2. 多列索引</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> products
+ADD COLUMN cpu <span class="type">VARCHAR</span>(<span class="num">50</span>)
+<span class="kwd">GENERATED ALWAYS</span> <span class="kwd">AS</span> (attributes->><span class="str">'$.specs.cpu'</span>) <span class="kwd">VIRTUAL</span>;
+
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_brand_cpu <span class="kwd">ON</span> products(brand, cpu);
+
+<span class="com">-- 3. 前缀索引（长字符串）</span>
+<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> products
+ADD COLUMN description <span class="type">VARCHAR</span>(<span class="num">500</span>)
+<span class="kwd">GENERATED ALWAYS</span> <span class="kwd">AS</span> (attributes->><span class="str">'$.description'</span>) <span class="kwd">VIRTUAL</span>;
+
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_desc_prefix <span class="kwd">ON</span> products(description(<span class="num">50</span>));
+
+<span class="com">-- 4. 查看 JSON 列的索引使用情况</span>
+<span class="kwd">EXPLAIN</span> <span class="kwd">SELECT</span> * <span class="kwd">FROM</span> products
+<span class="kwd">WHERE</span> attributes->><span class="str">'$.brand'</span> = <span class="str">'Apple'</span>;
+
+<span class="com">-- 5. 使用覆盖索引优化 JSON 查询</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_covering <span class="kwd">ON</span> products(brand, price, name);
+
+<span class="kwd">SELECT</span> brand, price, name <span class="kwd">FROM</span> products <span class="kwd">WHERE</span> brand = <span class="str">'Apple'</span>;
+<span class="com">-- Extra 显示 "Using index" 表示使用覆盖索引</span></code></pre>
+                </div>
+
+                <h4>8.6 JSON 实战应用场景</h4>
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- 场景 1: 动态表单数据存储</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> form_submissions (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span> <span class="kwd">AUTO_INCREMENT</span>,
+    form_id <span class="kwd">INT</span>,
+    user_id <span class="kwd">INT</span>,
+    responses <span class="type">JSON</span>,
+    submitted_at <span class="type">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>
+);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> form_submissions (form_id, user_id, responses) <span class="kwd">VALUES</span>
+(<span class="num">1</span>, <span class="num">100</span>, <span class="str">'{
+    "q1": "非常满意",
+    "q2": "界面设计",
+    "q3": ["易用", "美观", "快速"],
+    "rating": 5
+}'</span>);
+
+<span class="com">-- 查询评分大于 4 的提交</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> form_submissions
+<span class="kwd">WHERE</span> responses->><span class="str">'$.rating'</span> > <span class="num">4</span>;
+
+<span class="com">-- 场景 2: 日志数据存储</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> application_logs (
+    id <span class="kwd">BIGINT</span> <span class="kwd">PRIMARY KEY</span> <span class="kwd">AUTO_INCREMENT</span>,
+    log_level <span class="type">VARCHAR</span>(<span class="num">20</span>),
+    log_data <span class="type">JSON</span>,
+    created_at <span class="type">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>
+);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> application_logs (log_level, log_data) <span class="kwd">VALUES</span>
+(<span class="str">'ERROR'</span>, <span class="str">'{
+    "error_code": "DB001",
+    "message": "Connection timeout",
+    "stack_trace": "...",
+    "user_id": 123,
+    "request_id": "abc-123"
+}'</span>);
+
+<span class="com">-- 查询特定错误码的日志</span>
+<span class="kwd">SELECT</span> <span class="func">COUNT</span>(*) <span class="kwd">FROM</span> application_logs
+<span class="kwd">WHERE</span> log_data->><span class="str">'$.error_code'</span> = <span class="str">'DB001'</span>;
+
+<span class="com">-- 场景 3: 电商商品多规格</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> product_variants (
+    id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    product_id <span class="kwd">INT</span>,
+    variant_data <span class="type">JSON</span>
+);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> product_variants <span class="kwd">VALUES</span>
+(<span class="num">1</span>, <span class="num">100</span>, <span class="str">'{
+    "sku": "MBP-M2-16-512-SV",
+    "options": {
+        "color": "Silver",
+        "memory": "16GB",
+        "storage": "512GB"
+    },
+    "price": 12999,
+    "stock": 50
+}'</span>);
+
+<span class="com">-- 查询特定配置的商品</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> product_variants
+<span class="kwd">WHERE</span> variant_data->><span class="str">'$.options.memory'</span> = <span class="str">'16GB'</span>
+<span class="kwd">AND</span> variant_data->><span class="str">'$.options.color'</span> = <span class="str">'Silver'</span>;
+
+<span class="com">-- 场景 4: 用户画像标签系统</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> user_profiles (
+    user_id <span class="kwd">INT</span> <span class="kwd">PRIMARY KEY</span>,
+    profile_data <span class="type">JSON</span>
+);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> user_profiles <span class="kwd">VALUES</span>
+(<span class="num">1</span>, <span class="str">'{
+    "demographics": {
+        "age": 30,
+        "gender": "M",
+        "city": "Beijing"
+    },
+    "interests": ["technology", "music", "travel"],
+    "purchase_history": {
+        "total_orders": 25,
+        "avg_order_value": 500,
+        "last_purchase": "2024-01-15"
+    },
+    "preferences": {
+        "newsletter": true,
+        "sms_notifications": false
+    }
+}'</span>);
+
+<span class="com">-- 查询北京地区对科技感兴趣的用户</span>
+<span class="kwd">SELECT</span> user_id <span class="kwd">FROM</span> user_profiles
+<span class="kwd">WHERE</span> profile_data->><span class="str">'$.demographics.city'</span> = <span class="str">'Beijing'</span>
+<span class="kwd">AND</span> <span class="func">JSON_SEARCH</span>(profile_data-><span class="str">'$.interests'</span>, <span class="str">'one'</span>, <span class="str">'technology'</span>) <span class="kwd">IS NOT NULL</span>;
+
+<span class="com">-- 场景 5: API 响应缓存</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> api_cache (
+    endpoint <span class="type">VARCHAR</span>(<span class="num">200</span>) <span class="kwd">PRIMARY KEY</span>,
+    response_data <span class="type">JSON</span>,
+    cache_key <span class="type">VARCHAR</span>(<span class="num">100</span>),
+    expires_at <span class="type">TIMESTAMP</span>
+);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> api_cache <span class="kwd">VALUES</span>
+(<span class="str">'/api/users/1'</span>, <span class="str">'{"id": 1, "name": "John", "email": "john@example.com"}'</span>, <span class="str">'user_1'</span>, <span class="kwd">NOW</span>() + INTERVAL <span class="num">1</span> HOUR);
+
+<span class="com">-- 查询未过期的缓存</span>
+<span class="kwd">SELECT</span> response_data <span class="kwd">FROM</span> api_cache
+<span class="kwd">WHERE</span> endpoint = <span class="str">'/api/users/1'</span>
+<span class="kwd">AND</span> expires_at > <span class="kwd">NOW</span>();</code></pre>
+                </div>
+
+                <h4>8.7 JSON 最佳实践</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>场景</th>
+                                <th>推荐方案</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>频繁查询的字段</td>
+                                <td>虚拟列 + 索引</td>
+                                <td>提取为虚拟列并创建索引</td>
+                            </tr>
+                            <tr>
+                                <td>灵活配置数据</td>
+                                <td>JSON 类型</td>
+                                <td>用户偏好、系统配置</td>
+                            </tr>
+                            <tr>
+                                <td>动态表单</td>
+                                <td>JSON 类型</td>
+                                <td>字段不固定的场景</td>
+                            </tr>
+                            <tr>
+                                <td>日志存储</td>
+                                <td>JSON 类型</td>
+                                <td>结构化日志数据</td>
+                            </tr>
+                            <tr>
+                                <td>频繁更新的字段</td>
+                                <td>普通列</td>
+                                <td>避免 JSON 频繁解析开销</td>
+                            </tr>
+                            <tr>
+                                <td>需要外键约束</td>
+                                <td>普通列</td>
+                                <td>JSON 不支持外键</td>
+                            </tr>
+                            <tr>
+                                <td>大数据量查询</td>
+                                <td>普通列 + 索引</td>
+                                <td>JSON 查询性能较低</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="sql"><span class="com">-- JSON 使用注意事项：</span>
+
+<span class="com">-- 1. JSON 验证失败会报错</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> products (name, attributes)
+<span class="kwd">VALUES</span> (<span class="str">'Test'</span>, <span class="str">'{invalid json}'</span>);  <span class="com">-- ❌ 报错</span>
+
+<span class="com">-- 2. JSON 路径区分大小写</span>
+<span class="kwd">SELECT</span> attributes-><span class="str">'$.Brand'</span> <span class="kwd">FROM</span> products;  <span class="com">-- 返回 NULL</span>
+<span class="kwd">SELECT</span> attributes-><span class="str">'$.brand'</span> <span class="kwd">FROM</span> products;  <span class="com">-- ✅ 正确</span>
+
+<span class="com">-- 3. 使用 ->> 获取纯文本值</span>
+<span class="kwd">SELECT</span> attributes-><span class="str">'$.brand'</span> <span class="kwd">FROM</span> products;   <span class="com">-- 返回 "Apple"（带引号）</span>
+<span class="kwd">SELECT</span> attributes->><span class="str">'$.brand'</span> <span class="kwd">FROM</span> products;  <span class="com">-- 返回 Apple（纯文本）</span>
+
+<span class="com">-- 4. JSON 比较需要类型转换</span>
+<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> products
+<span class="kwd">WHERE</span> attributes->><span class="str">'$.specs.memory'</span> = <span class="str">'16GB'</span>;  <span class="com">-- ✅ 字符串比较</span>
+
+<span class="com">-- 5. 批量更新 JSON 使用 JSON_MERGE_PATCH</span>
+<span class="kwd">UPDATE</span> products
+<span class="kwd">SET</span> attributes = <span class="func">JSON_MERGE_PATCH</span>(
+    attributes,
+    <span class="str">'{"updated": true, "update_time": "2024-01-15"}'</span>
+);</code></pre>
+                </div>
+            </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

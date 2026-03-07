@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实战练习 - MySQL 教程</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default'
+        });
+    </script>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><a href="../index.html">MySQL 教程</a></h1>
+            </div>
+            <nav class="tree-nav">
+                <ul class="tree">
+                    <li><a href="introduction.html">什么是 MySQL？</a></li>
+<li><a href="installation.html">安装与配置</a></li>
+<li><a href="basics.html">基础操作</a></li>
+<li><a href="advanced.html">高级特性</a></li>
+<li><a href="sql-theory.html">SQL原理</a></li>
+<li><a href="index-theory.html">索引原理</a></li>
+<li><a href="performance.html">性能优化</a></li>
+<li><a href="backup.html">备份与恢复</a></li>
+<li><a href="security.html">安全特性</a></li>
+<li><a href="alternatives.html">MySQL 替代品</a></li>
+<li><a href="history.html">发展历程</a></li>
+<li><a href="ai.html">AI 增强</a></li>
+<li class="current"><a href="#">实战练习</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <section id="practice" class="section">
+                <h2>实战练习</h2>
+                <div class="content">
+<h2>实战练习</h2>
+            <div class="content">
+                <div class="practice-project">
+                    <h3>项目一：博客管理系统</h3>
+                    <p>构建一个简单的博客管理系统，包含用户、文章、评论等功能。</p>
+
+                    <details>
+                        <summary>查看完整代码</summary>
+                        <div class="code-block">
+                            <pre><code class="sql"><span class="com">-- 创建数据库</span>
+<span class="kwd">CREATE</span> <span class="kwd">DATABASE</span> blog_system;
+<span class="kwd">USE</span> blog_system;
+
+<span class="com">-- 用户表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> users (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    username <span class="type">VARCHAR</span>(<span class="num">50</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span> <span class="kwd">UNIQUE</span>,
+    <span class="kwd">password</span> <span class="type">VARCHAR</span>(<span class="num">255</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    email <span class="type">VARCHAR</span>(<span class="num">100</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span> <span class="kwd">UNIQUE</span>,
+    created_at <span class="kwd">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>
+);
+
+<span class="com">-- 分类表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> categories (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">50</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    description <span class="kwd">TEXT</span>
+);
+
+<span class="com">-- 文章表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> posts (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    title <span class="type">VARCHAR</span>(<span class="num">200</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    content <span class="kwd">TEXT</span> <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    author_id <span class="kwd">INT</span> <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    category_id <span class="type">INT</span>,
+    views <span class="kwd">INT</span> <span class="kwd">DEFAULT</span> <span class="num">0</span>,
+    <span class="kwd">status</span> <span class="type">ENUM</span>(<span class="str">'draft'</span>, <span class="str">'published'</span>, <span class="str">'archived'</span>) <span class="kwd">DEFAULT</span> <span class="str">'draft'</span>,
+    created_at <span class="kwd">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>,
+    updated_at <span class="kwd">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span> <span class="kwd">ON</span> <span class="kwd">UPDATE</span> <span class="kwd">CURRENT_TIMESTAMP</span>,
+    <span class="kwd">FOREIGN KEY</span> (author_id) <span class="kwd">REFERENCES</span> users(id) <span class="kwd">ON</span> <span class="kwd">DELETE</span> <span class="kwd">CASCADE</span>,
+    <span class="kwd">FOREIGN KEY</span> (category_id) <span class="kwd">REFERENCES</span> categories(id) <span class="kwd">ON</span> <span class="kwd">DELETE</span> <span class="kwd">SET</span> <span class="kwd">NULL</span>
+);
+
+<span class="com">-- 评论表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> comments (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    post_id <span class="kwd">INT</span> <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    user_id <span class="kwd">INT</span> <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    content <span class="kwd">TEXT</span> <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    created_at <span class="kwd">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>,
+    <span class="kwd">FOREIGN KEY</span> (post_id) <span class="kwd">REFERENCES</span> posts(id) <span class="kwd">ON</span> <span class="kwd">DELETE</span> <span class="kwd">CASCADE</span>,
+    <span class="kwd">FOREIGN KEY</span> (user_id) <span class="kwd">REFERENCES</span> users(id) <span class="kwd">ON</span> <span class="kwd">DELETE</span> <span class="kwd">CASCADE</span>
+);
+
+<span class="com">-- 插入示例数据</span>
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> categories (name, description) <span class="kwd">VALUES</span>
+    (<span class="str">'技术'</span>, <span class="str">'技术相关文章'</span>),
+    (<span class="str">'生活'</span>, <span class="str">'生活分享'</span>),
+    (<span class="str">'学习'</span>, <span class="str">'学习笔记'</span>);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> users (username, <span class="kwd">password</span>, email) <span class="kwd">VALUES</span>
+    (<span class="str">'admin'</span>, <span class="str">'hashed_password'</span>, <span class="str">'admin@example.com'</span>),
+    (<span class="str">'zhangsan'</span>, <span class="str">'hashed_password'</span>, <span class="str">'zhangsan@example.com'</span>);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> posts (title, content, author_id, category_id, <span class="kwd">status</span>) <span class="kwd">VALUES</span>
+    (<span class="str">'MySQL 入门教程'</span>, <span class="str">'这是 MySQL 入门教程的内容...'</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="str">'published'</span>),
+    (<span class="str">'学习笔记'</span>, <span class="str">'今天学习了数据库基础知识'</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="str">'published'</span>);
+
+<span class="kwd">INSERT</span> <span class="kwd">INTO</span> comments (post_id, user_id, content) <span class="kwd">VALUES</span>
+    (<span class="num">1</span>, <span class="num">2</span>, <span class="str">'很好的教程，学到了很多！'</span>),
+    (<span class="num">2</span>, <span class="num">1</span>, <span class="str">'继续加油！'</span>);</code></pre>
+                                </div>
+                    </details>
+                </div>
+
+                <div class="practice-project">
+                    <h3>项目二：电商订单系统</h3>
+                    <p>设计一个电商订单系统，包含商品、订单、订单详情等表。</p>
+
+                    <details>
+                        <summary>查看完整代码</summary>
+                        <div class="code-block">
+                            <pre><code class="sql"><span class="com">-- 创建数据库</span>
+<span class="kwd">CREATE</span> <span class="kwd">DATABASE</span> ecommerce;
+<span class="kwd">USE</span> ecommerce;
+
+<span class="com">-- 商品表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> products (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    name <span class="type">VARCHAR</span>(<span class="num">200</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    description <span class="type">TEXT</span>,
+    price <span class="type">DECIMAL</span>(<span class="num">10</span>, <span class="num">2</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    stock <span class="kwd">INT</span> <span class="kwd">DEFAULT</span> <span class="num">0</span>,
+    category <span class="type">VARCHAR</span>(<span class="num">50</span>),
+    created_at <span class="kwd">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>
+);
+
+<span class="com">-- 用户表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> customers (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    username <span class="type">VARCHAR</span>(<span class="num">50</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span> <span class="kwd">UNIQUE</span>,
+    email <span class="type">VARCHAR</span>(<span class="num">100</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span> <span class="kwd">UNIQUE</span>,
+    phone <span class="type">VARCHAR</span>(<span class="num">20</span>),
+    address <span class="type">TEXT</span>,
+    created_at <span class="kwd">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>
+);
+
+<span class="com">-- 订单表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> orders (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    customer_id <span class="kwd">INT</span> <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    total_amount <span class="type">DECIMAL</span>(<span class="num">10</span>, <span class="num">2</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    <span class="kwd">status</span> <span class="type">ENUM</span>(<span class="str">'pending'</span>, <span class="str">'confirmed'</span>, <span class="str">'shipped'</span>, <span class="str">'delivered'</span>, <span class="str">'cancelled'</span>) <span class="kwd">DEFAULT</span> <span class="str">'pending'</span>,
+    order_date <span class="kwd">TIMESTAMP</span> <span class="kwd">DEFAULT</span> <span class="kwd">CURRENT_TIMESTAMP</span>,
+    <span class="kwd">FOREIGN KEY</span> (customer_id) <span class="kwd">REFERENCES</span> customers(id)
+);
+
+<span class="com">-- 订单详情表</span>
+<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> order_items (
+    id <span class="kwd">INT</span> <span class="kwd">AUTO_INCREMENT</span> <span class="kwd">PRIMARY KEY</span>,
+    order_id <span class="kwd">INT</span> <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    product_id <span class="kwd">INT</span> <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    quantity <span class="kwd">INT</span> <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    price <span class="type">DECIMAL</span>(<span class="num">10</span>, <span class="num">2</span>) <span class="kwd"><span class="kwd">NOT</span> NULL</span>,
+    <span class="kwd">FOREIGN KEY</span> (order_id) <span class="kwd">REFERENCES</span> orders(id) <span class="kwd">ON</span> <span class="kwd">DELETE</span> <span class="kwd">CASCADE</span>,
+    <span class="kwd">FOREIGN KEY</span> (product_id) <span class="kwd">REFERENCES</span> products(id)
+);
+
+<span class="com">-- 复杂查询示例：查询某个用户的所有订单及详情</span>
+<span class="kwd">SELECT</span>
+    o.id <span class="kwd">as</span> order_id,
+    o.order_date,
+    o.total_amount,
+    o.<span class="kwd">status</span>,
+    p.name <span class="kwd">as</span> product_name,
+    oi.quantity,
+    oi.price
+<span class="kwd">FROM</span> orders o
+<span class="kwd">INNER JOIN</span> order_items oi <span class="kwd">ON</span> o.id = oi.order_id
+<span class="kwd">INNER JOIN</span> products p <span class="kwd">ON</span> oi.product_id = p.id
+<span class="kwd">WHERE</span> o.customer_id = <span class="num">1</span>
+<span class="kwd">ORDER BY</span> o.order_date DESC;</code></pre>
+                                </div>
+                    </details>
+                </div>
+            </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
