@@ -101,14 +101,4 @@ document.addEventListener('DOMContentLoaded', function() {
         table.parentNode.insertBefore(wrapper, table);
         wrapper.appendChild(table);
     });
-    
-    // 为 mermaid 图表添加容器
-    document.querySelectorAll('.mermaid').forEach(function(mermaid) {
-        mermaid.setAttribute('data-processed', 'false');
-    });
-    
-    // 重新初始化 mermaid
-    if (typeof mermaid !== 'undefined' && mermaid.init) {
-        mermaid.init();
-    }
 });

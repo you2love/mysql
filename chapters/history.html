@@ -8,9 +8,16 @@
     <link rel="stylesheet" href="../styles.css">
     <script src="../mermaid.min.js"></script>
     <script>
+        // Mermaid v10+ 配置
         mermaid.initialize({
             startOnLoad: true,
-            theme: 'default'
+            theme: 'default',
+            securityLevel: 'loose',
+            fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
         });
     </script>
 </head>
@@ -47,7 +54,7 @@
             <div class="content">
                 <p>MySQL 由瑞典 MySQL AB 公司开发，于 2008 年被 Sun Microsystems 收购，2009 年随 Sun 被 Oracle 收购。作为最流行的开源关系型数据库，MySQL 经历了多个重要版本的迭代，每个版本都带来了关键的新特性和性能提升。</p>
                 
-                <div class="mermaid">
+                <pre class="mermaid">
 gantt
     title MySQL 版本演进时间线
     dateFormat YYYY
@@ -65,7 +72,7 @@ gantt
     MySQL 8.0 发布        :2018-01-01, 0d
     MySQL 8.4 LTS         :2024-04-01, 0d
     MySQL 9.0 发布        :2024-10-01, 0d
-</div>
+</pre>
                 
                 <h3>1. MySQL 3.23 (2000年) - 奠定基础</h3>
                 <div class="code-block">

@@ -8,9 +8,16 @@
     <link rel="stylesheet" href="../styles.css">
     <script src="../mermaid.min.js"></script>
     <script>
+        // Mermaid v10+ 配置
         mermaid.initialize({
             startOnLoad: true,
-            theme: 'default'
+            theme: 'default',
+            securityLevel: 'loose',
+            fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
         });
     </script>
 </head>
@@ -632,7 +639,7 @@
                 <h3>2. 事务处理（支持分布式事务）</h3>
                 <p>事务是数据库管理系统执行过程中的一个逻辑单位，由一系列SQL语句组成。事务具有ACID特性：原子性(Atomicity)、一致性(Consistency)、隔离性(Isolation)、持久性(Durability)。</p>
                 
-                <div class="mermaid">
+                <pre class="mermaid">
 flowchart TD
     A[开始事务] --> B{执行SQL语句}
     
@@ -658,7 +665,7 @@ flowchart TD
     style J fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
     style G fill:#ffcdd2,stroke:#c62828,stroke-width:2px
     style L fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-</div>
+</pre>
                 
                 <h4>ACID 特性说明：</h4>
                 <div class="comparison-table">
@@ -854,7 +861,7 @@ FOR EACH STATEMENT
                 <h3>7. 窗口函数（Window Functions）</h3>
                 <p>窗口函数是 MySQL 8.0+ 引入的强大功能，用于对一组相关的行执行计算，同时保留原始行的结构。窗口函数在数据分析、排名统计、移动平均等场景中非常有用。</p>
 
-                <div class="mermaid">
+                <pre class="mermaid">
 flowchart LR
     subgraph 传统聚合
     A1[GROUP BY] --> A2[分组聚合]
@@ -870,7 +877,7 @@ flowchart LR
     style A3 fill:#ffcdd2,stroke:#c62828
     style B1 fill:#c8e6c9,stroke:#2e7d32
     style B3 fill:#c8e6c9,stroke:#2e7d32
-</div>
+</pre>
 
                 <h4>7.1 窗口函数基础语法</h4>
                 <div class="code-block">
@@ -1270,7 +1277,7 @@ flowchart LR
                 <h3>8. JSON 增强操作（MySQL 5.7+/8.0+）</h3>
                 <p>MySQL 提供了强大的 JSON 支持，包括存储、查询、修改和索引等功能。JSON 类型允许你存储半结构化数据，同时保持高效的查询性能。</p>
 
-                <div class="mermaid">
+                <pre class="mermaid">
 flowchart LR
     subgraph JSON 操作
     A[存储 JSON] --> B[查询提取]
@@ -1288,7 +1295,7 @@ flowchart LR
 
     style A fill:#e3f2fd,stroke:#1565c0
     style E fill:#c8e6c9,stroke:#2e7d32
-</div>
+</pre>
 
                 <h4>8.1 JSON 基础操作</h4>
                 <div class="code-block">

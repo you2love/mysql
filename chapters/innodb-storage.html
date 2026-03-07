@@ -8,9 +8,16 @@
     <link rel="stylesheet" href="../styles.css">
     <script src="../mermaid.min.js"></script>
     <script>
+        // Mermaid v10+ 配置
         mermaid.initialize({
             startOnLoad: true,
-            theme: 'default'
+            theme: 'default',
+            securityLevel: 'loose',
+            fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
         });
     </script>
 </head>
@@ -49,7 +56,7 @@
                     <h4>1.1 B+ Tree 索引的物理存储</h4>
                     <p>InnoDB 中，B+ Tree 索引的每个节点就是一个物理数据页（16KB）。非叶子节点存储索引键和子页指针，叶子节点存储完整的数据行。</p>
 
-                    <div class="mermaid">
+                    <pre class="mermaid">
 flowchart TD
     subgraph BTree[B+ Tree 物理存储]
         ND1["非叶子节点页<br/>索引页<br/>存储键+指针"]
@@ -79,7 +86,7 @@ flowchart TD
     style L2 fill:#c8e6c9,stroke:#2e7d32
     style L3 fill:#c8e6c9,stroke:#2e7d32
     style L4 fill:#c8e6c9,stroke:#2e7d32
-</div>
+</pre>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- B+ Tree 节点 = 物理数据页 (16KB)
@@ -102,7 +109,7 @@ flowchart TD
                     <h4>1.2 索引查找与磁盘IO</h4>
                     <p>每次通过索引查找数据，都需要将数据页从磁盘读取到 Buffer Pool。磁盘IO是数据库的主要性能瓶颈。</p>
 
-                    <div class="mermaid">
+                    <pre class="mermaid">
 flowchart TD
     A[查询 id=100] --> B[加载根节点页]
     B --> C{页在Buffer Pool?}
@@ -127,7 +134,7 @@ flowchart TD
     style J fill:#ffcdd2,stroke:#c62828
     style E fill:#c8e6c9,stroke:#2e7d32
     style K fill:#c8e6c9,stroke:#2e7d32
-</div>
+</pre>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- 索引查找的磁盘IO过程：
@@ -157,7 +164,7 @@ flowchart TD
                     <h4>1.3 索引写入与页分裂</h4>
                     <p>当插入新数据时，如果目标叶子节点已满，InnoDB 会进行页分裂操作，将一半数据移动到新页面。</p>
 
-                    <div class="mermaid">
+                    <pre class="mermaid">
 flowchart TD
     A[插入新记录] --> B{叶子节点已满?}
     B -->|否| C[直接插入]
@@ -176,7 +183,7 @@ flowchart TD
     style F fill:#ffcdd2,stroke:#c62828
     style G fill:#c8e6c9,stroke:#2e7d32
     style C fill:#c8e6c9,stroke:#2e7d32
-</div>
+</pre>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- 页分裂详解：
@@ -256,7 +263,7 @@ flowchart TD
 
                     <h4>2.1 数据页 16KB 内部结构</h4>
 
-                    <div class="mermaid">
+                    <pre class="mermaid">
 flowchart TD
     subgraph Page[InnoDB 数据页 16KB]
         FH["File Header<br/>38字节<br/>页ID、checksum"]
@@ -276,7 +283,7 @@ flowchart TD
     UR --> FS
     FS --> PD
     PD --> FT
-</div>
+</pre>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- 16KB 数据页结构分解：
@@ -347,7 +354,7 @@ flowchart TD
 
                     <h4>3.1 ibd 文件物理布局</h4>
 
-                    <div class="mermaid">
+                    <pre class="mermaid">
 flowchart TD
     subgraph IBD[ibd 文件结构]
         H1["Space Header<br/>第1页<br/>表空间头信息"]
@@ -365,7 +372,7 @@ flowchart TD
     XDES --> DICT
     XDES --> IDX
     XDES --> UNDO
-</div>
+</pre>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- ibd 文件页分配结构：
@@ -398,7 +405,7 @@ flowchart TD
 
                     <h4>3.2 区(Extent)与段(Segment)</h4>
 
-                    <div class="mermaid">
+                    <pre class="mermaid">
 flowchart TD
     subgraph Pages[数据页]
         P1["页 1"] --> P2["页 2"]
@@ -413,7 +420,7 @@ flowchart TD
 
     style P1 fill:#e3f2fd,stroke:#1565c0
     style E1 fill:#c8e6c9,stroke:#2e7d32
-</div>
+</pre>
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- Extent（区）结构：
 --   - 1 Extent = 64 连续页 = 1MB
@@ -526,7 +533,7 @@ CREATE TABLE t1 (id INT) TABLESPACE ts1;
                     </div>
 
                     <h4>Buffer Pool 工作原理</h4>
-                    <div class="mermaid">
+                    <pre class="mermaid">
 flowchart TD
     subgraph Read[读取流程]
         R1[查询数据] --> R2{命中Buffer Pool?}
@@ -545,7 +552,7 @@ flowchart TD
     style R3 fill:#c8e6c9,stroke:#2e7d32
     style R4 fill:#ffcdd2,stroke:#c62828
     style W2 fill:#fff3e0,stroke:#e65100
-</div>
+</pre>
 
                     <h4>LRU 淘汰策略</h4>
                     <div class="comparison-table">
@@ -633,7 +640,7 @@ SHOW VARIABLES LIKE 'innodb_buffer_pool%';</code></pre>
 
                     <h4>脏页刷新机制</h4>
 
-                    <div class="mermaid">
+                    <pre class="mermaid">
 flowchart TD
     A[数据修改] --> B[修改Buffer Pool页]
     B --> C{innodb_flush_log_at_trx_commit?}
@@ -649,7 +656,7 @@ flowchart TD
 
     style B fill:#fff3e0,stroke:#e65100
     style I fill:#c8e6c9,stroke:#2e7d32
-</div>
+</pre>
 
                     <div class="code-block">
 <pre><code class="sql"><span class="com">-- 脏页刷新机制：
