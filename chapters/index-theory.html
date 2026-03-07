@@ -26,25 +26,159 @@
 <li><a href="advanced.html">高级特性</a></li>
 <li><a href="sql-theory.html">SQL原理</a></li>
 <li class="current"><a href="#">索引原理</a></li>
+<li><a href="innodb-storage.html">InnoDB存储</a></li>
 <li><a href="performance.html">性能优化</a></li>
 <li><a href="backup.html">备份与恢复</a></li>
-<li><a href="security.html">安全特性</a></li>
+
 <li><a href="alternatives.html">MySQL 替代品</a></li>
 <li><a href="history.html">发展历程</a></li>
 <li><a href="ai.html">AI 增强</a></li>
-<li><a href="practice.html">实战练习</a></li>
                 </ul>
             </nav>
         </aside>
         <main class="main-content">
             <section id="index-theory" class="section">
-                <h2>索引原理</h2>
                 <div class="content">
 <h2>索引原理</h2>
             <div class="content">
                 <p>理解索引的实现原理对于设计高性能数据库至关重要。本节详细介绍MySQL中索引的数据结构和工作方式。</p>
 
-                <h3>1. SELECT执行过程</h3>
+                <h3>1. B+ Tree 索引原理</h3>
+
+                <h4>1.1 B+ Tree 结构特点</h4>
+                <p>B+ Tree 是 MySQL 中 InnoDB 存储引擎默认使用的索引结构。它是一种自平衡的多路搜索树，所有数据都存储在叶子节点，非叶子节点只存储索引键。</p>
+
+                <div class="code-block">
+<pre><code class="sql"><span class="com">-- B+ Tree vs B Tree 对比：</span>
+
+<span class="kwd">特性</span>           | <span class="kwd">B+ Tree</span>              | <span class="kwd">B Tree</span>
+---------------|--------------------|----------------
+数据存储       | 只在叶子节点        | 所有节点都存储数据
+查询稳定性     | O(log n)，所有查询 | O(log n)，不同位置
+<span class="kwd">范围查询</span>        | 叶子节点链表，<span class="kwd">高效</span>     | 需要遍历树
+磁盘 IO        | 更少（只读叶子节点）| 更多
+空间利用率     | 更高（节点满）      | 相对较低
+
+<span class="com">-- 为什么 MySQL 选择 B+ Tree？</span>
+<span class="com">-- 1. 范围查询更高效，适合 ORDER BY</span>
+<span class="com">-- 2. 查询效率更稳定（都要到叶子节点）</span>
+<span class="com">-- 3. 更适合磁盘存储，IO 次数少</span></code></pre>
+                </div>
+
+                <h4>1.2 不同数据量下的性能表现</h4>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>数据量</th>
+                                <th>B+ Tree 高度</th>
+                                <th>磁盘 IO 次数</th>
+                                <th>查询性能</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1 万条</td>
+                                <td>2 层</td>
+                                <td>2 次</td>
+                                <td>毫秒级</td>
+                            </tr>
+                            <tr>
+                                <td>100 万条</td>
+                                <td>3 层</td>
+                                <td>3 次</td>
+                                <td>毫秒级</td>
+                            </tr>
+                            <tr>
+                                <td>1000 万条</td>
+                                <td>3 层</td>
+                                <td>3 次</td>
+                                <td>毫秒级</td>
+                            </tr>
+                            <tr>
+                                <td>1 亿条</td>
+                                <td>4 层</td>
+                                <td>4 次</td>
+                                <td>10毫秒级</td>
+                            </tr>
+                            <tr>
+                                <td>10 亿条</td>
+                                <td>4 层</td>
+                                <td>4 次</td>
+                                <td>10-50毫秒</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>1.3 B+ Tree 优缺点分析</h4>
+
+                <div class="code-block">
+<pre><code class="sql"><span class="com">-- B+ Tree 优点：</span>
+
+<span class="com">-- 1. 查询时间复杂度稳定 O(log n)</span>
+<span class="com">--    无论查询什么数据，路径长度相同</span>
+
+<span class="com">-- 2. 范围查询高效</span>
+<span class="com">--    叶子节点双向链表，顺序访问快</span>
+<span class="com">--    SELECT * FROM users WHERE age BETWEEN 20 AND 30</span>
+
+<span class="com">-- 3. 磁盘 IO 次数少</span>
+<span class="com">--    非叶子节点不存储数据，每页可存更多键</span>
+<span class="com">--    16KB / 12字节 ≈ 1365 个键值</span>
+
+<span class="com">-- 4. 适合区间统计</span>
+<span class="com">--    ORDER BY、GROUP BY 效率高</span>
+
+<span class="com">-- 5. 缓存命中率高</span>
+<span class="com">--    非叶子节点可缓存在内存中</span>
+
+
+<span class="com">-- B+ Tree 缺点：</span>
+
+<span class="com">-- 1. 写入性能较差</span>
+<span class="com">--    插入/删除需要维护树的平衡</span>
+<span class="com">--    可能触发页分裂/合并</span>
+
+<span class="com">-- 2. 空间占用较大</span>
+<span class="com">--    叶子节点存储重复的主键值</span>
+<span class="com">--    主键越长，冗余越大</span>
+
+<span class="com">-- 3. 不适合唯一性要求高的场景</span>
+<span class="com">--    需要额外维护唯一性</span>
+
+<span class="com">-- 4. 索引列更新成本高</span>
+<span class="com">--    索引列值变化需要更新索引</span></code></pre>
+                </div>
+
+                <h4>1.4 数据量与索引设计建议</h4>
+
+                <div class="code-block">
+<pre><code class="sql"><span class="com">-- 不同数据量的索引设计：</span>
+
+<span class="com">-- 小数据量 (< 10万)</span>
+<span class="com">-- - 简单索引即可，无需过度优化</span>
+<span class="com">-- - 优先考虑查询便利性</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_name <span class="kwd">ON</span> users(name);
+
+<span class="com">-- 中等数据量 (10万 - 1000万)</span>
+<span class="com">-- - 考虑复合索引覆盖查询</span>
+<span class="com">-- - 关注索引选择性</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_user_status <span class="kwd">ON</span> orders(user_id, <span class="kwd">status</span>);
+
+<span class="com">-- 大数据量 (> 1000万)</span>
+<span class="com">-- - 考虑分区表</span>
+<span class="com">-- - 使用覆盖索引避免回表</span>
+<span class="com">-- - 定期分析索引效率</span>
+<span class="kwd">CREATE</span> <span class="kwd">INDEX</span> idx_cover <span class="kwd">ON</span> logs(device_id, event_type, created_at);
+
+<span class="com">-- 超大数据量 (> 1亿)</span>
+<span class="com">-- - 考虑分库分表</span>
+<span class="com">-- - 使用近似查询代替精确查询</span>
+<span class="com">-- - 考虑 ClickHouse/ES 等分析型数据库</span></code></pre>
+                </div>
+
+                <h3>2. SELECT执行过程</h3>
                 <p>一条SELECT语句的执行需要经过多个阶段，MySQL的查询优化器会尽可能高效地完成数据检索。</p>
 
                 <div class="mermaid">
@@ -783,179 +917,7 @@ LIMIT 10000;
 <span class="com">-- 2. 大量删除时使用分批</span>
 <span class="com">-- 3. 使用TRUNCATE替代DELETE清空表</span>
 <span class="com">-- 4. 删除后使用OPTIMIZE TABLE回收空间</span>
-
-<h3>5. InnoDB ibd 文件存储原理</h3>
-
-<h4>5.1 ibd 文件概述</h4>
-<p>ibd 文件是 InnoDB 存储引擎的表空间文件，存储了表数据和索引。每个 InnoDB 表都有一个独立的 ibd 文件（独立表空间模式），或者多个表共享一个系统表空间文件。</p>
-
-<div class="code-block">
-<pre><code class="sql"><span class="com">-- ibd 文件结构：</span>
-<span class="com">-- 每个 ibd 文件由多个 16KB 的数据页组成</span>
-<span class="com">-- 页类型：</span>
-<span class="com">--   - FIL_PAGE_INDEX: 索引页（ B+ Tree 叶子节点）</span>
-<span class="com">--   - FIL_PAGE_TYPE_SYS: 系统页（Tablespace Header）</span>
-<span class="com">--   - FIL_PAGE_TYPE_TRX: 事务页</span>
-<span class="com">--   - FIL_PAGE_TYPE_BLOB: BLOB 页</span>
-
-<span class="com">-- 查看表对应的 ibd 文件：</span>
-<span class="kwd">SHOW</span> <span class="kwd">VARIABLES</span> <span class="kwd">LIKE</span> <span class="str">'innodb_file_per_table'</span>;
-<span class="com">-- ON: 每个表独立 ibd 文件</span>
-<span class="com">-- OFF: 所有表共享 system tablespace (ibdata1)</span></code></pre>
-</div>
-
-<h4>5.2 ibd 文件物理结构</h4>
-
-<div class="mermaid">
-graph TD
-    subgraph "ibd 文件结构"
-        Header["File Space Header<br/>(38页)<br/>表空间头信息"]
-        FSP["FSP Header<br/>(1页)<br/>空闲空间管理"]
-        XDES["XDES<br/>(1页)<br/>区描述符"]
-        IBUF["Insert Buffer<br/>插入缓冲<br/>B+ Tree"]
-        INDEX["Index<br/>索引数据<br/>B+ Tree"]
-        RSEG["Rollback Segment<br/>(1页)<br/>回滚段"]
-        TrxSys["Transaction System<br/>(1页)<br/>事务系统"]
-        Dict["Data Dictionary<br/>(多页)<br/>数据字典"]
-    end
-    
-    Header --> FSP
-    FSP --> XDES
-    XDES --> IBUF
-    XDES --> INDEX
-    XDES --> RSEG
-    RSEG --> TrxSys
-    TrxSys --> Dict
-
-    style Header fill:#e3f2fd,stroke:#1565c0
-    style INDEX fill:#c8e6c9,stroke:#2e7d32
-    style Dict fill:#fff3e0,stroke:#e65100
-</div>
-
-<h4>5.3 区(Extent)与段(Segment)</h4>
-<p>InnoDB 使用区(Extent)作为空间分配单位，每个区包含 64 个连续的数据页（1MB）。表数据存储在段(Segment)中，每个索引有两个段：叶子节点段和非叶子节点段。</p>
-
-<div class="code-block">
-<pre><code class="sql"><span class="com">-- 区(Extent)结构：</span>
-<span class="com">-- 1 区 = 64 页 = 1MB</span>
-<span class="com">-- 页大小 16KB × 64 = 1MB</span>
-
-<span class="com">-- 段(Segment)结构：</span>
-<span class="com">-- 每个索引包含两个段：</span>
-<span class="com">--   - Leaf Node Segment: 存储所有数据行</span>
-<span class="com">--   - Non-Leaf Node Segment: 存储索引键</span>
-
-<span class="com">-- 区分配策略：</span>
-<span class="com">-- 1. 碎片页：前 32 页按需分配</span>
-<span class="com">-- 2. 完整区：32 页后整区分配</span>
-<span class="com">-- 3. 顺序写：尽量连续分配区</span>
-
-<span class="com">-- 查看表空间使用情况：</span>
-<span class="kwd">SELECT</span> * <span class="kwd">FROM</span> information_schema.innodb_tablespaces
-<span class="kwd">WHERE</span> name = <span class="str">'database_name/table_name'</span>;</code></pre>
-</div>
-
-<h4>5.4 表空间Tablespace</h4>
-<p>InnoDB 支持多种表空间类型：系统表空间、独立表空间、通用表空间、临时表空间等。</p>
-
-<div class="code-block">
-<pre><code class="sql"><span class="com">-- 1. 系统表空间 (System Tablespace)</span>
-<span class="com">--    文件：ibdata1, ibdata2, ...</span>
-<span class="com">--    存储：undo log, change buffer, doublewrite buffer</span>
-<span class="com">--    位置：innodb_data_home_dir</span>
-
-<span class="com">-- 2. 独立表空间 (File-Per-Table Tablespace)</span>
-<span class="com">--    文件：table_name.ibd</span>
-<span class="com">--    优点：方便管理、支持压缩、可单独备份</span>
-<span class="com">--    推荐：innodb_file_per_table = ON</span>
-
-<span class="com">-- 3. 通用表空间 (General Tablespace)</span>
-<span class="com">--    创建语法：</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLESPACE</span> ts1 <span class="kwd">ADD</span> <span class="kwd">DATAFILE</span> <span class="str">'ts1.ibd'</span>;
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> t1 (id <span class="kwd">INT</span>) <span class="kwd">TABLESPACE</span> ts1;
-
-<span class="com">-- 4. 临时表空间 (Temporary Tablespace)</span>
-<span class="com">--    文件：ibtemp0, ibtemp1</span>
-<span class="com">--    存储：临时表和排序结果</span>
-
-<span class="com">-- 查看表使用的表空间：</span>
-<span class="kwd">SHOW</span> <span class="kwd">CREATE</span> <span class="kwd">TABLE</span> table_name\G
-<span class="com">-- Tablespace: 表名 或 innodb_system</span></code></pre>
-</div>
-
-<h4>5.5 ibd 文件读写流程</h4>
-
-<div class="mermaid">
-flowchart TD
-    A[SQL查询] --> B{数据页在Buffer Pool?}
-    B -->|是| C[直接读取]
-    B -->|否| D[从磁盘读取ibd]
-    D --> E[放入Buffer Pool]
-    E --> C
-    C --> F[返回结果]
-    
-    G[数据修改] --> H[修改Buffer Pool]
-    H --> I{是否需要落盘?}
-    I -->|是| J[写入Redo Log]
-    I -->|否| K[等待批量刷新]
-    J --> L[后台线程刷新到ibd]
-    K --> L
-
-    style D fill:#ffcdd2,stroke:#c62828
-    style L fill:#c8e6c9,stroke:#2e7d32
-</div>
-
-<div class="code-block">
-<pre><code class="sql"><span class="com">-- ibd 文件读写优化：</span>
-
-<span class="com">-- 1. Buffer Pool 调优</span>
-<span class="kwd">SET</span> <span class="kwd">GLOBAL</span> innodb_buffer_pool_size = <span class="num">4</span> * <span class="num">1024</span> * <span class="num">1024</span> * <span class="num">1024</span>; <span class="com">-- 4GB</span>
-<span class="com">-- 建议设置为可用内存的 50-70%</span>
-
-<span class="com">-- 2. 预读优化</span>
-<span class="kwd">SET</span> <span class="kwd">GLOBAL</span> innodb_read_ahead_threshold = <span class="num">56</span>;
-<span class="com">-- 顺序读取 56 页后触发预读</span>
-
-<span class="com">-- 3. 刷新策略</span>
-<span class="kwd">SET</span> <span class="kwd">GLOBAL</span> innodb_flush_log_at_trx_commit = <span class="num">1</span>;
-<span class="com">-- 1: 每次事务提交刷新日志（最安全）</span>
-<span class="com">-- 2: 每秒刷新（性能好，可能丢失1秒数据）</span>
-<span class="com">-- 0: 不刷新（性能最好，危险）</span>
-
-<span class="com">-- 4. 查看 ibd 文件状态：</span>
-<span class="kwd">SHOW</span> <span class="kwd">ENGINE</span> <span class="kwd">INNODB</span> <span class="kwd">STATUS</span>;
-<span class="com">-- 查看 Buffer Pool 命中率、脏页数量等</span></code></pre>
-</div>
-
-<h4>5.6 ibd 文件空间回收</h4>
-<p>删除数据后，ibd 文件不会自动收缩，需要手动执行 OPTIMIZE TABLE 来回收空间。</p>
-
-<div class="code-block">
-<pre><code class="sql"><span class="com">-- 空间回收方法：</span>
-
-<span class="com">-- 1. 重建表回收空间</span>
-<span class="kwd">OPTIMIZE</span> <span class="kwd">TABLE</span> table_name;
-<span class="com">-- 相当于 ALTER TABLE engine=InnoDB</span>
-
-<span class="com">-- 2. 重建表（在线重建）</span>
-<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> table_name <span class="kwd">ENGINE</span>=InnoDB;
-
-<span class="com">-- 3. 收缩表空间</span>
-<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> table_name <span class="kwd">TABLESPACE</span>=innodb_system;
-<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> table_name <span class="kwd">TABLESPACE</span>=innodb_file_per_table;
-
-<span class="com">-- 查看表空间使用：</span>
-<span class="kwd">SELECT</span> 
-    table_name,
-    round(data_length/<span class="num">1024</span>/<span class="num">1024</span>, <span class="num">2</span>) <span class="kwd">as</span> data_mb,
-    round(index_length/<span class="num">1024</span>/<span class="num">1024</span>, <span class="num">2</span>) <span class="kwd">as</span> index_mb
-<span class="kwd">FROM</span> information_schema.tables
-<span class="kwd">WHERE</span> table_schema = <span class="str">'your_database'</span>;
-
-<span class="com">-- 批量回收（删除大量数据后）：</span>
-<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> big_table <span class="kwd">ENGINE</span>=InnoDB;
-<span class="kwd">ANALYZE</span> <span class="kwd">TABLE</span> big_table;</code></pre>
-</div></code></pre>
+</code></pre>
                 </div>
             </div>
                 </div>
