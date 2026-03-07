@@ -26,10 +26,9 @@
                     <li><a href="advanced.html">高级特性</a></li>
                     <li><a href="sql-theory.html">SQL原理</a></li>
                     <li><a href="index-theory.html">索引原理</a></li>
-                    <li class="current"><a href="#">InnoDB存储原理</a></li>
+                    <li class="current"><a href="#">InnoDB存储</a></li>
                     <li><a href="performance.html">性能优化</a></li>
                     <li><a href="backup.html">备份与恢复</a></li>
-                    
                     <li><a href="alternatives.html">MySQL 替代品</a></li>
                     <li><a href="history.html">发展历程</a></li>
                     <li><a href="ai.html">AI 增强</a></li>
@@ -38,36 +37,231 @@
         </aside>
         <main class="main-content">
             <section id="innodb-storage" class="section">
+                <h2>InnoDB存储原理</h2>
                 <div class="content">
-                    <h3>1. 数据页存储</h3>
+                    <h3>1. B+ Tree 与物理数据页的关系</h3>
 
-                    <h4>1.1 数据页概述</h4>
-                    <p>InnoDB 是 MySQL 默认的存储引擎，其数据存储的基本单位是<strong>数据页（Page）</strong>。每个数据页默认大小为 <strong>16KB</strong>，是 InnoDB 与磁盘交互的最小单位。</p>
-
-                    <div class="code-block">
-<pre><code class="sql"><span class="com">-- InnoDB 数据页基本参数：</span>
-<span class="com">-- - 页大小: 16KB (可通过 innodb_page_size 配置)</span>
-<span class="com">-- - 页类型: 数据页、索引页、Undo页、系统页等</span>
-<span class="com">-- - 磁盘IO: 每次读写以页为单位</span>
-<span class="com">-- - 缓存: 页数据缓存在 Buffer Pool 中</span>
-
-<span class="com">-- 查看数据页大小：</span>
-<span class="kwd">SHOW</span> <span class="kwd">VARIABLES</span> <span class="kwd">LIKE</span> <span class="str">'innodb_page_size'</span>;</code></pre>
-                    </div>
-
-                    <h4>1.2 数据页结构</h4>
+                    <h4>1.1 B+ Tree 索引的物理存储</h4>
+                    <p>InnoDB 中，B+ Tree 索引的每个节点就是一个物理数据页（16KB）。非叶子节点存储索引键和子页指针，叶子节点存储完整的数据行。</p>
 
                     <div class="mermaid">
 graph TD
-    subgraph "InnoDB 数据页结构 (16KB)"
-        FH["File Header<br/>(38字节)<br/>页ID、checksum等"]
-        PH["Page Header<br/>(56字节)<br/>页目录信息"]
-        INF["Infimum<br/>(13字节)<br/>虚拟记录最小值"]
-        SUP["Supremum<br/>(13字节)<br/>虚拟记录最大值"]
+    subgraph "B+ Tree 物理存储"
+        ND1["非叶子节点页<br/>索引页<br/>存储键+指针"]
+        ND2["非叶子节点页<br/>索引页<br/>存储键+指针"]
+        ND3["非叶子节点页<br/>索引页"]
+        L1["叶子节点页<br/>数据页<br/>Row 1"]
+        L2["叶子节点页<br/>数据页<br/>Row 2"]
+        L3["叶子节点页<br/>数据页<br/>Row 3"]
+        L4["叶子节点页<br/>数据页<br/>Row 4"]
+    end
+
+    ND1 --> ND2
+    ND1 --> ND3
+    ND2 --> L1
+    ND2 --> L2
+    ND3 --> L3
+    ND3 --> L4
+
+    L1 -.-> L2
+    L2 -.-> L3
+    L3 -.-> L4
+
+    style ND1 fill:#e3f2fd,stroke:#1565c0
+    style ND2 fill:#e3f2fd,stroke:#1565c0
+    style ND3 fill:#e3f2fd,stroke:#1565c0
+    style L1 fill:#c8e6c9,stroke:#2e7d32
+    style L2 fill:#c8e6c9,stroke:#2e7d32
+    style L3 fill:#c8e6c9,stroke:#2e7d32
+    style L4 fill:#c8e6c9,stroke:#2e7d32
+</div>
+
+                    <div class="code-block">
+<pre><code class="sql"><span class="com">-- B+ Tree 节点 = 物理数据页 (16KB)
+
+-- 非叶子节点（索引页）
+-- 存储结构：[主键值, 页指针]
+-- 每行约 12 字节
+-- 每页可存：16KB / 12 ≈ 1365 个键
+
+-- 叶子节点（数据页）
+-- 存储结构：[主键, 所有列数据]
+-- 每行大小取决于字段类型和数量
+-- 每页可存：几百到几千行不等
+
+-- 示例：B+ Tree 高度为 3
+-- 根节点 -> 1365 个子节点 -> 1365² 行数据
+-- 约可存储：1365 × 1365 × 1000 ≈ 18 亿行</code></pre>
+                    </div>
+
+                    <h4>1.2 索引查找与磁盘IO</h4>
+                    <p>每次通过索引查找数据，都需要将数据页从磁盘读取到 Buffer Pool。磁盘IO是数据库的主要性能瓶颈。</p>
+
+                    <div class="mermaid">
+flowchart TD
+    A[查询 id=100] --> B[加载根节点页]
+    B --> C{页在Buffer Pool?}
+    C -->|否| D[磁盘IO: 读取ibd文件]
+    D --> E[放入Buffer Pool]
+    C -->|是| E
+    E --> F[在内存中查找]
+    F --> G[定位到子页指针]
+    G --> H[加载叶子节点页]
+    H --> I{页在Buffer Pool?}
+    I -->|否| J[磁盘IO: 读取ibd]
+    I -->|是| K
+    J --> K[放入Buffer Pool]
+    K --> L[找到目标行]
+    L --> M[返回结果]
+
+    D -->|1次IO| B
+    J -->|2次IO| H
+    M --> N[可能需要回表]
+
+    style D fill:#ffcdd2,stroke:#c62828
+    style J fill:#ffcdd2,stroke:#c62828
+    style E fill:#c8e6c9,stroke:#2e7d32
+    style K fill:#c8e6c9,stroke:#2e7d32
+</flowchart>
+
+                    <div class="code-block">
+<pre><code class="sql"><span class="com">-- 索引查找的磁盘IO过程：
+
+-- 1. 加载根节点页（第1次IO）
+--    - 从ibd文件读取根节点页到Buffer Pool
+--    - 根据查询键值确定下一级子页
+
+-- 2. 加载中间节点页（第2次IO）
+--    - 继续定位，直到叶子节点
+
+-- 3. 加载叶子节点页（第3次IO）
+--    - 叶子节点存储实际数据行
+--    - 在页内查找目标记录
+
+-- 4. 回表（如需）（第4次IO）
+--    - 如果是覆盖索引，无需回表
+--    - 否则需要根据主键再查一次
+
+<span class="com">-- 性能指标：</span>
+<span class="com">-- - 磁盘随机IO延迟：~10ms</span>
+<span class="com">-- - 内存访问延迟：~100ns</span>
+<span class="com">-- - 速度差异：10万倍</span>
+<span class="com">-- - 因此：减少磁盘IO是优化关键</span></code></pre>
+                    </div>
+
+                    <h4>1.3 索引写入与页分裂</h4>
+                    <p>当插入新数据时，如果目标叶子节点已满，InnoDB 会进行页分裂操作，将一半数据移动到新页面。</p>
+
+                    <div class="mermaid">
+flowchart TD
+    A[插入新记录] --> B{叶子节点已满?}
+    B -->|否| C[直接插入]
+    B -->|是| D[页分裂]
+    D --> E[创建新叶子节点]
+    E --> F[移动一半数据到新节点]
+    F --> G[更新父节点指针]
+    G --> H[插入新记录]
+    C --> I[可能触发父节点分裂]
+    H --> I
+    I --> J[结束]
+
+    style B fill:#fff3e0,stroke:#e65100
+    style D fill:#ffcdd2,stroke:#c62828
+    style E fill:#ffcdd2,stroke:#c62828
+    style F fill:#ffcdd2,stroke:#c62828
+    style G fill:#c8e6c9,stroke:#2e7d32
+    style C fill:#c8e6c9,stroke:#2e7d32
+</flowchart>
+
+                    <div class="code-block">
+<pre><code class="sql"><span class="com">-- 页分裂详解：
+
+-- 触发条件：叶子节点数据页满（16KB）
+-- 分裂过程：
+--   1. 分配新叶子节点页
+--   2. 将原页一半记录移动到新页
+--   3. 在父节点添加新指针
+--   4. 插入新记录
+
+-- 页分裂的性能影响：
+--   - 需要分配新页面
+--   - 需要修改多个数据页
+--   - 可能引发连锁分裂（向上传播）
+--   - 导致页稀疏，空间利用率下降
+
+-- 优化建议：
+--   - 使用自增主键，顺序插入避免分裂
+--   - 避免随机主键（UUID等）
+--   - 批量插入减少分裂次数</code></pre>
+                    </div>
+
+                    <h4>1.4 B+ Tree 操作与物理IO对照表</h4>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>操作类型</th>
+                                    <th>B+ Tree 动作</th>
+                                    <th>物理IO</th>
+                                    <th>说明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>点查</strong></td>
+                                    <td>定位叶子节点</td>
+                                    <td>树高度次</td>
+                                    <td>如 WHERE id = 100</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>范围查询</strong></td>
+                                    <td>定位起点 + 顺序扫描</td>
+                                    <td>树高度 + 扫描页数</td>
+                                    <td>如 WHERE id > 100</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>顺序扫描</strong></td>
+                                    <td>从最左叶子开始</td>
+                                    <td>全表页数</td>
+                                    <td>无WHERE条件</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>插入</strong></td>
+                                    <td>查找 + 可能的分裂</td>
+                                    <td>树高度 + 分裂次数</td>
+                                    <td>可能触发多次IO</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>更新</strong></td>
+                                    <td>查找 + 修改叶子</td>
+                                    <td>树高度 + 脏页刷新</td>
+                                    <td>涉及Redo Log</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>删除</strong></td>
+                                    <td>查找 + 标记删除</td>
+                                    <td>树高度 + 可能的合并</td>
+                                    <td>后台Purge清理</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>2. 数据页结构详解</h3>
+
+                    <h4>2.1 数据页 16KB 内部结构</h4>
+
+                    <div class="mermaid">
+graph TD
+    subgraph "InnoDB 数据页 (16KB)"
+        FH["File Header<br/>38字节<br/>页ID、checksum"]
+        PH["Page Header<br/>56字节<br/>页目录信息"]
+        INF["Infimum<br/>13字节<br/>虚拟记录"]
+        SUP["Supremum<br/>13字节<br/>虚拟记录"]
         UR["User Records<br/>用户记录区<br/>(实际数据)"]
         FS["Free Space<br/>空闲空间"]
-        PD["Page Directory<br/>(页目录)<br/>记录位置指针"]
-        FT["File Trailer<br/>(8字节)<br/>页尾校验"]
+        PD["Page Directory<br/>页目录<br/>稀疏索引"]
+        FT["File Trailer<br/>8字节<br/>校验信息"]
     end
 
     FH --> PH
@@ -79,151 +273,464 @@ graph TD
     PD --> FT
 </div>
 
-                    <h4>1.3 数据页查找过程</h4>
                     <div class="code-block">
-<pre><code class="sql"><span class="com">-- 数据页内查找记录的过程：</span>
+<pre><code class="sql"><span class="com">-- 16KB 数据页结构分解：
 
-<span class="com">-- 1. 通过 B+ Tree 定位到目标数据页</span>
-<span class="com">-- 2. 在数据页内使用 Page Directory 进行二分查找</span>
-<span class="com">-- 3. 定位到记录所在的 Slot</span>
-<span class="com">-- 4. 顺序查找定位精确记录</span>
-<span class="com">-- 5. 返回记录（或通过主键回表获取完整数据）</span></code></pre>
+-- 1. File Header (38字节)
+--    - 页ID (space ID + page number)
+--    - 上一页/下一页指针（双向链表）
+--    - 页类型 (INDEX/SYSTEM/UNDO等)
+--    - LSN (日志序列号)
+--    - Checksum (数据完整性校验)
+
+-- 2. Page Header (56字节)
+--    - 已记录数 (PAGE_N_DIR_SLOTS)
+--    - 空闲空间起始位置 (PAGE_FREE)
+--    - 第一个被删除记录的位置
+--    - 页面中记录数量
+
+-- 3. Infimum + Supremum (各13字节)
+--    - 虚拟记录，作为页内记录边界
+--    - Infimum: 比任何用户记录都小
+--    - Supremum: 比任何用户记录都大
+
+-- 4. User Records (用户数据区)
+--    - 实际存储的行数据
+--    - 变长字段使用额外空间存储长度
+
+-- 5. Free Space (空闲区)
+--    - 未使用的空间
+--    - 新记录从这里分配
+
+-- 6. Page Directory (页目录)
+--    - 稀疏索引，指向记录组
+--    - 二分查找加速定位
+
+-- 7. File Trailer (8字节)
+--    - 页尾校验
+--    - 检测页面是否损坏</code></pre>
                     </div>
 
-                    <h3>2. ibd 文件存储</h3>
-
-                    <h4>2.1 ibd 文件概述</h4>
-                    <p>ibd 文件是 InnoDB 存储引擎的表空间文件，存储了表数据和索引。每个 InnoDB 表都有一个独立的 ibd 文件（独立表空间模式）。</p>
+                    <h4>2.2 数据页内查找机制</h4>
 
                     <div class="code-block">
-<pre><code class="sql"><span class="com">-- ibd 文件结构：</span>
-<span class="com">-- 每个 ibd 文件由多个 16KB 的数据页组成</span>
-<span class="com">-- 页类型：</span>
-<span class="com">--   - FIL_PAGE_INDEX: 索引页（ B+ Tree 叶子节点）</span>
-<span class="com">--   - FIL_PAGE_TYPE_SYS: 系统页</span>
-<span class="com">--   - FIL_PAGE_TYPE_TRX: 事务页</span>
-<span class="com">--   - FIL_PAGE_TYPE_BLOB: BLOB 页</span>
+<pre><code class="sql"><span class="com">-- 数据页内查找过程：
 
-<span class="com">-- 查看表对应的 ibd 文件：</span>
-<span class="kwd">SHOW</span> <span class="kwd">VARIABLES</span> <span class="kwd">LIKE</span> <span class="str">'innodb_file_per_table'</span>;
-<span class="com">-- ON: 每个表独立 ibd 文件</span>
-<span class="com">-- OFF: 所有表共享 system tablespace</span></code></pre>
+-- 1. Page Directory 二分查找
+--    - 将页内记录分组，每组4-8条
+--    - 每组一个目录项（2字节指针）
+--    - 二分查找定位到组
+
+-- 2. 顺序查找精确定位
+--    - 在目标组内顺序查找
+--    - 组内记录数少，扫描开销小
+
+-- 示例：
+--    - 假设页内有1000条记录
+--    - 每组8条，需要125个目录项
+--    - 二分查找：log2(125) = 7次
+--    - 组内查找最多8次
+--    - 总计：约15次比较定位记录
+
+-- 对比：
+--    - 无页目录：1000次线性比较
+--    - 有页目录：15次比较
+--    - 性能提升：60倍</code></pre>
                     </div>
 
-                    <h4>2.2 ibd 文件物理结构</h4>
+                    <h3>3. ibd 文件存储结构</h3>
+
+                    <h4>3.1 ibd 文件物理布局</h4>
 
                     <div class="mermaid">
 graph TD
     subgraph "ibd 文件结构"
-        Header["File Space Header<br/>(38页)<br/>表空间头信息"]
-        FSP["FSP Header<br/>(1页)<br/>空闲空间管理"]
-        XDES["XDES<br/>(1页)<br/>区描述符"]
-        IBUF["Insert Buffer<br/>插入缓冲"]
-        INDEX["Index<br/>索引数据<br/>B+ Tree"]
-        RSEG["Rollback Segment<br/>(1页)<br/>回滚段"]
-        TrxSys["Transaction System<br/>(1页)<br/>事务系统"]
-        Dict["Data Dictionary<br/>(多页)<br/>数据字典"]
+        H1["Space Header<br/>第1页<br/>表空间头信息"]
+        H2["FSP Header<br/>第2页<br/>空闲空间管理"]
+        XDES["XDES<br/>第3-64页<br/>区描述符"]
+        IBUF["Insert Buffer<br/>B+ Tree<br/>索引页"]
+        DICT["Data Dictionary<br/>B+ Tree<br/>数据字典"]
+        IDX["Index B+ Tree<br/>索引+数据<br/>主要存储区"]
+        UNDO["Undo Log<br/>回滚日志<br/>历史版本"]
     end
 
-    Header --> FSP
-    FSP --> XDES
+    H1 --> H2
+    H2 --> XDES
     XDES --> IBUF
-    XDES --> INDEX
-    XDES --> RSEG
-    RSEG --> TrxSys
-    TrxSys --> Dict
-
-    style Header fill:#e3f2fd,stroke:#1565c0
-    style INDEX fill:#c8e6c9,stroke:#2e7d32
-    style Dict fill:#fff3e0,stroke:#e65100
+    XDES --> DICT
+    XDES --> IDX
+    XDES --> UNDO
 </div>
 
-                    <h4>2.3 区(Extent)与段(Segment)</h4>
-                    <p>InnoDB 使用区(Extent)作为空间分配单位，每个区包含 64 个连续的数据页（1MB）。</p>
-
                     <div class="code-block">
-<pre><code class="sql"><span class="com">-- 区(Extent)结构：</span>
-<span class="com">-- 1 区 = 64 页 = 1MB</span>
+<pre><code class="sql"><span class="com">-- ibd 文件页分配结构：
 
-<span class="com">-- 段(Segment)结构：</span>
-<span class="com">-- 每个索引包含两个段：</span>
-<span class="com">--   - Leaf Node Segment: 存储所有数据行</span>
-<span class="com">--   - Non-Leaf Node Segment: 存储索引键</span>
+-- 第1页：Space Header (Tablespace Header)
+--   - 表空间ID、标志位
+--   - 第一个可用Extent地址
+--   - 所有数据页的bitmap
 
-<span class="com">-- 区分配策略：</span>
-<span class="com">-- 1. 碎片页：前 32 页按需分配</span>
-<span class="com">-- 2. 完整区：32 页后整区分配</span></code></pre>
+-- 第2页：FSP Header (File Space Header)
+--   - 空闲Extent链表
+--   - 完全使用Extent链表
+--   - 碎片Extent信息
+
+-- 第3-64页：XDES (Extent Descriptor)
+--   - 每个Extent描述符256字节
+--   - 每个Extent (64页) 占4字节
+--   - 描述每个Extent的状态
+
+-- 索引页区域：
+--   - B+ Tree 非叶子节点
+--   - B+ Tree 叶子节点（数据）
+--   - 按Extent分配和管理
+
+-- 特殊页：
+--   - Insert Buffer B+ Tree
+--   - Data Dictionary B+ Tree
+--   - Undo Log 页</code></pre>
                     </div>
 
-                    <h4>2.4 表空间Tablespace</h4>
+                    <h4>3.2 区(Extent)与段(Segment)</h4>
+
+                    <div class="mermaid">
+graph TD
+    subgraph "Extent = 64页 = 1MB"
+        P1["页1"]
+        P2["页2"]
+        P3["..."]
+        P64["页64"]
+    end
+
+    P1 --> P2
+    P2 --> P3
+    P3 --> P64
+
+    subgraph "Segment"
+        E1["Extent 1"]
+        E2["Extent 2"]
+        E3["Extent N"]
+    end
+
+    E1 --> E2
+    E2 --> E3
+</div>
 
                     <div class="code-block">
-<pre><code class="sql"><span class="com">-- 1. 系统表空间 (System Tablespace)</span>
-<span class="com">--    文件：ibdata1, ibdata2, ...</span>
-<span class="com">--    存储：undo log, change buffer, doublewrite buffer</span>
+<pre><code class="sql"><span class="com">-- Extent（区）结构：
+--   - 1 Extent = 64 连续页 = 1MB
+--   - 顺序IO优化：减少磁盘寻道
+--   - 空间预分配：提高写入性能
 
-<span class="com">-- 2. 独立表空间 (File-Per-Table)</span>
-<span class="com">--    文件：table_name.ibd</span>
-<span class="com">--    推荐：innodb_file_per_table = ON</span>
+-- Segment（段）结构：
+--   - Leaf Node Segment：叶子节点段
+--   - Non-Leaf Node Segment：非叶子节点段
+--   - 每个索引由两个Segment组成
 
-<span class="com">-- 3. 通用表空间 (General Tablespace)</span>
-<span class="kwd">CREATE</span> <span class="kwd">TABLESPACE</span> ts1 <span class="kwd">ADD</span> <span class="kwd">DATAFILE</span> <span class="str">'ts1.ibd'</span>;
-<span class="kwd">CREATE</span> <span class="kwd">TABLE</span> t1 (id <span class="kwd">INT</span>) <span class="kwd">TABLESPACE</span> ts1;</code></pre>
+-- Extent 分配策略：
+--   1. 碎片页分配 (0-32页)
+--      - 按需分配单页
+--      - 空间利用率高
+--      - 随机IO较多
+
+--   2. 完整区分配 (>32页)
+--      - 整区1MB分配
+--      - 顺序IO优化
+--      - 空间可能浪费
+
+-- 查看表空间使用：
+SELECT
+    name,
+    total_pages,
+    total_pages * 16384 / 1024 / 1024 AS size_mb
+FROM information_schema.innodb_tablespaces
+WHERE name = 'database/table_name';</code></pre>
                     </div>
 
-                    <h4>2.5 ibd 文件读写流程</h4>
+                    <h4>3.3 表空间类型</h4>
+
+                    <div class="code-block">
+<pre><code class="sql"><span class="com">-- InnoDB 表空间类型：
+
+-- 1. 系统表空间 (System Tablespace)
+--    文件：ibdata1, ibdata2, ...
+--    默认路径：innodb_data_home_dir
+--    存储内容：
+--    - data dictionary (数据字典)
+--    - undo log (回滚日志)
+--    - change buffer (变更缓冲)
+--    - doublewrite buffer (双写缓冲)
+--    - 所有表的元数据和索引
+
+-- 2. 独立表空间 (File-Per-Table)
+--    文件：database/table_name.ibd
+--    优点：
+--    - 方便单表备份
+--    - 支持表级压缩
+--    - 删除表可立即回收空间
+--    - I/O隔离（可单独flush）
+--    配置：innodb_file_per_table = ON
+
+-- 3. 通用表空间 (General Tablespace)
+--    文件：自定义 .ibd 文件
+--    优点：
+--    - 多表共享表空间
+--    - 减少文件系统碎片
+--    - 支持大表空间
+CREATE TABLESPACE ts1 ADD DATAFILE 'ts1.ibd';
+CREATE TABLE t1 (id INT) TABLESPACE ts1;
+
+-- 4. 临时表空间 (Temporary Tablespace)
+--    文件：ibtemp0, ibtemp1
+--    用途：临时表、排序结果
+--    特点：重启后重建
+
+-- 5. Undo 表空间
+--    文件：undo_001, undo_002
+--    用途：事务回滚</code></pre>
+                    </div>
+
+                    <h3>4. Buffer Pool 与数据页读写</h3>
+
+                    <h4>4.1 Buffer Pool 机制</h4>
+
+                    <div class="mermaid">
+flowchart LR
+    subgraph Disk
+        IBD[ibd文件<br/>数据页]
+    end
+
+    subgraph BufferPool
+        BP[Buffer Pool<br/>内存缓存]
+    end
+
+    subgraph Pages
+        C[干净页]
+        D[脏页]
+    end
+
+    IBD -->|"读取"| BP
+    BP -->|"修改"| D
+    D -->|"flush"| IBD
+    BP -.->|"命中"| C
+</flowchart>
+
+                    <div class="code-block">
+<pre><code class="sql"><span class="com">-- Buffer Pool 工作原理：
+
+-- 1. 读取流程
+--    a. 查询数据页时，先查Buffer Pool
+--    b. 命中则直接返回（内存访问 ~100ns）
+--    c. 未命中则从磁盘读取（磁盘IO ~10ms）
+--    d. 放入Buffer Pool，返回数据
+
+-- 2. 写入流程
+--    a. 修改数据时，只修改Buffer Pool中的页
+--    b. 该页标记为"脏页"
+--    c. 后台线程定期刷新到磁盘
+--    d. 写入Redo Log确保持久性
+
+-- 3. LRU 淘汰策略
+--    - 新读取的页插入LRU链表头部
+--    - 经常访问的页保持在头部
+--    - 长时间未访问的页被淘汰
+--    - 改进的LRU：冷数据区隔
+
+-- Buffer Pool 配置：
+--    innodb_buffer_pool_size = 4G  (建议50-70%内存)
+--    innodb_buffer_pool_instances = 4  (减少锁竞争)
+--    innodb_old_blocks_pct = 37  (冷数据区比例)</code></pre>
+                    </div>
+
+                    <h4>4.2 脏页刷新机制</h4>
 
                     <div class="mermaid">
 flowchart TD
-    A[SQL查询] --> B{数据页在Buffer Pool?}
-    B -->|是| C[直接读取]
-    B -->|否| D[从磁盘读取ibd]
-    D --> E[放入Buffer Pool]
-    E --> C
-    C --> F[返回结果]
+    A[数据修改] --> B[修改Buffer Pool页]
+    B --> C{innodb_flush_log_at_trx_commit?}
+    C -->|1| D[立即写Redo Log]
+    C -->|2| E[每秒写Redo Log]
+    C -->|0| F[延迟写Redo Log]
+    D --> G[后台刷新线程]
+    E --> G
+    F --> G
+    G --> H{刷新策略}
+    H -->|Page Cleaner| I[刷新脏页到ibd]
+    I --> J[干净页]
 
-    G[数据修改] --> H[修改Buffer Pool]
-    H --> I{是否需要落盘?}
-    I -->|是| J[写入Redo Log]
-    I -->|否| K[等待批量刷新]
-    J --> L[后台线程刷新到ibd]
-
-    style D fill:#ffcdd2,stroke:#c62828
-    style L fill:#c8e6c9,stroke:#2e7d32
-</div>
+    style B fill:#fff3e0,stroke:#e65100
+    style I fill:#c8e6c9,stroke:#2e7d32
+</flowchart>
 
                     <div class="code-block">
-<pre><code class="sql"><span class="com">-- ibd 文件读写优化：</span>
+<pre><code class="sql"><span class="com">-- 脏页刷新机制：
 
-<span class="com">-- 1. Buffer Pool 调优</span>
-<span class="kwd">SET</span> <span class="kwd">GLOBAL</span> innodb_buffer_pool_size = <span class="num">4</span> * <span class="num">1024</span> * <span class="num">1024</span> * <span class="num">1024</span>;
-<span class="com">-- 建议设置为可用内存的 50-70%</span>
+-- 刷新策略 (innodb_flush_log_at_trx_commit)：
+--    1. = 1 (默认，最安全)
+--       每次事务提交同步写Redo Log
+--       最多丢失1个事务
+--    2. = 2
+--       每次事务提交写OS缓存
+--       每秒刷新到磁盘
+--       最多丢失1秒数据
+--    3. = 0
+--       不立即写Redo Log
+--       每秒刷新
+--       最多丢失1秒数据（危险！）
 
-<span class="com">-- 2. 刷新策略</span>
-<span class="kwd">SET</span> <span class="kwd">GLOBAL</span> innodb_flush_log_at_trx_commit = <span class="num">1</span>;
-<span class="com">-- 1: 每次事务提交刷新日志（最安全）</span>
+-- 刷新时机：
+--    a. 脏页比例超过阈值
+--       innodb_max_dirty_pages_pct = 75%
+--    b. Redo Log空间不足
+--    c. 后台Page Cleaner线程定时刷新
+--    d. 正常关闭数据库
 
-<span class="com">-- 查看状态：</span>
-<span class="kwd">SHOW</span> <span class="kwd">ENGINE</span> <span class="kwd">INNODB</span> <span class="kwd">STATUS</span>;</code></pre>
+-- 查看Buffer Pool状态：
+SHOW ENGINE INNODB STATUS;
+-- 查看：Buffer pool size, Pages dirty, Pages read/write
+
+-- 性能影响：
+--    - 脏页过多：恢复时间长
+--    - 刷新过慢：磁盘IO突增
+--    - 刷新过快：IO争用</code></pre>
                     </div>
 
-                    <h4>2.6 ibd 文件空间回收</h4>
+                    <h4>4.3 预读机制</h4>
 
                     <div class="code-block">
-<pre><code class="sql"><span class="com">-- 空间回收方法：</span>
+<pre><code class="sql"><span class="com">-- InnoDB 预读 (Read Ahead)：
 
-<span class="com">-- 1. 重建表回收空间</span>
-<span class="kwd">OPTIMIZE</span> <span class="kwd">TABLE</span> table_name;
+-- 1. 线性预读 (Linear Read Ahead)
+--    条件：顺序访问同一Extent的多个页
+--    触发：innodb_read_ahead_threshold = 56 (默认)
+--    行为：预读整个Extent (64页)
+--    示例：全表扫描时自动触发
 
-<span class="com">-- 2. 重建表</span>
-<span class="kwd">ALTER</span> <span class="kwd">TABLE</span> table_name <span class="kwd">ENGINE</span>=InnoDB;
+-- 2. 随机预读 (Random Read Ahead)
+--    条件：同一Extent内多个页被访问
+--    触发：innodb_random_read_ahead = ON
+--    行为：预读整个Extent
+--    注意：默认关闭，可能增加IO
 
-<span class="com">-- 查看表空间使用：</span>
-<span class="kwd">SELECT</span> 
+-- 预读触发示例：
+--    SELECT * FROM users ORDER BY id;
+--    -- 顺序扫描，触发线性预读
+
+--    SELECT * FROM users WHERE id IN (1,100,200,300);
+--    -- 可能触发随机预读
+
+-- 配置优化：
+--    innodb_read_ahead_threshold = 64
+--    innodb_random_read_ahead = OFF
+--    innodb_read_io_threads = 4</code></pre>
+                    </div>
+
+                    <h3>5. 空间管理与回收</h3>
+
+                    <h4>5.1 空间分配流程</h4>
+
+                    <div class="code-block">
+<pre><code class="sql"><span class="com">-- InnoDB 空间分配流程：
+
+-- 1. 请求分配新页
+--    a. 检查Fragment Array (前32页)
+--    b. 有碎片页则分配单页
+--    c. 无碎片页则分配完整Extent
+
+-- 2. Extent 分配
+--    a. 从FSP_FREE链表中获取
+--    b. 标记为Fragment Array使用
+--    c. 32页后标记为完整Extent
+
+-- 3. 数据页分配
+--    a. 从Fragment Array分配
+--    b. 初始化页头
+--    c. 加入LRU链表
+
+-- 4. 索引结构维护
+--    a. 更新B+ Tree结构
+--    b. 维护Page Directory
+--    c. 更新数据字典
+
+-- 查看表空间统计：
+SELECT
     table_name,
-    round(data_length/<span class="num">1024</span>/<span class="num">1024</span>, <span class="num">2</span>) <span class="kwd">as</span> data_mb
-<span class="kwd">FROM</span> information_schema.tables
-<span class="kwd">WHERE</span> table_schema = <span class="str">'your_database'</span>;</code></pre>
+    round(table_rows / 10000, 1) AS rows_w,
+    round(data_length / 1024 / 1024, 1) AS data_mb,
+    round(index_length / 1024 / 1024, 1) AS index_mb
+FROM information_schema.tables
+WHERE engine = 'InnoDB';</code></pre>
+                    </div>
+
+                    <h4>5.2 空间回收机制</h4>
+
+                    <div class="code-block">
+<pre><code class="sql"><span class="com">-- 空间回收机制：
+
+-- 1. 删除记录的逻辑删除
+--    - 记录标记为"已删除"
+--    - 空间标记为可复用
+--    - 真正删除由Purge线程处理
+
+-- 2. Purge 机制
+--    - 后台线程定期清理已删除记录
+--    - 清理Undo Log
+--    - 释放空间到Free List
+--    - innodb_purge_threads = 4
+
+-- 3. 页面合并
+--    - 当相邻页利用率低时合并
+--    - 释放多余页到Free Extent
+--    - 减少碎片
+
+-- 4. 手动回收空间
+--    OPTIMIZE TABLE table_name;
+--    -- 重建表，整理碎片
+
+--    ALTER TABLE t ENGINE=InnoDB;
+--    -- 在线重建表
+
+--    ALTER TABLE t TABLESPACE=innodb_file_per_table;
+--    -- 移动到独立表空间
+
+-- 注意事项：
+--    - ibd文件不会自动缩小
+--    - DELETE只标记删除，不释放空间
+--    - TRUNCATE会重建表，释放空间</code></pre>
+                    </div>
+
+                    <h4>5.3 常见问题与优化</h4>
+
+                    <div class="code-block">
+<pre><code class="sql"><span class="com">-- 常见空间问题：
+
+-- 问题1：ibd文件过大
+-- 原因：大量删除后空间未回收
+-- 解决：OPTIMIZE TABLE重建表
+
+-- 问题2：碎片过多
+-- 原因：随机插入导致页分裂频繁
+-- 解决：使用自增主键，定期优化
+
+-- 问题3：Buffer Pool命中率低
+-- 原因：数据量超过Buffer Pool大小
+-- 解决：增加Buffer Pool，优化查询
+
+-- 监控SQL：
+--    -- 查看表大小
+--    SELECT table_name,
+--           round(data_length/1024/1024,2) as mb
+--    FROM information_schema.tables
+--    WHERE table_schema = 'db';
+
+--    -- 查看索引统计
+--    SHOW INDEX FROM table_name;
+
+--    -- 查看InnoDB状态
+--    SHOW ENGINE INNODB STATUS\G
+
+--    -- 查看脏页比例
+--    SHOW GLOBAL STATUS LIKE 'Innodb_buffer_pool_pages_dirty';</code></pre>
                     </div>
                 </div>
             </section>

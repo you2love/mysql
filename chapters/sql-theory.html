@@ -50,64 +50,64 @@
                 <p>B+ Tree 是 MySQL 中 InnoDB 存储引擎默认使用的索引结构。它是一种自平衡的多路搜索树，所有数据都存储在叶子节点，非叶子节点只存储索引键。</p>
                 
                 <div class="mermaid">
-graph TD
-    subgraph 根节点
-    R["[20 40 60 80]"]
-    end
-    
-    subgraph 第一层节点
-    L1_1["[10 15]"]
-    L1_2["[20 30]"]
-    L1_3["[40 50]"]
-    L1_4["[60 70]"]
-    L1_5["[80 90]"]
-    end
-    
-    subgraph 叶子节点层
-    L2_1["[1,5,8]<br/>→data1"]
-    L2_2["[10,12,15]<br/>→data2"]
-    L2_3["[20,25,30]<br/>→data3"]
-    L2_4["[40,45,50]<br/>→data4"]
-    L2_5["[60,65,70]<br/>→data5"]
-    L2_6["[80,85,90]<br/>→data6"]
-    end
-    
-    R --> L1_1
-    R --> L1_2
-    R --> L1_3
-    R --> L1_4
-    R --> L1_5
-    
-    L1_1 --> L2_1
-    L1_1 --> L2_2
-    L1_2 --> L2_2
-    L1_2 --> L2_3
-    L1_3 --> L2_3
-    L1_3 --> L2_4
-    L1_4 --> L2_4
-    L1_4 --> L2_5
-    L1_5 --> L2_5
-    L1_5 --> L2_6
-    
-    L2_1 -.->|双向链表| L2_2
-    L2_2 -.->|双向链表| L2_3
-    L2_3 -.->|双向链表| L2_4
-    L2_4 -.->|双向链表| L2_5
-    L2_5 -.->|双向链表| L2_6
-    
-    style R fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style L1_1 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style L1_2 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style L1_3 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style L1_4 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style L1_5 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style L2_1 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-    style L2_2 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-    style L2_3 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-    style L2_4 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-    style L2_5 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-    style L2_6 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-</div>
+                graph TD
+                    subgraph 根节点
+                    R["[20 40 60 80]"]
+                    end
+                    
+                    subgraph 第一层节点
+                    L1_1["[10 15]"]
+                    L1_2["[20 30]"]
+                    L1_3["[40 50]"]
+                    L1_4["[60 70]"]
+                    L1_5["[80 90]"]
+                    end
+                    
+                    subgraph 叶子节点层
+                    L2_1["[1,5,8]<br/>→data1"]
+                    L2_2["[10,12,15]<br/>→data2"]
+                    L2_3["[20,25,30]<br/>→data3"]
+                    L2_4["[40,45,50]<br/>→data4"]
+                    L2_5["[60,65,70]<br/>→data5"]
+                    L2_6["[80,85,90]<br/>→data6"]
+                    end
+                    
+                    R --> L1_1
+                    R --> L1_2
+                    R --> L1_3
+                    R --> L1_4
+                    R --> L1_5
+                    
+                    L1_1 --> L2_1
+                    L1_1 --> L2_2
+                    L1_2 --> L2_2
+                    L1_2 --> L2_3
+                    L1_3 --> L2_3
+                    L1_3 --> L2_4
+                    L1_4 --> L2_4
+                    L1_4 --> L2_5
+                    L1_5 --> L2_5
+                    L1_5 --> L2_6
+                    
+                    L2_1 -.->|双向链表| L2_2
+                    L2_2 -.->|双向链表| L2_3
+                    L2_3 -.->|双向链表| L2_4
+                    L2_4 -.->|双向链表| L2_5
+                    L2_5 -.->|双向链表| L2_6
+                    
+                    style R fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+                    style L1_1 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+                    style L1_2 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+                    style L1_3 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+                    style L1_4 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+                    style L1_5 fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+                    style L2_1 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+                    style L2_2 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+                    style L2_3 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+                    style L2_4 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+                    style L2_5 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+                    style L2_6 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+                </div>
                 <p style="margin-top: 15px;"><strong>图示说明：</strong></p>
                 <ul>
                     <li><strong style="color: #01579b;">蓝色节点</strong>：非叶子节点（索引页，仅存储键值）</li>
