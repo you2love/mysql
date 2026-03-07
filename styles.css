@@ -409,6 +409,8 @@ body {
     padding: 0.5rem 1rem !important;
     background: rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 10;
 }
 
 .code-toolbar button {
@@ -421,6 +423,7 @@ body {
     color: #fff;
     transition: all 0.2s;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .code-toolbar button:hover {
@@ -436,6 +439,7 @@ body {
 .code-toolbar .toggle-btn {
     background: rgba(59, 130, 246, 0.2);
     border-color: rgba(59, 130, 246, 0.3);
+    min-width: 50px;
 }
 
 .code-toolbar .toggle-btn:hover {
@@ -457,15 +461,16 @@ body {
     background: rgba(16, 185, 129, 0.4);
 }
 
-/* 折叠状态 */
+/* 折叠状态 - 只隐藏 pre 内容，保留工具栏 */
 .code-block.collapsed pre {
     max-height: 0 !important;
-    padding: 0;
+    padding: 0 !important;
     opacity: 0;
+    overflow: hidden;
 }
 
-.code-block.collapsed .code-toolbar {
-    border-bottom: none;
+.code-block.collapsed {
+    padding-bottom: 0;
 }
 
 /* SQL 语法高亮 */
