@@ -13,20 +13,321 @@
             theme: 'default'
         });
     </script>
+    <style>
+        /* 主页特有样式 */
+        .hero-banner {
+            background: linear-gradient(135deg, #00758f 0%, #00a3bf 50%, #00758f 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-banner h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.9rem;
+        }
+
+        .intro-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .learning-path {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .path-item {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border-left: 4px solid var(--primary-light);
+            transition: all 0.3s ease;
+        }
+
+        .path-item:hover {
+            transform: translateX(8px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .path-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .path-content h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .path-content p {
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .path-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .path-link:hover {
+            color: var(--accent-color);
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .project-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-light);
+        }
+
+        .project-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-card h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .project-card > p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .project-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-features li {
+            padding: 0.35rem 0;
+            color: var(--text-secondary);
+        }
+
+        .project-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .project-link:hover {
+            color: var(--accent-color);
+        }
+
+        .quick-start {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .step {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .step-icon {
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+        }
+
+        .step-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-banner h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .path-item {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .step {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- 移动导航按钮 -->
+    <button class="menu-toggle" aria-label="切换菜单">
+        ☰ 菜单
+    </button>
+    <div class="menu-overlay"></div>
+    
     <div class="layout">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h1>MySQL 教程</h1>
+                <h1>🗄️ MySQL 教程</h1>
             </div>
             <nav class="tree-nav">
                 <ul class="tree">
                     <li><a href="chapters/basics.html">基础操作</a></li>
                     <li><a href="chapters/advanced.html">高级特性</a></li>
-                    <li><a href="chapters/sql-theory.html">SQL原理</a></li>
+                    <li><a href="chapters/sql-theory.html">SQL 原理</a></li>
                     <li><a href="chapters/index-theory.html">索引原理</a></li>
-                    <li><a href="chapters/innodb-storage.html">InnoDB存储</a></li>
+                    <li><a href="chapters/innodb-storage.html">InnoDB 存储</a></li>
                     <li><a href="chapters/performance.html">性能优化</a></li>
                     <li><a href="chapters/backup.html">备份与恢复</a></li>
                     <li><a href="chapters/alternatives.html">MySQL 替代品</a></li>
@@ -36,43 +337,190 @@
             </nav>
         </aside>
         <main class="main-content">
-            <section id="introduction" class="section">
-                <h2>什么是 MySQL？</h2>
-                <div class="content">
-<h2>什么是 MySQL？</h2>
-            <div class="content">
-                <p>MySQL 是世界上最流行的开源关系型数据库管理系统。它支持 AI 驱动的查询优化、机器学习集成、云原生架构等前沿技术。</p>
+            <!-- 欢迎横幅 -->
+            <section class="hero-banner">
+                <div class="hero-content">
+                    <h1>🚀 MySQL 从入门到精通</h1>
+                    <p class="hero-subtitle">全面掌握现代数据库技术，包括 AI 优化、云原生架构和性能调优</p>
+                    <div class="hero-actions">
+                        <a href="chapters/basics.html" class="btn btn-primary">开始学习</a>
+                        <a href="#features" class="btn btn-secondary">了解特性</a>
+                    </div>
+                </div>
+            </section>
 
+            <!-- 什么是 MySQL -->
+            <section id="introduction" class="section">
+                <h2>📖 什么是 MySQL？</h2>
+                <div class="content">
+                    <p class="intro-text">MySQL 是世界上最流行的开源关系型数据库管理系统，广泛应用于 Web 应用、企业系统和云计算平台。它以其卓越的性能、可靠性和易用性而闻名。</p>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-number">30+</span>
+                            <span class="stat-label">年历史</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">1000 万+</span>
+                            <span class="stat-label">全球用户</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">9.0</span>
+                            <span class="stat-label">最新版本</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">100%</span>
+                            <span class="stat-label">开源免费</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 核心特性 -->
+            <section id="features" class="section">
+                <h2>✨ 核心特性</h2>
                 <div class="feature-grid">
                     <div class="feature-card">
                         <h3>🎯 开源免费</h3>
-                        <p>完全开源，社区活跃，支持 PostgreSQL 协议兼容</p>
+                        <p>完全开源，社区活跃，支持 PostgreSQL 协议兼容，无授权费用</p>
                     </div>
                     <div class="feature-card">
                         <h3>⚡ 高性能</h3>
-                        <p>AI 驱动的查询优化器，性能提升 40%，支持实时分析</p>
+                        <p>AI 驱动的查询优化器，性能提升 40%，支持实时分析和 HTAP</p>
                     </div>
                     <div class="feature-card">
                         <h3>🔒 安全可靠</h3>
-                        <p>零信任架构，量子密钥分发支持，端到端加密</p>
+                        <p>零信任架构，量子密钥分发支持，端到端加密，企业级安全</p>
                     </div>
                     <div class="feature-card">
                         <h3>🌐 云原生</h3>
-                        <p>原生支持 Kubernetes、Serverless 架构，自动扩缩容</p>
+                        <p>原生支持 Kubernetes、Serverless 架构，自动扩缩容，弹性伸缩</p>
                     </div>
                     <div class="feature-card">
                         <h3>🤖 AI 集成</h3>
-                        <p>内置机器学习引擎，自动推荐索引、优化查询</p>
+                        <p>内置机器学习引擎，自动推荐索引、优化查询，智能调优</p>
                     </div>
                     <div class="feature-card">
                         <h3>📊 实时分析</h3>
-                        <p>HTAP 混合事务分析，实时 BI 和 OLAP 能力</p>
+                        <p>HTAP 混合事务分析，实时 BI 和 OLAP 能力，一站式解决方案</p>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <!-- 学习路径 -->
+            <section id="learning-path" class="section">
+                <h2>📚 学习路径</h2>
+                <div class="learning-path">
+                    <div class="path-item">
+                        <div class="path-number">1</div>
+                        <div class="path-content">
+                            <h3>基础入门</h3>
+                            <p>掌握数据库基本概念，学习 SQL 语法，完成简单的 CRUD 操作</p>
+                            <a href="chapters/basics.html" class="path-link">开始学习 →</a>
+                        </div>
+                    </div>
+                    <div class="path-item">
+                        <div class="path-number">2</div>
+                        <div class="path-content">
+                            <h3>进阶提升</h3>
+                            <p>深入理解索引原理、事务处理、锁机制和存储引擎</p>
+                            <a href="chapters/index-theory.html" class="path-link">开始学习 →</a>
+                        </div>
+                    </div>
+                    <div class="path-item">
+                        <div class="path-number">3</div>
+                        <div class="path-content">
+                            <h3>性能优化</h3>
+                            <p>学习查询优化、索引设计、配置调优和故障排查</p>
+                            <a href="chapters/performance.html" class="path-link">开始学习 →</a>
+                        </div>
+                    </div>
+                    <div class="path-item">
+                        <div class="path-number">4</div>
+                        <div class="path-content">
+                            <h3>高级特性</h3>
+                            <p>探索 AI 增强、云原生架构、读写分离和分布式方案</p>
+                            <a href="chapters/ai.html" class="path-link">开始学习 →</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 实战项目 -->
+            <section id="projects" class="section">
+                <h2>💼 实战项目</h2>
+                <div class="project-grid">
+                    <div class="project-card">
+                        <div class="project-icon">📝</div>
+                        <h3>博客管理系统</h3>
+                        <p>完整的博客系统数据库设计，包含用户管理、文章发布、分类标签、评论互动等功能</p>
+                        <ul class="project-features">
+                            <li>✓ 用户认证与权限</li>
+                            <li>✓ 文章 CRUD 操作</li>
+                            <li>✓ 分类与标签系统</li>
+                            <li>✓ 评论与回复</li>
+                        </ul>
+                        <a href="chapters/basics.html" class="project-link">查看详情 →</a>
+                    </div>
+                    <div class="project-card">
+                        <div class="project-icon">🛒</div>
+                        <h3>电商订单系统</h3>
+                        <p>电商场景的完整数据库设计，涵盖商品管理、购物车、订单处理、支付流程等核心模块</p>
+                        <ul class="project-features">
+                            <li>✓ 商品与库存管理</li>
+                            <li>✓ 购物车操作</li>
+                            <li>✓ 订单生命周期</li>
+                            <li>✓ 支付与退款</li>
+                        </ul>
+                        <a href="chapters/advanced.html" class="project-link">查看详情 →</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 快速开始 -->
+            <section id="quick-start" class="section">
+                <h2>⚡ 快速开始</h2>
+                <div class="quick-start">
+                    <div class="step">
+                        <div class="step-icon">1️⃣</div>
+                        <div class="step-content">
+                            <h3>安装 MySQL</h3>
+                            <p>根据你的操作系统（Mac/Linux/Windows）安装 MySQL 9.x 版本</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">2️⃣</div>
+                        <div class="step-content">
+                            <h3>连接数据库</h3>
+                            <pre><code>mysql -u root -p</code></pre>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">3️⃣</div>
+                        <div class="step-content">
+                            <h3>创建第一个表</h3>
+                            <pre><code>CREATE DATABASE mydb;
+USE mydb;
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50),
+    email VARCHAR(100)
+);</code></pre>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">4️⃣</div>
+                        <div class="step-content">
+                            <h3>开始学习</h3>
+                            <p>从基础操作章节开始，循序渐进掌握 MySQL</p>
+                            <a href="chapters/basics.html" class="btn btn-primary btn-sm">开始教程</a>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
+    
+    <script src="main.js"></script>
 </body>
 </html>
