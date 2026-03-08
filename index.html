@@ -24,7 +24,7 @@
         .hero-banner {
             background: linear-gradient(135deg, #00758f 0%, #00a3bf 50%, #00758f 100%);
             color: white;
-            padding: 5rem 2rem;
+            padding: 3rem 2rem;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -46,17 +46,17 @@
         }
 
         .hero-banner h1 {
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             font-weight: 800;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         .hero-subtitle {
-            font-size: 1.35rem;
+            font-size: 1.1rem;
             opacity: 0.95;
-            margin-bottom: 2.5rem;
-            max-width: 700px;
+            margin-bottom: 1.5rem;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -70,11 +70,11 @@
 
         .btn {
             display: inline-block;
-            padding: 1rem 2.5rem;
+            padding: 0.75rem 1.75rem;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
             border: none;
             cursor: pointer;
@@ -108,19 +108,19 @@
 
         /* 核心特性展示区 */
         .core-features {
-            padding: 4rem 2rem;
+            padding: 3rem 2rem;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
         }
 
         .section-header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         .section-header h2 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             color: var(--primary-color);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             position: relative;
             display: inline-block;
         }
@@ -131,32 +131,32 @@
             bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
+            width: 60px;
+            height: 3px;
             background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
             border-radius: 2px;
         }
 
         .section-header p {
-            font-size: 1.15rem;
+            font-size: 1rem;
             color: var(--text-secondary);
-            max-width: 600px;
-            margin: 1.5rem auto 0;
+            max-width: 500px;
+            margin: 1.25rem auto 0;
         }
 
         /* 特性网格 - 增强版 */
         .feature-grid-pro {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-            max-width: 1400px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
         .feature-card-pro {
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border-radius: var(--radius-xl);
-            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow-md);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -170,15 +170,15 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 3px;
             background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
             transform: scaleX(0);
             transition: transform 0.4s ease;
         }
 
         .feature-card-pro:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-xl);
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
             border-color: var(--primary-light);
         }
 
@@ -187,28 +187,29 @@
         }
 
         .feature-icon {
-            width: 70px;
-            height: 70px;
+            width: 56px;
+            height: 56px;
             background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 8px 16px rgba(0, 117, 143, 0.2);
+            font-size: 2rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 6px 12px rgba(0, 117, 143, 0.2);
         }
 
         .feature-card-pro h3 {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             color: var(--text-primary);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .feature-card-pro p {
             color: var(--text-secondary);
-            line-height: 1.8;
-            margin-bottom: 1.5rem;
+            line-height: 1.7;
+            margin-bottom: 1.25rem;
+            font-size: 0.95rem;
         }
 
         .feature-tags {
@@ -229,7 +230,7 @@
 
         /* 性能对比区 */
         .performance-section {
-            padding: 4rem 2rem;
+            padding: 3rem 2rem;
             background: linear-gradient(135deg, #00758f 0%, #005a6e 100%);
             color: white;
         }
@@ -244,23 +245,23 @@
 
         .perf-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            max-width: 900px;
             margin: 0 auto;
         }
 
         .perf-card {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
             text-align: center;
         }
 
         .perf-number {
-            font-size: 3.5rem;
+            font-size: 2.75rem;
             font-weight: 800;
             background: linear-gradient(135deg, #fff, #e0f2f1);
             -webkit-background-clip: text;
@@ -270,76 +271,77 @@
         }
 
         .perf-label {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: rgba(255, 255, 255, 0.9);
             margin-top: 0.5rem;
         }
 
         .perf-desc {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.7);
-            margin-top: 1rem;
+            margin-top: 0.75rem;
         }
 
         /* 应用场景 */
         .scenarios-section {
-            padding: 4rem 2rem;
+            padding: 3rem 2rem;
             background: var(--bg-primary);
         }
 
         .scenario-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            max-width: 1200px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
         .scenario-card {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
             text-align: center;
             border: 1px solid var(--border-light);
             transition: all 0.3s ease;
         }
 
         .scenario-card:hover {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-lg);
+            transform: scale(1.03);
+            box-shadow: var(--shadow-md);
         }
 
         .scenario-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .scenario-card h4 {
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 1rem;
         }
 
         .scenario-card p {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         /* CTA 区域 */
         .cta-section {
-            padding: 5rem 2rem;
+            padding: 3.5rem 2rem;
             background: linear-gradient(135deg, var(--accent-color) 0%, #f59e0b 100%);
             text-align: center;
             color: white;
         }
 
         .cta-section h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
         }
 
         .cta-section p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
             opacity: 0.95;
         }
 
@@ -353,29 +355,29 @@
         .btn-cta-primary {
             background: white;
             color: var(--accent-color);
-            padding: 1rem 3rem;
+            padding: 0.875rem 2.25rem;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: all 0.3s ease;
             display: inline-block;
         }
 
         .btn-cta-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
         .btn-cta-secondary {
             background: transparent;
             color: white;
             border: 2px solid white;
-            padding: 1rem 3rem;
+            padding: 0.875rem 2.25rem;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: all 0.3s ease;
             display: inline-block;
         }
@@ -387,11 +389,11 @@
 
         @media (max-width: 768px) {
             .hero-banner h1 {
-                font-size: 2.2rem;
+                font-size: 1.75rem;
             }
 
             .hero-subtitle {
-                font-size: 1.1rem;
+                font-size: 0.95rem;
             }
 
             .feature-grid-pro {
@@ -399,11 +401,15 @@
             }
 
             .section-header h2 {
-                font-size: 2rem;
+                font-size: 1.5rem;
             }
 
             .perf-number {
-                font-size: 2.5rem;
+                font-size: 2rem;
+            }
+
+            .scenario-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
