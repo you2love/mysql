@@ -562,6 +562,33 @@
                         <div class="perf-desc">分库分表方案支持海量数据存储</div>
                     </div>
                 </div>
+
+                <!-- InnoDB 缓冲池详解 -->
+                <div style="margin-top: 2.5rem; max-width: 700px; margin-left: auto; margin-right: auto;">
+                    <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.15);">
+                        <h4 style="color: rgba(255, 255, 255, 0.85); font-size: 1.05rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                            💡 InnoDB 缓冲池优化
+                        </h4>
+                        <p style="color: rgba(255, 255, 255, 0.75); line-height: 1.7; margin-bottom: 1.25rem; font-size: 0.85rem;">
+                            InnoDB 缓冲池（Buffer Pool）是内存中用于缓存数据和索引的区域，合理配置可显著提升数据库吞吐量。
+                            数据页和索引页在缓冲池中命中，可避免磁盘 I/O，将随机读取转为顺序读取。
+                        </p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+                            <div style="background: rgba(0, 0, 0, 0.15); padding: 0.85rem; border-radius: var(--radius-sm);">
+                                <div style="color: #4ade80; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.85rem;">📌 缓冲池命中率</div>
+                                <div style="color: rgba(255, 255, 255, 0.65); font-size: 0.75rem;">目标 &gt; 99%，通过 <code style="background: rgba(255,255,255,0.15); padding: 0.15rem 0.4rem; border-radius: 3px;">SHOW STATUS</code> 监控</div>
+                            </div>
+                            <div style="background: rgba(0, 0, 0, 0.15); padding: 0.85rem; border-radius: var(--radius-sm);">
+                                <div style="color: #60a5fa; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.85rem;">⚙️ 配置参数</div>
+                                <div style="color: rgba(255, 255, 255, 0.65); font-size: 0.75rem;"><code style="background: rgba(255,255,255,0.15); padding: 0.15rem 0.4rem; border-radius: 3px;">innodb_buffer_pool_size</code> 设为物理内存 50-80%</div>
+                            </div>
+                            <div style="background: rgba(0, 0, 0, 0.15); padding: 0.85rem; border-radius: var(--radius-sm);">
+                                <div style="color: #fbbf24; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.85rem;">🚀 优化技巧</div>
+                                <div style="color: rgba(255, 255, 255, 0.65); font-size: 0.75rem;">预热缓冲池、分离冷热数据、使用 SSD</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- 应用场景 -->
