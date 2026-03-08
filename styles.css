@@ -361,6 +361,11 @@ body {
     box-shadow: var(--shadow-lg);
     border: 1px solid #334155;
     transition: all var(--transition-base);
+    position: relative;
+}
+
+.code-block.collapsed {
+    overflow: visible;
 }
 
 .code-block:hover {
@@ -406,11 +411,20 @@ body {
     display: flex;
     gap: 0.5rem;
     justify-content: flex-end;
-    padding: 0.5rem 1rem !important;
+    padding: 0.5rem 1rem;
     background: rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 10;
+}
+
+.code-block.collapsed .code-toolbar {
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .code-toolbar button {
@@ -467,6 +481,8 @@ body {
     padding: 0 !important;
     opacity: 0;
     overflow: hidden;
+    visibility: hidden !important;
+    height: 0 !important;
 }
 
 .code-block.collapsed {

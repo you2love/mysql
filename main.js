@@ -80,23 +80,27 @@ document.addEventListener('DOMContentLoaded', function() {
         let isExpanded = true;
         const pre = block.querySelector('pre');
         const originalMaxHeight = pre.style.maxHeight || '500px';
-        
+
         toggleBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             if (isExpanded) {
                 // 折叠 - 只隐藏 pre 内容，保留工具栏
                 pre.style.maxHeight = '0';
+                pre.style.height = '0';
                 pre.style.padding = '0';
                 pre.style.opacity = '0';
                 pre.style.overflow = 'hidden';
+                pre.style.visibility = 'hidden';
                 toggleBtn.textContent = '展开';
                 block.classList.add('collapsed');
             } else {
                 // 展开
                 pre.style.maxHeight = originalMaxHeight;
+                pre.style.height = 'auto';
                 pre.style.padding = '1.25rem';
                 pre.style.opacity = '1';
                 pre.style.overflow = 'auto';
+                pre.style.visibility = 'visible';
                 toggleBtn.textContent = '折叠';
                 block.classList.remove('collapsed');
             }
@@ -127,19 +131,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         toolbar.appendChild(toggleBtn);
         toolbar.appendChild(copyBtn);
-        
-        block.style.position = 'relative';
+
         block.insertBefore(toolbar, block.firstChild);
-        
+
         // 如果代码超过 15 行，默认折叠
         const code = block.querySelector('code');
         if (code) {
             const lines = code.textContent.split('\n').length;
             if (lines > 15) {
                 pre.style.maxHeight = '0';
+                pre.style.height = '0';
                 pre.style.padding = '0';
                 pre.style.opacity = '0';
                 pre.style.overflow = 'hidden';
+                pre.style.visibility = 'hidden';
                 toggleBtn.textContent = '展开';
                 block.classList.add('collapsed');
                 isExpanded = false;
